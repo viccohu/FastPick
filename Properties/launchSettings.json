@@ -1,0 +1,33 @@
+{
+  "profiles": {
+    "FastPick (Package)": {
+      "commandName": "MsixPackage",
+      "hotReloadEnabled": true,
+      "hotReloadProfile": "aspnetcore",
+      "environmentVariables": {
+        "DOTNET_HOTRELOAD": "true"
+      }
+    },
+    "FastPick (Unpackaged)": {
+      "commandName": "Project",
+      "hotReloadEnabled": true,
+      "hotReloadProfile": "aspnetcore",
+      "environmentVariables": {
+        "DOTNET_HOTRELOAD": "true"
+      }
+    },
+    "FastPick (Hot Reload)": {
+      "commandName": "Project",
+      "hotReloadEnabled": true,
+      "hotReloadProfile": "aspnetcore",
+      "launchBrowser": false,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_HOTRELOAD": "true",
+        "DOTNET_USE_POLLING_FILE_WATCHER": "true"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": ""
+    }
+  }
+}

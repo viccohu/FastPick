@@ -1,0 +1,1228 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Page
+    x:Class="FastPick.Views.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:FastPick"
+    xmlns:models="using:FastPick.Models"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:mycontrols="using:FastPick.Controls"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    NavigationCacheMode="Required"
+    Background="{StaticResource PageBackgroundBrush}"
+    PointerPressed="Page_PointerPressed">
+
+    <Page.Resources>
+        <!-- 页面级资源覆盖 -->
+        
+        <!-- 缩略图项数据模板 - 用于 ItemsRepeater -->
+        <DataTemplate x:Key="ThumbnailItemTemplate">
+            <Grid x:Name="ThumbnailGrid"
+                  Width="130" 
+                  Height="110"
+                  Background="{StaticResource ElevatedBackgroundBrush}"
+                  BorderBrush="{StaticResource BorderBrush}"
+                  BorderThickness="2"
+                  CornerRadius="4">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="20"/>
+                </Grid.RowDefinitions>
+                
+                <!-- 图片区域 -->
+                <Grid Grid.Row="0" Margin="0">
+                    <Image x:Name="ThumbnailImage"
+                           Source="{Binding Thumbnail}"
+                           Stretch="Uniform"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+                </Grid>
+                
+                <!-- 底部信息栏 -->
+                <Grid Grid.Row="1"
+                      Background="{Binding IsMarkedForDeletion, Converter={StaticResource BoolToDeletionBackgroundConverter}}"
+                      BorderBrush="{StaticResource BorderBrush}"
+                      BorderThickness="0,1,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- 文件类型标签 -->
+                    <Border x:Name="FileTypeBadge"
+                            Grid.Column="0"
+                            Background="{StaticResource ElevatedBackgroundBrush}"
+                            Padding="4,2"
+                            CornerRadius="2"
+                            Margin="4,0,0,0"
+                            VerticalAlignment="Center">
+                        <TextBlock x:Name="FileTypeText"
+                                   FontSize="8"
+                                   Foreground="{Binding FileType, Converter={StaticResource FileTypeToColorConverter}}"
+                                   Text="{Binding FileType, Converter={StaticResource FileTypeToStringConverter}}"/>
+                    </Border>
+                    
+                    <!-- 星级 -->
+                    <mycontrols:RatingControl Grid.Column="2"
+                                              Rating="{Binding Rating, Mode=OneWay}"
+                                              RatingChanged="RatingControl_Changed"
+                                              UseDeletionColor="True"
+                                              Margin="0,0,4,0"
+                                              VerticalAlignment="Center"/>
+                </Grid>
+                
+                <!-- 选中状态的边框覆盖层 (最上层) -->
+                <Border x:Name="SelectionBorder"
+                        Grid.Row="0"
+                        Grid.RowSpan="2"
+                        BorderBrush="{StaticResource AccentBrush}"
+                        BorderThickness="2"
+                        CornerRadius="4"
+                        Visibility="Collapsed"
+                        IsHitTestVisible="False"/>
+            </Grid>
+        </DataTemplate>
+        
+        <!-- 多选预览数据模板 -->
+        <DataTemplate x:Key="MultiPreviewTemplate">
+            <Grid Width="160" Height="120" Margin="4">
+                <Image x:Name="PreviewImage"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+                <Border Background="#80000000" 
+                        VerticalAlignment="Bottom"
+                        HorizontalAlignment="Stretch"
+                        Padding="4,2">
+                    <TextBlock x:Name="PreviewFileName"
+                               Foreground="White"
+                               FontSize="10"
+                               TextTrimming="CharacterEllipsis"/>
+                </Border>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <!-- 五段式布局 -->
+    <Grid x:Name="MainLayout">
+        <Grid.RowDefinitions>
+            <!-- Row 0: 标题栏 -->
+            <RowDefinition Height="42" />
+            <!-- Row 1: 抽屉区 -->
+            <RowDefinition Height="Auto" />
+            <!-- Row 2: 预览区 -->
+            <RowDefinition Height="*" />
+            <!-- Row 3: 缩略图区 (固定180px) -->
+            <RowDefinition Height="120" />
+            <!-- Row 4: 底部工具栏 -->
+            <RowDefinition Height="38" />
+        </Grid.RowDefinitions>
+
+        <!-- ==================== 标题栏 (Row 0) ==================== -->
+        <Grid x:Name="TitleBarGrid" 
+              Grid.Row="0" 
+              Background="{StaticResource SurfaceBackgroundBrush}"
+              BorderBrush="{StaticResource BorderBrush}"
+              BorderThickness="0,0,0,1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- 左侧功能按钮（图标化） -->
+            <StackPanel x:Name="TitleBarButtonsPanel" Grid.Column="0" Orientation="Horizontal" Margin="8,0" Spacing="4">
+                <Button x:Name="PathButton"
+                        Content="&#xE8B7;"
+                        FontFamily="Segoe Fluent Icons"
+                        Style="{StaticResource IconButtonStyle}"
+                        Click="PathButton_Click"
+                        ToolTipService.ToolTip="路径" />
+                <Button x:Name="ExportButton"
+                        Content="&#xE72D;"
+                        FontFamily="Segoe Fluent Icons"
+                        Style="{StaticResource IconButtonStyle}"
+                        Click="ExportButton_Click"
+                        ToolTipService.ToolTip="导出" />
+                <Button x:Name="DeleteButton"
+                        Content="&#xE74D;"
+                        FontFamily="Segoe Fluent Icons"
+                        Style="{StaticResource IconButtonStyle}"
+                        Click="DeleteButton_Click"
+                        ToolTipService.ToolTip="删除" />
+                <Grid>
+                    <Button x:Name="FilterButton"
+                            Content="&#xE71C;"
+                            FontFamily="Segoe Fluent Icons"
+                            Style="{StaticResource IconButtonStyle}"
+                            Click="FilterButton_Click"
+                            ToolTipService.ToolTip="筛选" />
+                    <Button x:Name="FilterClearButton"
+                            Content="&#xE711;"
+                            FontFamily="Segoe Fluent Icons"
+                            FontSize="10"
+                            Width="15"
+                            Height="15"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top"
+                            Margin="0,3,-2,0"
+                            Visibility="Collapsed"
+                            Click="FilterClearButton_Click"
+                            ToolTipService.ToolTip="清除筛选"
+                            Style="{StaticResource IconButtonHighlightStyle}" />
+                </Grid>
+                <Button x:Name="SettingsButton"
+                        Content="&#xE713;"
+                        FontFamily="Segoe Fluent Icons"
+                        Style="{StaticResource IconButtonStyle}"
+                        Click="SettingsButton_Click"
+                        ToolTipService.ToolTip="设置" />
+            </StackPanel>
+
+            <!-- 中间标题（可拖拽区域） -->
+            <TextBlock Grid.Column="1"
+                       x:Name="TitleBarText"
+                       Text=""
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       FontSize="16"
+                       Foreground="{StaticResource TextPrimaryBrush}" />
+
+            <!-- 右侧窗口控制（使用系统标题栏按钮） -->
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="8,0" x:Name="WindowControlsPanel">
+            </StackPanel>
+        </Grid>
+
+        <!-- ==================== 抽屉区 (Row 1) ==================== -->
+        <!-- 路径抽屉 -->
+        <Border x:Name="PathDrawer"
+                Grid.Row="1"
+                Style="{StaticResource DrawerContentStyle}"
+                Visibility="Collapsed"
+                RenderTransformOrigin="0.5,0"
+                Opacity="0">
+            <Border.RenderTransform>
+                <TranslateTransform x:Name="PathDrawerTransform" Y="-20"/>
+            </Border.RenderTransform>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                
+                <Grid Grid.Row="0" Grid.Column="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="120" />
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0" Spacing="8" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="路径1:" VerticalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}" />
+                            <TextBox x:Name="Path1TextBox" 
+                                     Width="300" 
+                                     PlaceholderText="选择文件夹..."
+                                     TextChanged="Path1TextBox_TextChanged"
+                                     Style="{StaticResource DarkTextBoxStyle}" />
+                            <Button Content="&#xE838;"
+                                    FontFamily="Segoe Fluent Icons"
+                                    Style="{StaticResource IconButtonStyle}"
+                                    Click="SelectPath1Button_Click"
+                                    ToolTipService.ToolTip="选择文件夹" />
+                            <StackPanel x:Name="Path1PreviewPanel" Orientation="Horizontal" Spacing="4" Visibility="Collapsed">
+                                <ProgressRing x:Name="Path1ScanRing" Width="14" Height="14" IsActive="False" />
+                                <TextBlock x:Name="Path1PreviewText" VerticalAlignment="Center" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="路径2:" VerticalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}" />
+                            <TextBox x:Name="Path2TextBox" 
+                                     Width="300" 
+                                     PlaceholderText="选择文件夹..."
+                                     TextChanged="Path2TextBox_TextChanged"
+                                     Style="{StaticResource DarkTextBoxStyle}" />
+                            <Button Content="&#xE838;"
+                                    FontFamily="Segoe Fluent Icons"
+                                    Style="{StaticResource IconButtonStyle}"
+                                    Click="SelectPath2Button_Click"
+                                    ToolTipService.ToolTip="选择文件夹" />
+                            <StackPanel x:Name="Path2PreviewPanel" Orientation="Horizontal" Spacing="4" Visibility="Collapsed">
+                                <ProgressRing x:Name="Path2ScanRing" Width="14" Height="14" IsActive="False" />
+                                <TextBlock x:Name="Path2PreviewText" VerticalAlignment="Center" FontSize="12" Foreground="{StaticResource TextSecondaryBrush}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Button Grid.Column="2"
+                            Content="&#xE7C5;"
+                            FontFamily="Segoe Fluent Icons"
+                            FontSize="18"
+                            Width="50"
+                            Height="75"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Click="LoadButton_Click"
+                            ToolTipService.ToolTip="载入" />
+                </Grid>
+                
+                <Button x:Name="PinPathDrawerButton"
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Margin="0,0,0,0"
+                        VerticalAlignment="Top"
+                        HorizontalAlignment="Right"
+                        Style="{StaticResource SmallPinButtonStyle}"
+                        Click="PinPathDrawerButton_Click"
+                        ToolTipService.ToolTip="固定">
+                    <Grid>
+                        <FontIcon x:Name="PinPathDrawerIconFill"
+                                  FontFamily="Segoe Fluent Icons"
+                                  FontSize="12"
+                                  Glyph="&#xE841;"
+                                  Foreground="{StaticResource TextSecondaryBrush}"
+                                  Visibility="Collapsed" />
+                        <FontIcon x:Name="PinPathDrawerIconOutline"
+                                  FontFamily="Segoe Fluent Icons"
+                                  FontSize="12"
+                                  Glyph="&#xE840;"
+                                  Foreground="{StaticResource TextDisabledBrush}" />
+                    </Grid>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- 导出抽屉 -->
+        <Border x:Name="ExportDrawer"
+                Grid.Row="1"
+                Style="{StaticResource DrawerContentStyle}"
+                Visibility="Collapsed"
+                RenderTransformOrigin="0.5,0"
+                Opacity="0">
+            <Border.RenderTransform>
+                <TranslateTransform x:Name="ExportDrawerTransform" Y="-20"/>
+            </Border.RenderTransform>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                
+                <Grid Grid.Row="0" Grid.Column="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="120" />
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0" Spacing="8" VerticalAlignment="Center">
+                        <!-- 第一行：RAW导出控制 + 文件夹配置 -->
+                        <StackPanel Orientation="Horizontal" Spacing="16">
+                            <TextBlock Text="RAW导出控制:" VerticalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}" />
+                            <ComboBox x:Name="ExportRatingComboBox" 
+                                      Width="120" 
+                                      SelectedIndex="0"
+                                      Style="{StaticResource DarkComboBoxStyle}">
+                                <ComboBoxItem Content="5星以上" />
+                                <ComboBoxItem Content="4星以上" />
+                                <ComboBoxItem Content="3星以上" />
+                                <ComboBoxItem Content="2星以上" />
+                                <ComboBoxItem Content="1星以上" />
+                            </ComboBox>
+
+                            <TextBlock Text="JPG文件夹:" VerticalAlignment="Center" Margin="16,0,0,0" Foreground="{StaticResource TextPrimaryBrush}" />
+                            <TextBox x:Name="JpgFolderTextBox" 
+                                     Width="100" 
+                                     Text="JPG"
+                                     Style="{StaticResource DarkTextBoxStyle}" />
+
+                            <TextBlock Text="RAW文件夹:" VerticalAlignment="Center" Margin="16,0,0,0" Foreground="{StaticResource TextPrimaryBrush}" />
+                            <TextBox x:Name="RawFolderTextBox" 
+                                     Width="100" 
+                                     Text="RAW"
+                                     Style="{StaticResource DarkTextBoxStyle}" />
+                        </StackPanel>
+                        
+                        <!-- 第二行：导出路径 -->
+                        <StackPanel Orientation="Horizontal" Spacing="16">
+                            <TextBlock Text="导出位置:" VerticalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}" />
+                            <TextBox x:Name="ExportPathTextBox" 
+                                     Width="300" 
+                                     PlaceholderText="选择导出路径..."
+                                     Style="{StaticResource DarkTextBoxStyle}" />
+                            <Button Content="&#xE8B7;"
+                                    FontFamily="Segoe Fluent Icons"
+                                    Style="{StaticResource IconButtonStyle}"
+                                    Click="BrowseExportPathButton_Click"
+                                    ToolTipService.ToolTip="浏览" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Button Grid.Column="2"
+                            Content="&#xE725;"
+                            FontFamily="Segoe Fluent Icons"
+                            FontSize="18"
+                            Width="50"
+                            Height="75"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Click="ExecuteExportButton_Click"
+                            ToolTipService.ToolTip="导出" />
+                </Grid>
+                
+                <Button x:Name="PinExportDrawerButton"
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Margin="0,0,0,0"
+                        VerticalAlignment="Top"
+                        HorizontalAlignment="Right"
+                        Style="{StaticResource SmallPinButtonStyle}"
+                        Click="PinExportDrawerButton_Click"
+                        ToolTipService.ToolTip="固定">
+                    <Grid>
+                        <FontIcon x:Name="PinExportDrawerIconFill"
+                                  FontFamily="Segoe Fluent Icons"
+                                  FontSize="12"
+                                  Glyph="&#xE841;"
+                                  Foreground="{StaticResource TextSecondaryBrush}"
+                                  Visibility="Collapsed" />
+                        <FontIcon x:Name="PinExportDrawerIconOutline"
+                                  FontFamily="Segoe Fluent Icons"
+                                  FontSize="12"
+                                  Glyph="&#xE840;"
+                                  Foreground="{StaticResource TextDisabledBrush}" />
+                    </Grid>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- 删除抽屉 -->
+        <Border x:Name="DeleteDrawer"
+                Grid.Row="1"
+                Style="{StaticResource DrawerContentStyle}"
+                Visibility="Collapsed"
+                RenderTransformOrigin="0.5,0"
+                Opacity="0">
+            <Border.RenderTransform>
+                <TranslateTransform x:Name="DeleteDrawerTransform" Y="-20"/>
+            </Border.RenderTransform>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="12">
+                    <TextBlock VerticalAlignment="Center">
+                        <Run Text="预删除：" Foreground="{StaticResource TextSecondaryBrush}" />
+                        <Run x:Name="DeleteCountRun" Text="0张" Foreground="{StaticResource TextSecondaryBrush}" />
+                    </TextBlock>
+                    
+                    <Border Width="1" Background="{StaticResource BorderBrush}" Margin="8,0" />
+                    
+                    <!-- 删除模式按钮组 -->
+                    <Button x:Name="DeleteBothButton"
+                            Content="全删"
+                            Style="{StaticResource TitleBarButtonStyle}"
+                            Click="DeleteModeButton_Click"
+                            Tag="Both" />
+                    <Button x:Name="DeleteJpgOnlyButton"
+                            Content="仅删JPG"
+                            Style="{StaticResource TitleBarButtonStyle}"
+                            Click="DeleteModeButton_Click"
+                            Tag="JpgOnly" />
+                    <Button x:Name="DeleteRawOnlyButton"
+                            Content="仅删RAW"
+                            Style="{StaticResource TitleBarButtonStyle}"
+                            Click="DeleteModeButton_Click"
+                            Tag="RawOnly" />
+                    
+                    <Border Width="1" Background="{StaticResource BorderBrush}" Margin="8,0" />
+                    
+                    <!-- 执行删除按钮 -->
+                    <Button Content="&#xE74D;"
+                            FontFamily="Segoe Fluent Icons"
+                            Style="{StaticResource DangerButtonStyle}"
+                            Click="ExecuteDeleteButton_Click"
+                            ToolTipService.ToolTip="执行删除" />
+                </StackPanel>
+                
+                <Button x:Name="PinDeleteDrawerButton"
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Margin="0,0,0,0"
+                        VerticalAlignment="Top"
+                        HorizontalAlignment="Right"
+                        Style="{StaticResource SmallPinButtonStyle}"
+                        Click="PinDeleteDrawerButton_Click"
+                        ToolTipService.ToolTip="固定">
+                    <Grid>
+                        <FontIcon x:Name="PinDeleteDrawerIconFill"
+                                  FontFamily="Segoe Fluent Icons"
+                                  FontSize="12"
+                                  Glyph="&#xE841;"
+                                  Foreground="{StaticResource TextSecondaryBrush}"
+                                  Visibility="Collapsed" />
+                        <FontIcon x:Name="PinDeleteDrawerIconOutline"
+                                  FontFamily="Segoe Fluent Icons"
+                                  FontSize="12"
+                                  Glyph="&#xE840;"
+                                  Foreground="{StaticResource TextDisabledBrush}" />
+                    </Grid>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- 筛选抽屉 -->
+        <Border x:Name="FilterDrawer"
+                Grid.Row="1"
+                Style="{StaticResource DrawerContentStyle}"
+                Visibility="Collapsed"
+                RenderTransformOrigin="0.5,0"
+                Opacity="0">
+            <Border.RenderTransform>
+                <TranslateTransform x:Name="FilterDrawerTransform" Y="-20"/>
+            </Border.RenderTransform>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="12">
+                    <!-- 文件类型筛选按钮组 -->
+                    <Button x:Name="FilterAllButton" 
+                            Content="全部" 
+                            Style="{StaticResource TitleBarButtonStyle}"
+                            Click="FilterFileType_Click" 
+                            Tag="All" />
+                    <Button x:Name="FilterBothButton" 
+                            Content="双文件" 
+                            Style="{StaticResource TitleBarButtonStyle}"
+                            Click="FilterFileType_Click" 
+                            Tag="Both" />
+                    <Button x:Name="FilterJpgButton" 
+                            Content="仅JPG" 
+                            Style="{StaticResource TitleBarButtonStyle}"
+                            Click="FilterFileType_Click" 
+                            Tag="JpgOnly" />
+                    <Button x:Name="FilterRawButton" 
+                            Content="仅RAW" 
+                            Style="{StaticResource TitleBarButtonStyle}"
+                            Click="FilterFileType_Click" 
+                            Tag="RawOnly" />
+                    
+                    <Border Width="1" Background="{StaticResource BorderBrush}" Margin="8,0" />
+                    
+                    <!-- 预删除筛选按钮 -->
+                    <Button x:Name="FilterDeletedButton"
+                            Content="预删除"
+                            Style="{StaticResource TitleBarButtonStyle}"
+                            Click="FilterDeletedButton_Click"
+                            ToolTipService.ToolTip="筛选已标记的文件" />
+                    
+                    <Border Width="1" Background="{StaticResource BorderBrush}" Margin="8,0" />
+                    
+                    <!-- 星级筛选 -->
+                    <TextBlock Text="星级" 
+                               FontSize="14"
+                               VerticalAlignment="Center" 
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               ToolTipService.ToolTip="星级筛选" />
+                    <ComboBox x:Name="FilterRatingConditionComboBox" 
+                              Width="80" 
+                              SelectedIndex="0"
+                              SelectionChanged="FilterRatingConditionComboBox_SelectionChanged"
+                              Style="{StaticResource DarkComboBoxStyle}">
+                        <ComboBoxItem>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="&#xe8a9;" FontFamily="Segoe Fluent Icons" />
+                            </StackPanel>
+                        </ComboBoxItem>
+                        <ComboBoxItem>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="&#xE735;" FontFamily="Segoe Fluent Icons" />
+                            </StackPanel>
+                        </ComboBoxItem>
+                        <ComboBoxItem>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="&#xE734;" FontFamily="Segoe Fluent Icons" />
+                            </StackPanel>
+                        </ComboBoxItem>
+                        <ComboBoxItem>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="&#xe94e;" FontFamily="Segoe Fluent Icons" />
+                            </StackPanel>
+                        </ComboBoxItem>
+                        <ComboBoxItem>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="&#xE74A;" FontFamily="Segoe Fluent Icons" />
+                            </StackPanel>
+                        </ComboBoxItem>
+                        <ComboBoxItem>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="&#xE74B;" FontFamily="Segoe Fluent Icons" />
+                            </StackPanel>
+                        </ComboBoxItem>
+                    </ComboBox>
+                    <mycontrols:RatingControl x:Name="FilterRatingControl" 
+                                              Rating="0"
+                                              IsFilterMode="True"
+                                              RatingChanged="FilterRatingControl_RatingChanged"
+                                              IsEnabled="False"
+                                              VerticalAlignment="Center" />
+                    
+                    <Border Width="1" Background="{StaticResource BorderBrush}" Margin="8,0" />
+                    
+                    <!-- 清除筛选按钮 -->
+                    <Button Content="&#xE894;"
+                            FontFamily="Segoe Fluent Icons"
+                            Style="{StaticResource IconButtonStyle}"
+                            Click="FilterClearButton_Click"
+                            ToolTipService.ToolTip="清除筛选" />
+                </StackPanel>
+                
+                <Button x:Name="PinFilterDrawerButton"
+                        Grid.Row="0"
+                        Grid.Column="1"
+                        Margin="0,0,0,0"
+                        VerticalAlignment="Top"
+                        HorizontalAlignment="Right"
+                        Style="{StaticResource SmallPinButtonStyle}"
+                        Click="PinFilterDrawerButton_Click"
+                        ToolTipService.ToolTip="固定">
+                    <Grid>
+                        <FontIcon x:Name="PinFilterDrawerIconFill"
+                                  FontFamily="Segoe Fluent Icons"
+                                  FontSize="12"
+                                  Glyph="&#xE841;"
+                                  Foreground="{StaticResource TextSecondaryBrush}"
+                                  Visibility="Collapsed" />
+                        <FontIcon x:Name="PinFilterDrawerIconOutline"
+                                  FontFamily="Segoe Fluent Icons"
+                                  FontSize="12"
+                                  Glyph="&#xE840;"
+                                  Foreground="{StaticResource TextDisabledBrush}" />
+                    </Grid>
+                </Button>
+            </Grid>
+        </Border>
+
+        <!-- ==================== 预览区 (Row 2) ==================== -->
+        <Grid x:Name="PreviewContainer" 
+              Grid.Row="2" 
+              Background="{StaticResource PageBackgroundBrush}"
+              PointerWheelChanged="PreviewContainer_PointerWheelChanged"
+              PointerPressed="PreviewContainer_PointerPressed"
+              PointerMoved="PreviewContainer_PointerMoved"
+              PointerReleased="PreviewContainer_PointerReleased"
+              DoubleTapped="PreviewContainer_DoubleTapped">
+            <Grid.Clip>
+                <RectangleGeometry x:Name="PreviewClip" />
+            </Grid.Clip>
+            <!-- 单图预览 -->
+            <Image x:Name="PreviewImage"
+                   Stretch="Uniform"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Visibility="Visible"
+                   RenderTransformOrigin="0.5,0.5">
+                <Image.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform x:Name="PreviewScaleTransform" ScaleX="1" ScaleY="1" />
+                        <RotateTransform x:Name="PreviewRotateTransform" Angle="0" />
+                        <TranslateTransform x:Name="PreviewTranslateTransform" X="0" Y="0" />
+                    </TransformGroup>
+                </Image.RenderTransform>
+            </Image>
+            
+            <!-- 缩放比例显示 -->
+            <Border x:Name="ZoomIndicator"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="16"
+                    Background="{StaticResource SurfaceBackgroundBrush}"
+                    CornerRadius="4"
+                    Padding="8,4"
+                    Visibility="Collapsed">
+                <TextBlock x:Name="ZoomTextBlock"
+                           Text="100%"
+                           FontSize="12"
+                           Foreground="{StaticResource TextPrimaryBrush}" />
+            </Border>
+
+            <!-- 单图信息覆盖层 -->
+            <StackPanel x:Name="PreviewInfoPanel"
+                        VerticalAlignment="Bottom"
+                        HorizontalAlignment="Left"
+                        Margin="16"
+                        Background="{StaticResource SurfaceBackgroundBrush}"
+                        CornerRadius="8"
+                        Padding="12,8"
+                        Spacing="4"
+                        Opacity="0.9"
+                        MaxWidth="220"
+                        Visibility="Collapsed">
+                        
+                <TextBlock x:Name="PreviewFileNameText"
+                           FontSize="12"
+                           
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           TextTrimming="CharacterEllipsis"
+                           MaxWidth="196"/>
+            </StackPanel>
+
+            <!-- 多图平铺预览 -->
+            <GridView x:Name="MultiPreviewGrid"
+                      Visibility="Collapsed"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      MaxWidth="1000">
+                <GridView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="5" />
+                    </ItemsPanelTemplate>
+                </GridView.ItemsPanel>
+            </GridView>
+
+            <!-- 加载进度环 -->
+            <ProgressRing x:Name="LoadingRing"
+                          IsActive="False"
+                          Width="50"
+                          Height="50"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          Foreground="{StaticResource AccentBrush}" />
+        </Grid>
+
+        <!-- ==================== 缩略图区 (Row 3) ==================== -->
+        <!-- 优雅方案：Grid 高度约束 + Padding 居中 -->
+        <Grid Grid.Row="3"
+              Height="120"
+              Background="{StaticResource SurfaceBackgroundBrush}"
+              BorderBrush="{StaticResource BorderBrush}"
+              BorderThickness="0,1,0,0">
+            <ScrollViewer x:Name="ThumbnailScrollViewer"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Disabled"
+                          HorizontalScrollMode="Enabled"
+                          VerticalScrollMode="Disabled"
+                          IsVerticalScrollChainingEnabled="False"
+                          PointerWheelChanged="ThumbnailScrollViewer_PointerWheelChanged">
+                <Grid Padding="8,5,8,5">
+                    <ItemsRepeater x:Name="ThumbnailRepeater"
+                                   ItemTemplate="{StaticResource ThumbnailItemTemplate}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Orientation="Horizontal" Spacing="8"/>
+                        </ItemsRepeater.Layout>
+                    </ItemsRepeater>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- ==================== 右侧文件信息抽屉 ==================== -->
+        <!-- 覆盖预览区+缩略图区 -->
+        <!-- 文件信息抽屉（独立抽屉，不自动关闭，压缩布局） -->
+        <Border x:Name="FileInfoDrawer"
+                Grid.Row="2"
+                Grid.RowSpan="2"
+                Background="{StaticResource AcrylicSurfaceBrush}"
+                BorderBrush="{StaticResource BorderBrush}"
+                BorderThickness="1,0,0,0"
+                Width="320"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Stretch"
+                Visibility="Collapsed"
+                RenderTransformOrigin="1,0.5"
+                Opacity="0">
+            <Border.RenderTransform>
+                <TranslateTransform x:Name="FileInfoDrawerTransform" X="50"/>
+            </Border.RenderTransform>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <!-- 标题栏 -->
+                <Border Grid.Row="0" 
+                        Background="{StaticResource AcrylicSurfaceBrush}" 
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="0,0,0,1"
+                        Padding="16,8">
+                    <Grid>
+                        <TextBlock Text="信息" 
+                                   Foreground="{StaticResource TextPrimaryBrush}" 
+                            
+                                   FontSize="14"
+                                   VerticalAlignment="Center" />
+                        <Button x:Name="CloseFileInfoButton"
+                                Content="&#xE711;"
+                                FontFamily="Segoe Fluent Icons"
+                                Style="{StaticResource IconButtonStyle}"
+                                Width="30"
+                                Height="30"
+                                HorizontalAlignment="Right"
+                                Click="CloseFileInfoButton_Click"
+                                ToolTipService.ToolTip="关闭" />
+                    </Grid>
+                </Border>
+
+                <!-- 内容区域 -->
+                <ScrollViewer Grid.Row="1" Padding="16">
+                    <StackPanel Spacing="16">
+                        <!-- 文件名 -->
+                        <StackPanel Spacing="8">
+                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" FontSize="12">
+                                <Run FontFamily="Segoe Fluent Icons" Text="&#xE8E5;" />
+                                <Run Text=" 文件名" />
+                            </TextBlock>
+                            <Border Background="{StaticResource SurfaceBackgroundBrush}" 
+                                    CornerRadius="4" 
+                                    Padding="12,8">
+                                <TextBlock x:Name="FileNameTextBlock" 
+                                           Text="-" 
+                                           TextWrapping="Wrap" 
+                                           Foreground="{StaticResource TextPrimaryBrush}" 
+                                          />
+                            </Border>
+                        </StackPanel>
+
+                        <!-- 日期时间 -->
+                        <StackPanel Spacing="8">
+                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" FontSize="12">
+                                <Run FontFamily="Segoe Fluent Icons" Text="&#xE787;" />
+                                <Run Text=" 日期时间" />
+                            </TextBlock>
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" 
+                                        Background="{StaticResource SurfaceBackgroundBrush}" 
+                                        CornerRadius="4" 
+                                        Padding="8,6">
+                                    <TextBlock x:Name="FileYearTextBlock" 
+                                               Text="-年" 
+                                               Foreground="{StaticResource TextPrimaryBrush}" 
+                                               FontSize="12" 
+                                               HorizontalAlignment="Center" />
+                                </Border>
+                                <Border Grid.Column="1" 
+                                        Background="{StaticResource SurfaceBackgroundBrush}" 
+                                        CornerRadius="4" 
+                                        Padding="8,6">
+                                    <TextBlock x:Name="FileMonthTextBlock" 
+                                               Text="-月" 
+                                               Foreground="{StaticResource TextPrimaryBrush}" 
+                                               FontSize="12" 
+                                               HorizontalAlignment="Center" />
+                                </Border>
+                                <Border Grid.Column="2" 
+                                        Background="{StaticResource SurfaceBackgroundBrush}" 
+                                        CornerRadius="4" 
+                                        Padding="8,6">
+                                    <TextBlock x:Name="FileDayTextBlock" 
+                                               Text="-日" 
+                                               Foreground="{StaticResource TextPrimaryBrush}" 
+                                               FontSize="12" 
+                                               HorizontalAlignment="Center" />
+                                </Border>
+                            </Grid>
+                            <Border Background="{StaticResource SurfaceBackgroundBrush}" 
+                                    CornerRadius="4" 
+                                    Padding="12,6">
+                                <TextBlock x:Name="FileTimeTextBlock" 
+                                           Text="-" 
+                                           Foreground="{StaticResource TextPrimaryBrush}" 
+                                           FontSize="12" 
+                                           HorizontalAlignment="Center" />
+                            </Border>
+                        </StackPanel>
+
+                        <!-- 大小信息 -->
+                        <StackPanel Spacing="8">
+                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" FontSize="12">
+                                <Run FontFamily="Segoe Fluent Icons" Text="&#xE9D9;" />
+                                <Run Text=" 大小信息" />
+                            </TextBlock>
+                            <Border Background="{StaticResource SurfaceBackgroundBrush}" 
+                                    CornerRadius="4" 
+                                    Padding="12,8">
+                                <Grid ColumnSpacing="16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" 
+                                               x:Name="FileDimensionsTextBlock" 
+                                               Text="- x -" 
+                                               Foreground="{StaticResource TextPrimaryBrush}" 
+                                               FontSize="12" />
+                                    <TextBlock Grid.Column="1" 
+                                               x:Name="FileSizeTextBlock" 
+                                               Text="- MB" 
+                                               Foreground="{StaticResource TextSecondaryBrush}" 
+                                               FontSize="12" />
+                                    <TextBlock Grid.Column="2" 
+                                               x:Name="FileDpiTextBlock" 
+                                               Text="- dpi" 
+                                               Foreground="{StaticResource TextSecondaryBrush}" 
+                                               FontSize="12" />
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+
+                        <!-- 设备信息 -->
+                        <StackPanel Spacing="8">
+                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" FontSize="12">
+                                <Run FontFamily="Segoe Fluent Icons" Text="&#xE760;" />
+                                <Run Text=" 设备信息" />
+                            </TextBlock>
+                            <Border Background="{StaticResource SurfaceBackgroundBrush}" 
+                                    CornerRadius="4" 
+                                    Padding="12,8">
+                                <StackPanel Spacing="6">
+                                    <!-- 相机型号 -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" 
+                                                   Text="相机: " 
+                                                   Foreground="{StaticResource TextSecondaryBrush}" 
+                                                   FontSize="12" />
+                                        <TextBlock Grid.Column="1" 
+                                                   x:Name="FileCameraTextBlock" 
+                                                   Text="-" 
+                                                   Foreground="{StaticResource TextPrimaryBrush}" 
+                                                   FontSize="12" />
+                                    </Grid>
+                                    <!-- 镜头型号 -->
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" 
+                                                   Text="镜头: " 
+                                                   Foreground="{StaticResource TextSecondaryBrush}" 
+                                                   FontSize="12" />
+                                        <TextBlock Grid.Column="1" 
+                                                   x:Name="FileLensTextBlock" 
+                                                   Text="-" 
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Foreground="{StaticResource TextPrimaryBrush}" 
+                                                   FontSize="12" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+                            
+                            <!-- 拍摄参数卡片 -->
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <!-- ISO -->
+                                <Border Grid.Column="0"
+                                        Background="{StaticResource SurfaceBackgroundBrush}" 
+                                        CornerRadius="4" 
+                                        Padding="8,6">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="ISO" 
+                                                   Foreground="{StaticResource TextSecondaryBrush}" 
+                                                   FontSize="10" 
+                                                   HorizontalAlignment="Center" />
+                                        <TextBlock x:Name="FileISOTextBlock" 
+                                                   Text="-" 
+                                                   Foreground="{StaticResource TextPrimaryBrush}" 
+                                                   FontSize="12" 
+                                                   HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+                                <!-- 光圈 -->
+                                <Border Grid.Column="1"
+                                        Background="{StaticResource SurfaceBackgroundBrush}" 
+                                        CornerRadius="4" 
+                                        Padding="8,6">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="光圈" 
+                                                   Foreground="{StaticResource TextSecondaryBrush}" 
+                                                   FontSize="10" 
+                                                   HorizontalAlignment="Center" />
+                                        <TextBlock x:Name="FileApertureTextBlock" 
+                                                   Text="-" 
+                                                   Foreground="{StaticResource TextPrimaryBrush}" 
+                                                   FontSize="12" 
+                                                   HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+                                <!-- 快门 -->
+                                <Border Grid.Column="2"
+                                        Background="{StaticResource SurfaceBackgroundBrush}" 
+                                        CornerRadius="4" 
+                                        Padding="8,6">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="快门" 
+                                                   Foreground="{StaticResource TextSecondaryBrush}" 
+                                                   FontSize="10" 
+                                                   HorizontalAlignment="Center" />
+                                        <TextBlock x:Name="FileShutterTextBlock" 
+                                                   Text="-" 
+                                                   Foreground="{StaticResource TextPrimaryBrush}" 
+                                                   FontSize="12" 
+                                                   HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+                                <!-- 闪光灯 -->
+                                <Border Grid.Column="3"
+                                        Background="{StaticResource SurfaceBackgroundBrush}" 
+                                        CornerRadius="4" 
+                                        Padding="8,6">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="闪光" 
+                                                   Foreground="{StaticResource TextSecondaryBrush}" 
+                                                   FontSize="10" 
+                                                   HorizontalAlignment="Center" />
+                                        <TextBlock x:Name="FileFlashTextBlock" 
+                                                   Text="-" 
+                                                   Foreground="{StaticResource TextPrimaryBrush}" 
+                                                   FontSize="12" 
+                                                   HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+
+                        <!-- 文件路径 -->
+                        <StackPanel Spacing="8">
+                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" FontSize="12">
+                                <Run FontFamily="Segoe Fluent Icons" Text="&#xE838;" />
+                                <Run Text=" 文件路径" />
+                            </TextBlock>
+                            
+                            <!-- JPG 路径 -->
+                            <mycontrols:ClickablePanel x:Name="JpgPathPanel" 
+                                        PointerPressed="JpgPathBorder_PointerPressed"
+                                        Visibility="Collapsed">
+                                <Border Background="{StaticResource SurfaceBackgroundBrush}" 
+                                        CornerRadius="4" 
+                                        Padding="12,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" 
+                                                   Text="JPG" 
+                                                   Foreground="{StaticResource AccentBrush}" 
+                                                   FontSize="10" 
+                                                   FontWeight="Bold"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,8,0" />
+                                        <TextBlock Grid.Column="1" 
+                                                   x:Name="JpgPathTextBlock" 
+                                                   Text="-" 
+                                                   TextWrapping="Wrap" 
+                                                   Foreground="{StaticResource TextPrimaryBrush}" 
+                                                   FontSize="11" 
+                                                   VerticalAlignment="Center" />
+                                        <Button Grid.Column="2"
+                                                Content="&#xE8C8;"
+                                                FontFamily="Segoe Fluent Icons"
+                                                FontSize="12"
+                                                Style="{StaticResource IconButtonStyle}"
+                                                Width="24"
+                                                Height="24"
+                                                Click="CopyJpgPathButton_Click"
+                                                ToolTipService.ToolTip="复制路径" />
+                                    </Grid>
+                                </Border>
+                            </mycontrols:ClickablePanel>
+                            
+                            <!-- RAW 路径 -->
+                            <mycontrols:ClickablePanel x:Name="RawPathPanel" 
+                                        PointerPressed="RawPathBorder_PointerPressed"
+                                        Visibility="Collapsed">
+                                <Border Background="{StaticResource SurfaceBackgroundBrush}" 
+                                        CornerRadius="4" 
+                                        Padding="12,8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" 
+                                                   Text="RAW" 
+                                                   Foreground="{StaticResource WarningBrush}" 
+                                                   FontSize="10" 
+                                                   FontWeight="Bold"
+                                                   VerticalAlignment="Center"
+                                                   Margin="0,0,8,0" />
+                                        <TextBlock Grid.Column="1" 
+                                                   x:Name="RawPathTextBlock" 
+                                                   Text="-" 
+                                                   TextWrapping="Wrap" 
+                                                   Foreground="{StaticResource TextPrimaryBrush}" 
+                                                   FontSize="11" 
+                                                   VerticalAlignment="Center" />
+                                        <Button Grid.Column="2"
+                                                Content="&#xE8C8;"
+                                                FontFamily="Segoe Fluent Icons"
+                                                FontSize="12"
+                                                Style="{StaticResource IconButtonStyle}"
+                                                Width="24"
+                                                Height="24"
+                                                Click="CopyRawPathButton_Click"
+                                                ToolTipService.ToolTip="复制路径" />
+                                    </Grid>
+                                </Border>
+                            </mycontrols:ClickablePanel>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+
+        <!-- ==================== 底部工具栏 (Row 4) ==================== -->
+        <Grid Grid.Row="4" 
+              Background="{StaticResource SurfaceBackgroundBrush}"
+              BorderBrush="{StaticResource BorderBrush}"
+              BorderThickness="0,1,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- 左侧：选中信息 + 图片导航 -->
+            <StackPanel Grid.Column="0" 
+                        Orientation="Horizontal" 
+                        Margin="8,0"
+                        Spacing="16">
+                <TextBlock VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}">
+                    <Run Text="已选中" />
+                    <Run x:Name="SelectedCountText" 
+                         Text="{Binding SelectedCount, Mode=OneWay}" 
+                         Foreground="{StaticResource TextPrimaryBrush}" />
+                </TextBlock>
+                <TextBlock VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}">
+                    <Run x:Name="CurrentIndexRun" Text="0" />
+                    <Run Text="/" />
+                    <Run x:Name="TotalCountRun" Text="0" />
+                </TextBlock>
+                <mycontrols:RatingControl x:Name="BottomRatingControl"
+                                          Rating="{Binding CurrentPreviewItem.Rating, Mode=OneWay}"
+                                          RatingChanged="BottomRatingControl_RatingChanged"
+                                          DataContext="{Binding CurrentPreviewItem}"
+                                          VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- 中间：旋转翻转控件 -->
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Spacing="4">
+                <Button x:Name="FileInfoButton"
+                        Content="&#xE946;"
+                        FontFamily="Segoe Fluent Icons"
+                        Style="{StaticResource IconButtonStyle}"
+                        Click="FileInfoButton_Click"
+                        ToolTipService.ToolTip="文件信息" />
+                <Border Width="1" Background="{StaticResource BorderBrush}" Margin="4,4" />
+                <Button Content="&#xE777;"
+                        FontFamily="Segoe Fluent Icons"
+                        Style="{StaticResource IconButtonStyle}"
+                        Click="RotateLeftButton_Click"
+                        ToolTipService.ToolTip="向左旋转" />
+                <Button Content="&#xE72C;"
+                        FontFamily="Segoe Fluent Icons"
+                        Style="{StaticResource IconButtonStyle}"
+                        Click="RotateRightButton_Click"
+                        ToolTipService.ToolTip="向右旋转" />
+                <Button Content="&#xE746;"
+                        FontFamily="Segoe Fluent Icons"
+                        Style="{StaticResource IconButtonStyle}"
+                        Click="FlipHorizontalButton_Click"
+                        ToolTipService.ToolTip="水平翻转" />
+                <Button Content="&#xE745;"
+                        FontFamily="Segoe Fluent Icons"
+                        Style="{StaticResource IconButtonStyle}"
+                        Click="FlipVerticalButton_Click"
+                        ToolTipService.ToolTip="垂直翻转" />
+            </StackPanel>
+
+            <!-- 右侧：缩放控制 -->
+            <StackPanel Grid.Column="2"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="8,0"
+                        Spacing="8">
+                <TextBlock Text="缩放" VerticalAlignment="Center" Foreground="{StaticResource TextSecondaryBrush}" />
+                <ComboBox x:Name="ZoomComboBox" 
+                          Width="90" 
+                          SelectedIndex="3"
+                          SelectionChanged="ZoomComboBox_SelectionChanged"
+                          Style="{StaticResource DarkComboBoxStyle}">
+                    <ComboBoxItem Content="50%" />
+                    <ComboBoxItem Content="60%" />
+                    <ComboBoxItem Content="75%" />
+                    <ComboBoxItem Content="100%" />
+                    <ComboBoxItem Content="125%" />
+                    <ComboBoxItem Content="150%" />
+                    <ComboBoxItem Content="200%" />
+                </ComboBox>
+                <Button Content="&#xE71E;"
+                        FontFamily="Segoe Fluent Icons"
+                        ToolTipService.ToolTip="适应窗口"
+                        Click="FitToWindowButton_Click"
+                        Style="{StaticResource TitleBarButtonStyle}" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Toast 提示容器 -->
+        <Border x:Name="ToastContainer"
+                Grid.Row="2"
+                Grid.RowSpan="3"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Bottom"
+                Background="#CC000000"
+                CornerRadius="8"
+                Padding="16,10"
+                Margin="0,0,0,60"
+                Visibility="Collapsed"
+                Opacity="0">
+            <TextBlock x:Name="ToastText"
+                       Foreground="White"
+                       FontSize="14"
+                       TextWrapping="Wrap"/>
+        </Border>
+    </Grid>
+</Page>
