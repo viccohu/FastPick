@@ -31,8 +31,8 @@ namespace FastPick.Views
         private CancellationTokenSource? _previewLoadCts;
 
         private double _zoomScale = 1.0;
-        private double _minZoom = 0.01;  // 支持 1% 缩放（相对于原图）
-        private double _maxZoom = 8.0;  // 支持 800% 缩放（相对于原图）
+        private double _minZoom = 0.1;
+        private double _maxZoom = 8.0;  // 从 5.0 改为 8.0，支持 800% 缩放
         
         private bool _isDragging = false;
         private Windows.Foundation.Point _lastDragPoint;
@@ -1899,7 +1899,12 @@ namespace FastPick.Views
 
         private void ActualSizeButton_Click(object sender, RoutedEventArgs e)
         {
-            SetZoom(1.0);
+            var item = _viewModel.CurrentPreviewItem;
+            if (item == null) return;
+            
+            // 放大到原图 100%（1:1）
+            var originalScale = CalculateOriginalScale(item);
+            SetZoom(originalScale);
             CheckAndLoadHighResolution();
         }
 
@@ -2056,16 +2061,7 @@ namespace FastPick.Views
                 double zoomFactor = delta > 0 ? 1.1 : 0.909;
                 
                 var oldScale = _zoomScale;
-                var newScale = _zoomScale * zoomFactor;
-                
-                // 检查是否需要强制在 100% 停留
-                // 当从小于 100% 向大于 100% 缩放，或者从大于 100% 向小于 100% 缩放时
-                if ((oldScale < 1.0 && newScale >= 1.0) || (oldScale > 1.0 && newScale <= 1.0))
-                {
-                    newScale = 1.0;
-                }
-                
-                _zoomScale = Math.Min(_maxZoom, Math.Max(_minZoom, newScale));
+                _zoomScale = Math.Min(_maxZoom, Math.Max(_minZoom, _zoomScale * zoomFactor));
                 
                 // 缩放时保持当前偏移比例，不跳变
                 var scaleRatio = _zoomScale / oldScale;
@@ -2113,16 +2109,8 @@ namespace FastPick.Views
             if (_frontImage == null)
                 return (0, 0);
             
-            var item = _viewModel.CurrentPreviewItem;
-            double displayScale = _zoomScale;
-            if (item != null && item.Width > 0 && item.Height > 0)
-            {
-                var fitScale = CalculateFitToScreenScale(item);
-                displayScale = _zoomScale * fitScale;
-            }
-            
-            var actualWidth = _frontImage.ActualWidth * displayScale;
-            var actualHeight = _frontImage.ActualHeight * displayScale;
+            var actualWidth = _frontImage.ActualWidth * _zoomScale;
+            var actualHeight = _frontImage.ActualHeight * _zoomScale;
             
             // 当旋转 90 度或 270 度时，宽高交换
             if (_rotation == 90 || _rotation == 270)
@@ -2237,16 +2225,8 @@ namespace FastPick.Views
         {
             if (PreviewScaleTransform == null || PreviewRotateTransform == null || PreviewTranslateTransform == null) return;
             
-            var item = _viewModel.CurrentPreviewItem;
-            double displayScale = _zoomScale;
-            if (item != null && item.Width > 0 && item.Height > 0)
-            {
-                var fitScale = CalculateFitToScreenScale(item);
-                displayScale = _zoomScale * fitScale;
-            }
-            
-            PreviewScaleTransform.ScaleX = displayScale * (_flipHorizontal ? -1 : 1);
-            PreviewScaleTransform.ScaleY = displayScale * (_flipVertical ? -1 : 1);
+            PreviewScaleTransform.ScaleX = _zoomScale * (_flipHorizontal ? -1 : 1);
+            PreviewScaleTransform.ScaleY = _zoomScale * (_flipVertical ? -1 : 1);
             PreviewRotateTransform.Angle = _rotation;
             PreviewTranslateTransform.X = _translateX;
             PreviewTranslateTransform.Y = _translateY;
@@ -2256,16 +2236,8 @@ namespace FastPick.Views
         {
             if (PreviewScaleTransform == null || PreviewRotateTransform == null || PreviewTranslateTransform == null) return;
             
-            var item = _viewModel.CurrentPreviewItem;
-            double displayScale = _zoomScale;
-            if (item != null && item.Width > 0 && item.Height > 0)
-            {
-                var fitScale = CalculateFitToScreenScale(item);
-                displayScale = _zoomScale * fitScale;
-            }
-            
-            PreviewScaleTransform.ScaleX = displayScale * (_flipHorizontal ? -1 : 1);
-            PreviewScaleTransform.ScaleY = displayScale * (_flipVertical ? -1 : 1);
+            PreviewScaleTransform.ScaleX = _zoomScale * (_flipHorizontal ? -1 : 1);
+            PreviewScaleTransform.ScaleY = _zoomScale * (_flipVertical ? -1 : 1);
             PreviewRotateTransform.Angle = _rotation;
             PreviewTranslateTransform.X = _translateX;
             PreviewTranslateTransform.Y = _translateY;
@@ -2275,10 +2247,55 @@ namespace FastPick.Views
         {
             if (ZoomIndicator == null || ZoomTextBlock == null) return;
             
-            int percentage = (int)(_zoomScale * 100);
+            int percentage;
+            
+            try
+            {
+                var item = _viewModel.CurrentPreviewItem;
+                
+                if (item != null && item.Width > 0 && item.Height > 0)
+                {
+                    // 有图片，显示相对于原图的比例
+                // _zoomScale = 1.0 表示 Fit 屏幕
+                // 原图比例 = _zoomScale * fitScale
+                var fitScale = CalculateFitToScreenScale(item);
+                
+                // 安全检查，避免除以 0 或 NaN
+                if (fitScale > 0 && !double.IsNaN(fitScale) && !double.IsInfinity(fitScale))
+                {
+                    var originalPercentage = (_zoomScale * fitScale) * 100;
+                    
+                    // 安全检查，确保百分比在合理范围内
+                    if (!double.IsNaN(originalPercentage) && !double.IsInfinity(originalPercentage))
+                    {
+                        percentage = (int)originalPercentage;
+                    }
+                    else
+                    {
+                        // 如果计算失败，回退到原来的逻辑
+                        percentage = (int)(_zoomScale * 100);
+                    }
+                }
+                else
+                {
+                    // 如果 fitScale 无效，回退到原来的逻辑
+                    percentage = (int)(_zoomScale * 100);
+                }
+                }
+                else
+                {
+                    // 没有图片，回退到原来的逻辑（基于 Fit 比例）
+                    percentage = (int)(_zoomScale * 100);
+                }
+            }
+            catch
+            {
+                // 发生任何异常，回退到原来的逻辑
+                percentage = (int)(_zoomScale * 100);
+            }
             
             // 确保百分比在合理范围内
-            percentage = Math.Max(1, Math.Min(800, percentage));
+            percentage = Math.Max(0, Math.Min(1000, percentage));
             
             ZoomTextBlock.Text = $"{percentage}%";
             ZoomIndicator.Visibility = percentage != 100 ? Visibility.Visible : Visibility.Collapsed;
@@ -2442,8 +2459,11 @@ namespace FastPick.Views
             if (item == null) return false;
             if (!item.HasRaw && !item.HasJpg) return false;
             
-            // 当缩放超过原图 50% 时加载高分辨率
-            if (_zoomScale >= 0.5) return true;
+            // 计算原图 100% 的缩放比例
+            var originalScale = CalculateOriginalScale(item);
+            
+            // 当缩放超过原图 100% 的 50% 时加载高分辨率
+            if (_zoomScale >= originalScale * 0.5) return true;
             
             if (_isLoadingHighRes && _currentHighResItem == item) return false;
             
@@ -2486,8 +2506,8 @@ namespace FastPick.Views
             try
             {
                 // 使用原图尺寸作为目标尺寸
-                var targetWidth = (int)(item.Width * _zoomScale);
-                var targetHeight = (int)(item.Height * _zoomScale);
+                var targetWidth = (int)(item.Width * _zoomScale / CalculateOriginalScale(item));
+                var targetHeight = (int)(item.Height * _zoomScale / CalculateOriginalScale(item));
 
                 BitmapImage? highResBitmap = null;
 
