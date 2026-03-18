@@ -42,7 +42,6 @@ public static class WicImageService
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
             return null;
 
-        // 检查缓存
         var cacheKey = $"{filePath}_{size}";
         if (ThumbnailCache.TryGetValue(cacheKey, out var cachedImage))
         {
@@ -56,20 +55,19 @@ public static class WicImageService
             using var stream = await file.OpenReadAsync();
             var decoder = await BitmapDecoder.CreateAsync(stream);
             
-            // 计算缩放比例
+            var orientedWidth = decoder.OrientedPixelWidth;
+            var orientedHeight = decoder.OrientedPixelHeight;
             var originalWidth = decoder.PixelWidth;
             var originalHeight = decoder.PixelHeight;
-            var scale = Math.Min((double)size / originalWidth, (double)size / originalHeight);
-            var newWidth = (uint)(originalWidth * scale);
-            var newHeight = (uint)(originalHeight * scale);
 
-            // 使用软件位图进行缩放
-            var transform = new BitmapTransform
+            var scale = Math.Min((double)size / orientedWidth, (double)size / orientedHeight);
+
+            var transform = new BitmapTransform();
+            if (scale < 1)
             {
-                ScaledWidth = newWidth,
-                ScaledHeight = newHeight,
-                InterpolationMode = BitmapInterpolationMode.Linear
-            };
+                transform.ScaledWidth = (uint)(originalWidth * scale);
+                transform.ScaledHeight = (uint)(originalHeight * scale);
+            }
 
             var pixelData = await decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied, transform, ExifOrientationMode.RespectExifOrientation, ColorManagementMode.ColorManageToSRgb);
             
@@ -83,7 +81,6 @@ public static class WicImageService
                 bitmap.SetSource(memoryStream);
             }
 
-            // 存入缓存
             ThumbnailCache[cacheKey] = bitmap;
             return bitmap;
         }
@@ -105,7 +102,6 @@ public static class WicImageService
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
             return null;
 
-        // 检查缓存
         var cacheKey = $"{filePath}_preview";
         if (PreviewCache.TryGetValue(cacheKey, out var cachedImage))
         {
@@ -119,26 +115,24 @@ public static class WicImageService
             using var stream = await file.OpenReadAsync();
             var decoder = await BitmapDecoder.CreateAsync(stream);
             
-            // 计算缩放比例
+            var orientedWidth = decoder.OrientedPixelWidth;
+            var orientedHeight = decoder.OrientedPixelHeight;
             var originalWidth = decoder.PixelWidth;
             var originalHeight = decoder.PixelHeight;
-            var scale = Math.Min((double)maxSize / originalWidth, (double)maxSize / originalHeight);
+
+            var scale = Math.Min((double)maxSize / orientedWidth, (double)maxSize / orientedHeight);
             
-            // 如果图片已经小于最大尺寸，不缩放
             if (scale >= 1.0)
             {
                 scale = 1.0;
             }
-            
-            var newWidth = (uint)(originalWidth * scale);
-            var newHeight = (uint)(originalHeight * scale);
 
-            var transform = new BitmapTransform
+            var transform = new BitmapTransform();
+            if (scale < 1)
             {
-                ScaledWidth = newWidth,
-                ScaledHeight = newHeight,
-                InterpolationMode = BitmapInterpolationMode.Cubic
-            };
+                transform.ScaledWidth = (uint)(originalWidth * scale);
+                transform.ScaledHeight = (uint)(originalHeight * scale);
+            }
 
             var pixelData = await decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied, transform, ExifOrientationMode.RespectExifOrientation, ColorManagementMode.ColorManageToSRgb);
             
@@ -152,7 +146,6 @@ public static class WicImageService
                 bitmap.SetSource(memoryStream);
             }
 
-            // 存入缓存
             PreviewCache[cacheKey] = bitmap;
             return bitmap;
         }

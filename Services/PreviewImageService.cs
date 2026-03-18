@@ -112,14 +112,20 @@ public class PreviewImageService
             using var stream = await storageFile.OpenAsync(FileAccessMode.Read);
             var decoder = await BitmapDecoder.CreateAsync(stream);
 
+            var orientedWidth = decoder.OrientedPixelWidth;
+            var orientedHeight = decoder.OrientedPixelHeight;
+            var originalWidth = decoder.PixelWidth;
+            var originalHeight = decoder.PixelHeight;
+
             var transform = new BitmapTransform();
             var scaleFactor = Math.Min(
-                (double)MaxPreviewWidth / decoder.OrientedPixelWidth,
-                (double)MaxPreviewHeight / decoder.OrientedPixelHeight);
+                (double)MaxPreviewWidth / orientedWidth,
+                (double)MaxPreviewHeight / orientedHeight);
+            
             if (scaleFactor < 1)
             {
-                transform.ScaledWidth = (uint)(decoder.OrientedPixelWidth * scaleFactor);
-                transform.ScaledHeight = (uint)(decoder.OrientedPixelHeight * scaleFactor);
+                transform.ScaledWidth = (uint)(originalWidth * scaleFactor);
+                transform.ScaledHeight = (uint)(originalHeight * scaleFactor);
             }
 
             var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
@@ -265,14 +271,19 @@ public class PreviewImageService
             using var stream = await storageFile.OpenAsync(FileAccessMode.Read);
             var decoder = await BitmapDecoder.CreateAsync(stream);
 
+            var orientedWidth = decoder.OrientedPixelWidth;
+            var orientedHeight = decoder.OrientedPixelHeight;
+            var originalWidth = decoder.PixelWidth;
+            var originalHeight = decoder.PixelHeight;
+
             var transform = new BitmapTransform();
             var scaleFactor = Math.Min(
-                (double)MaxPreviewWidth / decoder.OrientedPixelWidth,
-                (double)MaxPreviewHeight / decoder.OrientedPixelHeight);
+                (double)MaxPreviewWidth / orientedWidth,
+                (double)MaxPreviewHeight / orientedHeight);
             if (scaleFactor < 1)
             {
-                transform.ScaledWidth = (uint)(decoder.OrientedPixelWidth * scaleFactor);
-                transform.ScaledHeight = (uint)(decoder.OrientedPixelHeight * scaleFactor);
+                transform.ScaledWidth = (uint)(originalWidth * scaleFactor);
+                transform.ScaledHeight = (uint)(originalHeight * scaleFactor);
             }
 
             var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
@@ -318,15 +329,15 @@ public class PreviewImageService
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var transform = new BitmapTransform
-            {
-                InterpolationMode = BitmapInterpolationMode.Fant
-            };
-
             var orientedWidth = decoder.OrientedPixelWidth;
             var orientedHeight = decoder.OrientedPixelHeight;
             var originalWidth = decoder.PixelWidth;
             var originalHeight = decoder.PixelHeight;
+
+            var transform = new BitmapTransform
+            {
+                InterpolationMode = BitmapInterpolationMode.Fant
+            };
 
             var scaleFactor = Math.Min(
                 (double)targetWidth / orientedWidth,
@@ -367,6 +378,87 @@ public class PreviewImageService
         catch (Exception ex)
         {
             Debug.WriteLine($"[高分辨率] 解码失败: {rawPath}, 错误: {ex.Message}");
+            return null;
+        }
+        finally
+        {
+            _highResSemaphore.Release();
+        }
+    }
+
+    public async Task<BitmapImage?> LoadJpgFullResolutionAsync(
+        string jpgPath,
+        int targetWidth,
+        int targetHeight,
+        CancellationToken cancellationToken = default)
+    {
+        if (!File.Exists(jpgPath))
+        {
+            Debug.WriteLine($"[高分辨率] JPG 文件不存在: {jpgPath}");
+            return null;
+        }
+
+        await _highResSemaphore.WaitAsync(cancellationToken);
+        
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var storageFile = await StorageFile.GetFileFromPathAsync(jpgPath);
+            using var stream = await storageFile.OpenAsync(FileAccessMode.Read);
+            var decoder = await BitmapDecoder.CreateAsync(stream);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var orientedWidth = decoder.OrientedPixelWidth;
+            var orientedHeight = decoder.OrientedPixelHeight;
+            var originalWidth = decoder.PixelWidth;
+            var originalHeight = decoder.PixelHeight;
+
+            var transform = new BitmapTransform
+            {
+                InterpolationMode = BitmapInterpolationMode.Fant
+            };
+
+            var scaleFactor = Math.Min(
+                (double)targetWidth / orientedWidth,
+                (double)targetHeight / orientedHeight);
+            
+            if (scaleFactor > 1)
+            {
+                scaleFactor = Math.Min(scaleFactor, 1);
+            }
+
+            if (scaleFactor < 1)
+            {
+                transform.ScaledWidth = (uint)(originalWidth * scaleFactor);
+                transform.ScaledHeight = (uint)(originalHeight * scaleFactor);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
+                BitmapPixelFormat.Bgra8,
+                BitmapAlphaMode.Premultiplied,
+                transform,
+                ExifOrientationMode.RespectExifOrientation,
+                ColorManagementMode.DoNotColorManage);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var bitmap = await SoftwareBitmapToBitmapImageAsync(softwareBitmap);
+            
+            Debug.WriteLine($"[高分辨率] 解码 JPG: {Path.GetFileName(jpgPath)}, 目标: {targetWidth}x{targetHeight}, 原始: {originalWidth}x{originalHeight}, 旋转后: {orientedWidth}x{orientedHeight}, 缩放: {scaleFactor:F2}");
+            return bitmap;
+        }
+        catch (OperationCanceledException)
+        {
+            Debug.WriteLine($"[高分辨率] 解码取消: {Path.GetFileName(jpgPath)}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[高分辨率] 解码失败: {jpgPath}, 错误: {ex.Message}");
             return null;
         }
         finally

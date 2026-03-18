@@ -31,9 +31,8 @@ namespace FastPick.Views
         private CancellationTokenSource? _previewLoadCts;
 
         private double _zoomScale = 1.0;
-        private double _minZoom = 0.1;
-        private double _maxZoom = 5.0;
-        private double _zoomStep = 0.1;
+        private double _minZoom = 0.01;  // 支持 1% 缩放（相对于原图）
+        private double _maxZoom = 8.0;  // 支持 800% 缩放（相对于原图）
         
         private bool _isDragging = false;
         private Windows.Foundation.Point _lastDragPoint;
@@ -46,6 +45,14 @@ namespace FastPick.Views
         
         private DispatcherTimer? _toastTimer;
 
+        // 缩放动画
+        private DispatcherTimer? _zoomAnimationTimer;
+        private double _targetZoomScale = 1.0;
+        private double _startZoomScale = 1.0;
+        private double _zoomAnimationProgress = 0;
+        private const double ZoomAnimationDuration = 150; // 动画持续时间（毫秒）
+        private const double ZoomAnimationInterval = 16; // 约 60fps
+
         // 抽屉栏锁定状态
         private bool _isDrawerBarLocked = false;
 
@@ -55,6 +62,7 @@ namespace FastPick.Views
         private bool _isExportPathPickerOpen = false;
         private bool _isLoadingPhotos = false;
         private bool _isExporting = false;
+        private bool _isUpdatingZoomComboBox = false;
 
         // 路径预览服务
         private PathPreviewService _pathPreviewService = new();
@@ -70,6 +78,10 @@ namespace FastPick.Views
         private bool _isLoadingHighRes = false;
         private DispatcherTimer? _highResDebounceTimer;
         private const double HighResolutionZoomThreshold = 1.0;
+
+        // 双缓冲预览
+        private Image _frontImage;  // 当前显示的 Image
+        private Image _backImage;   // 后台加载的 Image
 
         // 设置服务
         private Services.SettingsService _settingsService => Services.SettingsService.Instance;
@@ -119,6 +131,10 @@ namespace FastPick.Views
             _path2PreviewTimer = new DispatcherTimer();
             _path2PreviewTimer.Interval = TimeSpan.FromMilliseconds(500);
             _path2PreviewTimer.Tick += Path2PreviewTimer_Tick;
+
+            // 初始化双缓冲预览
+            _frontImage = PreviewImageFront;
+            _backImage = PreviewImageBack;
 
             // 在 Page.Loaded 事件中加载保存的路径（确保所有控件都已初始化）
             this.Loaded += MainPage_Loaded;
@@ -479,7 +495,14 @@ namespace FastPick.Views
             var item = _viewModel.CurrentPreviewItem;
             if (item == null)
             {
-                PreviewImage.Source = null;
+                // 清空双缓冲
+                if (_frontImage.Source is BitmapImage oldBitmap)
+                {
+                    oldBitmap.UriSource = null;
+                }
+                _frontImage.Source = null;
+                _backImage.Source = null;
+                
                 PreviewInfoPanel.Visibility = Visibility.Collapsed;
                 PreviewInfoPanel.DataContext = null;
                 ClearFileInfo();
@@ -612,7 +635,7 @@ namespace FastPick.Views
         }
 
         /// <summary>
-        /// 加载预览图
+        /// 加载预览图（双缓冲优化）
         /// </summary>
         private async void LoadPreviewImage(PhotoItem item)
         {
@@ -630,13 +653,6 @@ namespace FastPick.Views
 
             try
             {
-                // 释放之前的预览图资源
-                if (PreviewImage.Source is BitmapImage oldBitmap)
-                {
-                    oldBitmap.UriSource = null;
-                    PreviewImage.Source = null;
-                }
-
                 // 使用 PreviewImageService 加载预览图
                 var bitmap = await _viewModel.LoadPreviewAsync(item);
                 
@@ -648,7 +664,11 @@ namespace FastPick.Views
 
                 if (bitmap != null)
                 {
-                    PreviewImage.Source = bitmap;
+                    // 设置到后台缓冲
+                    _backImage.Source = bitmap;
+                    
+                    // 交换前后缓冲
+                    SwapPreviewBuffers();
                 }
             }
             catch (OperationCanceledException)
@@ -662,6 +682,37 @@ namespace FastPick.Views
         }
 
         /// <summary>
+        /// 交换前后缓冲
+        /// </summary>
+        private void SwapPreviewBuffers()
+        {
+            // 交换前后缓冲引用
+            var temp = _frontImage;
+            _frontImage = _backImage;
+            _backImage = temp;
+            
+            // 更新可见性
+            _frontImage.Visibility = Visibility.Visible;
+            _frontImage.Opacity = 1;
+            _backImage.Visibility = Visibility.Collapsed;
+            _backImage.Opacity = 0;
+            
+            // 延迟清空后台缓冲，避免立即释放导致闪烁
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(100);
+                this.DispatcherQueue.TryEnqueue(() =>
+                {
+                    if (_backImage.Source is BitmapImage oldBitmap)
+                    {
+                        oldBitmap.UriSource = null;
+                        _backImage.Source = null;
+                    }
+                });
+            });
+        }
+
+        /// <summary>
         /// 加载多选预览图（前5张）
         /// </summary>
         private async void LoadMultiPreviewImages()
@@ -669,7 +720,11 @@ namespace FastPick.Views
             try
             {
                 // 清空当前预览
-                PreviewImage.Source = null;
+                if (_frontImage.Source is BitmapImage oldBitmap)
+                {
+                    oldBitmap.UriSource = null;
+                }
+                _frontImage.Source = null;
                 
                 // TODO: 实现多选预览平铺显示
                 // 暂时只显示第一张
@@ -679,7 +734,7 @@ namespace FastPick.Views
                     var bitmap = await _viewModel.LoadPreviewAsync(firstItem);
                     if (bitmap != null)
                     {
-                        PreviewImage.Source = bitmap;
+                        _frontImage.Source = bitmap;
                     }
                 }
             }
@@ -1845,13 +1900,17 @@ namespace FastPick.Views
         private void ActualSizeButton_Click(object sender, RoutedEventArgs e)
         {
             SetZoom(1.0);
+            CheckAndLoadHighResolution();
         }
 
         private void ZoomComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // 如果是程序化更新，跳过缩放逻辑
+            if (_isUpdatingZoomComboBox) return;
+            
             if (ZoomComboBox == null || ZoomComboBox.SelectedIndex < 0) return;
             
-            var zoomValues = new[] { 0.5, 0.6, 0.75, 1.0, 1.25, 1.5, 2.0 };
+            var zoomValues = new[] { 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 4.0, 8.0 };
             var index = ZoomComboBox.SelectedIndex;
             
             if (index >= 0 && index < zoomValues.Length)
@@ -1993,20 +2052,20 @@ namespace FastPick.Views
             
             if (delta != 0)
             {
-                var ctrlPressed = Microsoft.UI.Input.InputKeyboardSource.GetKeyStateForCurrentThread(Windows.System.VirtualKey.Control)
-                    .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+                // 等比缩放因子（每次缩放约 10%）
+                double zoomFactor = delta > 0 ? 1.1 : 0.909;
                 
-                var step = ctrlPressed ? _zoomStep * 2.5 : _zoomStep;
                 var oldScale = _zoomScale;
+                var newScale = _zoomScale * zoomFactor;
                 
-                if (delta > 0)
+                // 检查是否需要强制在 100% 停留
+                // 当从小于 100% 向大于 100% 缩放，或者从大于 100% 向小于 100% 缩放时
+                if ((oldScale < 1.0 && newScale >= 1.0) || (oldScale > 1.0 && newScale <= 1.0))
                 {
-                    _zoomScale = Math.Min(_maxZoom, _zoomScale + step);
+                    newScale = 1.0;
                 }
-                else
-                {
-                    _zoomScale = Math.Max(_minZoom, _zoomScale - step);
-                }
+                
+                _zoomScale = Math.Min(_maxZoom, Math.Max(_minZoom, newScale));
                 
                 // 缩放时保持当前偏移比例，不跳变
                 var scaleRatio = _zoomScale / oldScale;
@@ -2025,7 +2084,7 @@ namespace FastPick.Views
 
         private bool CanPanImage()
         {
-            if (PreviewImage == null || PreviewImage.Source == null || PreviewContainer == null)
+            if (_frontImage == null || _frontImage.Source == null || PreviewContainer == null)
                 return false;
             
             var (imageWidth, imageHeight) = GetRotatedImageSize();
@@ -2037,25 +2096,33 @@ namespace FastPick.Views
 
         private bool CanPanHorizontal()
         {
-            if (PreviewImage == null || PreviewContainer == null) return false;
+            if (_frontImage == null || PreviewContainer == null) return false;
             var (imageWidth, _) = GetRotatedImageSize();
             return imageWidth > PreviewContainer.ActualWidth;
         }
 
         private bool CanPanVertical()
         {
-            if (PreviewImage == null || PreviewContainer == null) return false;
+            if (_frontImage == null || PreviewContainer == null) return false;
             var (_, imageHeight) = GetRotatedImageSize();
             return imageHeight > PreviewContainer.ActualHeight;
         }
 
         private (double width, double height) GetRotatedImageSize()
         {
-            if (PreviewImage == null)
+            if (_frontImage == null)
                 return (0, 0);
             
-            var actualWidth = PreviewImage.ActualWidth * _zoomScale;
-            var actualHeight = PreviewImage.ActualHeight * _zoomScale;
+            var item = _viewModel.CurrentPreviewItem;
+            double displayScale = _zoomScale;
+            if (item != null && item.Width > 0 && item.Height > 0)
+            {
+                var fitScale = CalculateFitToScreenScale(item);
+                displayScale = _zoomScale * fitScale;
+            }
+            
+            var actualWidth = _frontImage.ActualWidth * displayScale;
+            var actualHeight = _frontImage.ActualHeight * displayScale;
             
             // 当旋转 90 度或 270 度时，宽高交换
             if (_rotation == 90 || _rotation == 270)
@@ -2130,7 +2197,7 @@ namespace FastPick.Views
         /// </summary>
         private void ClampTranslation()
         {
-            if (PreviewImage == null || PreviewImage.Source == null || PreviewContainer == null) return;
+            if (_frontImage == null || _frontImage.Source == null || PreviewContainer == null) return;
             
             var containerWidth = PreviewContainer.ActualWidth;
             var containerHeight = PreviewContainer.ActualHeight;
@@ -2170,8 +2237,16 @@ namespace FastPick.Views
         {
             if (PreviewScaleTransform == null || PreviewRotateTransform == null || PreviewTranslateTransform == null) return;
             
-            PreviewScaleTransform.ScaleX = _zoomScale * (_flipHorizontal ? -1 : 1);
-            PreviewScaleTransform.ScaleY = _zoomScale * (_flipVertical ? -1 : 1);
+            var item = _viewModel.CurrentPreviewItem;
+            double displayScale = _zoomScale;
+            if (item != null && item.Width > 0 && item.Height > 0)
+            {
+                var fitScale = CalculateFitToScreenScale(item);
+                displayScale = _zoomScale * fitScale;
+            }
+            
+            PreviewScaleTransform.ScaleX = displayScale * (_flipHorizontal ? -1 : 1);
+            PreviewScaleTransform.ScaleY = displayScale * (_flipVertical ? -1 : 1);
             PreviewRotateTransform.Angle = _rotation;
             PreviewTranslateTransform.X = _translateX;
             PreviewTranslateTransform.Y = _translateY;
@@ -2181,8 +2256,16 @@ namespace FastPick.Views
         {
             if (PreviewScaleTransform == null || PreviewRotateTransform == null || PreviewTranslateTransform == null) return;
             
-            PreviewScaleTransform.ScaleX = _zoomScale * (_flipHorizontal ? -1 : 1);
-            PreviewScaleTransform.ScaleY = _zoomScale * (_flipVertical ? -1 : 1);
+            var item = _viewModel.CurrentPreviewItem;
+            double displayScale = _zoomScale;
+            if (item != null && item.Width > 0 && item.Height > 0)
+            {
+                var fitScale = CalculateFitToScreenScale(item);
+                displayScale = _zoomScale * fitScale;
+            }
+            
+            PreviewScaleTransform.ScaleX = displayScale * (_flipHorizontal ? -1 : 1);
+            PreviewScaleTransform.ScaleY = displayScale * (_flipVertical ? -1 : 1);
             PreviewRotateTransform.Angle = _rotation;
             PreviewTranslateTransform.X = _translateX;
             PreviewTranslateTransform.Y = _translateY;
@@ -2192,25 +2275,41 @@ namespace FastPick.Views
         {
             if (ZoomIndicator == null || ZoomTextBlock == null) return;
             
-            var percentage = (int)(_zoomScale * 100);
-            ZoomTextBlock.Text = $"{percentage}%";
-            ZoomIndicator.Visibility = _zoomScale != 1.0 ? Visibility.Visible : Visibility.Collapsed;
+            int percentage = (int)(_zoomScale * 100);
             
+            // 确保百分比在合理范围内
+            percentage = Math.Max(1, Math.Min(800, percentage));
+            
+            ZoomTextBlock.Text = $"{percentage}%";
+            ZoomIndicator.Visibility = percentage != 100 ? Visibility.Visible : Visibility.Collapsed;
+            
+            // 更新缩放下拉框（程序化更新，不触发缩放）
             if (ZoomComboBox != null)
             {
-                var items = new[] { 50, 60, 75, 100, 125, 150, 200 };
-                var closestIndex = 0;
-                var minDiff = Math.Abs(items[0] - percentage);
-                for (int i = 1; i < items.Length; i++)
+                try
                 {
-                    var diff = Math.Abs(items[i] - percentage);
-                    if (diff < minDiff)
+                    var items = new[] { 25, 50, 75, 100, 150, 200, 400, 800 };
+                    var closestIndex = 0;
+                    var minDiff = Math.Abs(items[0] - percentage);
+                    for (int i = 1; i < items.Length; i++)
                     {
-                        minDiff = diff;
-                        closestIndex = i;
+                        var diff = Math.Abs(items[i] - percentage);
+                        if (diff < minDiff)
+                        {
+                            minDiff = diff;
+                            closestIndex = i;
+                        }
                     }
+                    
+                    // 设置标志位，避免触发 SelectionChanged 中的缩放逻辑
+                    _isUpdatingZoomComboBox = true;
+                    ZoomComboBox.SelectedIndex = closestIndex;
+                    _isUpdatingZoomComboBox = false;
                 }
-                ZoomComboBox.SelectedIndex = closestIndex;
+                catch
+                {
+                    // 下拉框更新失败，不影响其他功能
+                }
             }
         }
 
@@ -2229,8 +2328,6 @@ namespace FastPick.Views
         private void SetZoom(double scale)
         {
             _zoomScale = Math.Max(_minZoom, Math.Min(_maxZoom, scale));
-            _translateX = 0;
-            _translateY = 0;
             ApplyZoomTransformWithAnimation();
             UpdateZoomIndicator();
         }
@@ -2267,6 +2364,74 @@ namespace FastPick.Views
             ApplyZoomTransformWithAnimation();
         }
 
+        #region 缩放动画
+
+        private void AnimateZoomTo(double targetScale)
+        {
+            _targetZoomScale = Math.Max(_minZoom, Math.Min(_maxZoom, targetScale));
+            _startZoomScale = _zoomScale;
+            _zoomAnimationProgress = 0;
+            
+            if (_zoomAnimationTimer == null)
+            {
+                _zoomAnimationTimer = new DispatcherTimer();
+                _zoomAnimationTimer.Interval = TimeSpan.FromMilliseconds(ZoomAnimationInterval);
+                _zoomAnimationTimer.Tick += ZoomAnimationTimer_Tick;
+            }
+            
+            _zoomAnimationTimer.Start();
+        }
+
+        private void ZoomAnimationTimer_Tick(object? sender, object e)
+        {
+            _zoomAnimationProgress += ZoomAnimationInterval / ZoomAnimationDuration;
+            
+            if (_zoomAnimationProgress >= 1.0)
+            {
+                _zoomAnimationProgress = 1.0;
+                _zoomAnimationTimer.Stop();
+            }
+            
+            // 使用线性插值，平滑过渡
+            _zoomScale = _startZoomScale + (_targetZoomScale - _startZoomScale) * _zoomAnimationProgress;
+            
+            ApplyZoomTransform();
+            UpdateZoomIndicator();
+        }
+
+        #endregion
+
+        #region 缩放计算辅助方法
+
+        private double CalculateFitToScreenScale(PhotoItem item)
+        {
+            if (item.Width <= 0 || item.Height <= 0) return 1.0;
+            if (PreviewContainer == null) return 1.0;
+            
+            var containerWidth = PreviewContainer.ActualWidth;
+            var containerHeight = PreviewContainer.ActualHeight;
+            
+            if (containerWidth <= 0 || containerHeight <= 0) return 1.0;
+            
+            var scaleX = containerWidth / item.Width;
+            var scaleY = containerHeight / item.Height;
+            
+            return Math.Min(scaleX, scaleY);
+        }
+
+        private double CalculateOriginalScale(PhotoItem item)
+        {
+            // 原图 100% = 图片以原始像素大小显示
+            // Fit 状态下 _zoomScale = 1.0 表示图片适应容器
+            // 原图 100% 的缩放比例 = 1 / fitScale
+            var fitScale = CalculateFitToScreenScale(item);
+            if (fitScale <= 0) return 1.0;
+            
+            return 1.0 / fitScale;
+        }
+
+        #endregion
+
         #region 高分辨率预览加载
 
         private bool ShouldLoadHighResolution()
@@ -2275,8 +2440,11 @@ namespace FastPick.Views
             
             var item = _viewModel.CurrentPreviewItem;
             if (item == null) return false;
-            if (!item.HasRaw) return false;
-            if (_zoomScale <= HighResolutionZoomThreshold) return false;
+            if (!item.HasRaw && !item.HasJpg) return false;
+            
+            // 当缩放超过原图 50% 时加载高分辨率
+            if (_zoomScale >= 0.5) return true;
+            
             if (_isLoadingHighRes && _currentHighResItem == item) return false;
             
             return true;
@@ -2304,7 +2472,8 @@ namespace FastPick.Views
         private async Task LoadHighResolutionAsync()
         {
             var item = _viewModel.CurrentPreviewItem;
-            if (item == null || !item.HasRaw || item.RawPath == null) return;
+            if (item == null) return;
+            if (!item.HasRaw && !item.HasJpg) return;
             if (!ShouldLoadHighResolution()) return;
 
             _highResLoadCts?.Cancel();
@@ -2316,14 +2485,28 @@ namespace FastPick.Views
 
             try
             {
-                var targetWidth = (int)(PreviewImage.ActualWidth * _zoomScale);
-                var targetHeight = (int)(PreviewImage.ActualHeight * _zoomScale);
+                // 使用原图尺寸作为目标尺寸
+                var targetWidth = (int)(item.Width * _zoomScale);
+                var targetHeight = (int)(item.Height * _zoomScale);
 
-                var highResBitmap = await _previewImageService.LoadRawFullResolutionAsync(
-                    item.RawPath,
-                    targetWidth,
-                    targetHeight,
-                    _highResLoadCts.Token);
+                BitmapImage? highResBitmap = null;
+
+                if (item.HasRaw && item.RawPath != null)
+                {
+                    highResBitmap = await _previewImageService.LoadRawFullResolutionAsync(
+                        item.RawPath,
+                        targetWidth,
+                        targetHeight,
+                        _highResLoadCts.Token);
+                }
+                else if (item.HasJpg && !string.IsNullOrEmpty(item.JpgPath))
+                {
+                    highResBitmap = await _previewImageService.LoadJpgFullResolutionAsync(
+                        item.JpgPath,
+                        targetWidth,
+                        targetHeight,
+                        _highResLoadCts.Token);
+                }
 
                 if (_highResLoadCts.Token.IsCancellationRequested ||
                     _viewModel.CurrentPreviewItem != item)
@@ -2333,11 +2516,16 @@ namespace FastPick.Views
 
                 if (highResBitmap != null)
                 {
-                    PreviewImage.Source = highResBitmap;
+                    // 设置到后台缓冲
+                    _backImage.Source = highResBitmap;
+                    
+                    // 交换前后缓冲
+                    SwapPreviewBuffers();
                 }
             }
             catch (OperationCanceledException)
             {
+                // 正常取消
             }
             finally
             {

@@ -1,17 +1,24 @@
 {
-    // 使用 IntelliSense 了解相关属性。 
-    // 悬停以查看现有属性的描述。
-    // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (FastPick)",
+            "name": "FastPick (Build + Run)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/bin/x64/Debug/net9.0-windows10.0.19041.0/FastPick.exe",
             "args": [],
-            "cwd": "${workspaceFolder}/bin/x64/Debug/net9.0-windows10.0.19041.0",
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": "FastPick (Run Only)",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/x64/Debug/net9.0-windows10.0.19041.0/FastPick.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}",
             "console": "internalConsole",
             "stopAtEntry": false
         },

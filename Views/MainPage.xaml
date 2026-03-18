@@ -638,21 +638,39 @@
             <Grid.Clip>
                 <RectangleGeometry x:Name="PreviewClip" />
             </Grid.Clip>
-            <!-- 单图预览 -->
-            <Image x:Name="PreviewImage"
-                   Stretch="Uniform"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   Visibility="Visible"
-                   RenderTransformOrigin="0.5,0.5">
-                <Image.RenderTransform>
+            <!-- 双缓冲预览容器 -->
+            <Grid x:Name="PreviewImageContainer"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  RenderTransformOrigin="0.5,0.5">
+                <Grid.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform x:Name="PreviewScaleTransform" ScaleX="1" ScaleY="1" />
                         <RotateTransform x:Name="PreviewRotateTransform" Angle="0" />
                         <TranslateTransform x:Name="PreviewTranslateTransform" X="0" Y="0" />
                     </TransformGroup>
-                </Image.RenderTransform>
-            </Image>
+                </Grid.RenderTransform>
+                <!-- 前台缓冲（当前显示） -->
+                <Image x:Name="PreviewImageFront"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Visibility="Visible" />
+                <!-- 后台缓冲（预加载） -->
+                <Image x:Name="PreviewImageBack"
+                       Stretch="Uniform"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Visibility="Collapsed"
+                       Opacity="0" />
+            </Grid>
+            <!-- 兼容旧代码的引用 -->
+            <Image x:Name="PreviewImage"
+                   Stretch="Uniform"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Visibility="Collapsed"
+                   Opacity="0" />
             
             <!-- 缩放比例显示 -->
             <Border x:Name="ZoomIndicator"
@@ -1191,13 +1209,14 @@
                           SelectedIndex="3"
                           SelectionChanged="ZoomComboBox_SelectionChanged"
                           Style="{StaticResource DarkComboBoxStyle}">
+                    <ComboBoxItem Content="25%" />
                     <ComboBoxItem Content="50%" />
-                    <ComboBoxItem Content="60%" />
                     <ComboBoxItem Content="75%" />
                     <ComboBoxItem Content="100%" />
-                    <ComboBoxItem Content="125%" />
                     <ComboBoxItem Content="150%" />
                     <ComboBoxItem Content="200%" />
+                    <ComboBoxItem Content="400%" />
+                    <ComboBoxItem Content="800%" />
                 </ComboBox>
                 <Button Content="&#xE71E;"
                         FontFamily="Segoe Fluent Icons"

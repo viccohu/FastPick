@@ -88,15 +88,20 @@ public class ThumbnailService
             using var stream = await storageFile.OpenAsync(FileAccessMode.Read);
             var decoder = await BitmapDecoder.CreateAsync(stream);
 
+            var orientedWidth = decoder.OrientedPixelWidth;
+            var orientedHeight = decoder.OrientedPixelHeight;
+            var originalWidth = decoder.PixelWidth;
+            var originalHeight = decoder.PixelHeight;
+
             var transform = new BitmapTransform();
             var scaleFactor = Math.Min(
-                (double)ThumbnailWidth / decoder.OrientedPixelWidth,
-                (double)ThumbnailHeight / decoder.OrientedPixelHeight);
+                (double)ThumbnailWidth / orientedWidth,
+                (double)ThumbnailHeight / orientedHeight);
             
             if (scaleFactor < 1)
             {
-                transform.ScaledWidth = (uint)(decoder.OrientedPixelWidth * scaleFactor);
-                transform.ScaledHeight = (uint)(decoder.OrientedPixelHeight * scaleFactor);
+                transform.ScaledWidth = (uint)(originalWidth * scaleFactor);
+                transform.ScaledHeight = (uint)(originalHeight * scaleFactor);
             }
 
             var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
