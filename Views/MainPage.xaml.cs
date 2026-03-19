@@ -50,6 +50,7 @@ namespace FastPick.Views
         private bool _flipVertical = false;
         
         private DispatcherTimer? _toastTimer;
+        private DispatcherTimer? _zoomIndicatorTimer;
 
         // 缩放动画
         private DispatcherTimer? _zoomAnimationTimer;
@@ -141,6 +142,11 @@ namespace FastPick.Views
             // 初始化双缓冲预览
             _frontImage = PreviewImageFront;
             _backImage = PreviewImageBack;
+
+            // 初始化缩放指示器自动隐藏定时器
+            _zoomIndicatorTimer = new DispatcherTimer();
+            _zoomIndicatorTimer.Interval = TimeSpan.FromSeconds(2);
+            _zoomIndicatorTimer.Tick += ZoomIndicatorTimer_Tick;
 
             // 在 Page.Loaded 事件中加载保存的路径（确保所有控件都已初始化）
             this.Loaded += MainPage_Loaded;
@@ -1946,6 +1952,18 @@ namespace FastPick.Views
             }
         }
 
+        private void ZoomComboBox_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            // 禁止所有键盘输入，防止用户编辑
+            e.Handled = true;
+        }
+
+        private void ZoomComboBox_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            // 只在点击下拉箭头时才打开下拉列表
+            // 不禁止点击，因为用户需要通过下拉框选择选项
+        }
+
         private void OpenInExplorerButton_Click(object sender, RoutedEventArgs e)
         {
             if (_viewModel.CurrentPreviewItem == null) return;
@@ -2389,7 +2407,19 @@ namespace FastPick.Views
             percentage = Math.Max(0, Math.Min(1000, percentage));
             
             ZoomTextBlock.Text = $"{percentage}%";
-            ZoomIndicator.Visibility = percentage != 100 ? Visibility.Visible : Visibility.Collapsed;
+            bool shouldShow = percentage != 100;
+            
+            if (shouldShow)
+            {
+                ZoomIndicator.Visibility = Visibility.Visible;
+                _zoomIndicatorTimer?.Stop();
+                _zoomIndicatorTimer?.Start();
+            }
+            else
+            {
+                ZoomIndicator.Visibility = Visibility.Collapsed;
+                _zoomIndicatorTimer?.Stop();
+            }
             
             // 更新缩放下拉框显示文本（程序化更新，不触发缩放）
             if (ZoomComboBox != null)
@@ -2404,6 +2434,15 @@ namespace FastPick.Views
                 {
                     // 下拉框更新失败，不影响其他功能
                 }
+            }
+        }
+
+        private void ZoomIndicatorTimer_Tick(object? sender, object e)
+        {
+            _zoomIndicatorTimer?.Stop();
+            if (ZoomIndicator != null)
+            {
+                ZoomIndicator.Visibility = Visibility.Collapsed;
             }
         }
 

@@ -1209,6 +1209,8 @@
                           IsEditable="True"
                           SelectedIndex="3"
                           SelectionChanged="ZoomComboBox_SelectionChanged"
+                          PreviewKeyDown="ZoomComboBox_PreviewKeyDown"
+                          PointerPressed="ZoomComboBox_PointerPressed"
                           Style="{StaticResource DarkComboBoxStyle}">
                     <ComboBoxItem Content="25%" />
                     <ComboBoxItem Content="50%" />
