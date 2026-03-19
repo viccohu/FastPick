@@ -53,7 +53,7 @@ public class PreviewImageService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"加载预览图失败: {photoItem.FileName}, 错误: {ex.Message}");
+
             return null;
         }
     }
@@ -62,7 +62,7 @@ public class PreviewImageService
     {
         if (!File.Exists(rawPath))
         {
-            Debug.WriteLine($"RAW 文件不存在: {rawPath}");
+
             return null;
         }
 
@@ -367,7 +367,7 @@ public class PreviewImageService
 
             var bitmap = await SoftwareBitmapToBitmapImageAsync(softwareBitmap);
             
-            Debug.WriteLine($"[高分辨率] 解码 RAW: {Path.GetFileName(rawPath)}, 目标: {targetWidth}x{targetHeight}, 原始: {originalWidth}x{originalHeight}, 旋转后: {orientedWidth}x{orientedHeight}, 缩放: {scaleFactor:F2}");
+            Debug.WriteLine($"[高分辨率] 解码 RAW:  目标: {targetWidth}x{targetHeight}, 原始: {originalWidth}x{originalHeight}, 旋转后: {orientedWidth}x{orientedHeight}, 缩放: {scaleFactor:F2}");
             return bitmap;
         }
         catch (OperationCanceledException)
@@ -448,7 +448,7 @@ public class PreviewImageService
 
             var bitmap = await SoftwareBitmapToBitmapImageAsync(softwareBitmap);
             
-            Debug.WriteLine($"[高分辨率] 解码 JPG: {Path.GetFileName(jpgPath)}, 目标: {targetWidth}x{targetHeight}, 原始: {originalWidth}x{originalHeight}, 旋转后: {orientedWidth}x{orientedHeight}, 缩放: {scaleFactor:F2}");
+            Debug.WriteLine($"[高分辨率] 解码 JPG: 目标: {targetWidth}x{targetHeight}, 原始: {originalWidth}x{originalHeight}, 旋转后: {orientedWidth}x{orientedHeight}, 缩放: {scaleFactor:F2}");
             return bitmap;
         }
         catch (OperationCanceledException)

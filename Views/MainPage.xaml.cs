@@ -34,6 +34,12 @@ namespace FastPick.Views
         private double _minZoom = 0.1;
         private double _maxZoom = 8.0;  // 从 5.0 改为 8.0，支持 800% 缩放
         
+        // 100% 吸附效果相关
+        private bool _justSnappedTo100Percent = false;
+        private int _snapStayCounter = 0;
+        private const double SnapThreshold = 0.05;  // 5% 的容差范围（增强吸附力度）
+        private const int SnapStayCount = 4;  // 需要几次滚轮事件才离开 100%（增强停留效果）
+        
         private bool _isDragging = false;
         private Windows.Foundation.Point _lastDragPoint;
         private double _translateX = 0;
@@ -148,7 +154,6 @@ namespace FastPick.Views
 
         private void MainPage_Unloaded(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("[MainPage] Unloaded 触发 - 保存路径");
             SaveCurrentPaths();
         }
 
@@ -424,7 +429,7 @@ namespace FastPick.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"加载缩略图失败: {ex.Message}");
+
             }
         }
 
@@ -677,7 +682,7 @@ namespace FastPick.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"加载预览图失败: {ex.Message}");
+
             }
         }
 
@@ -740,7 +745,7 @@ namespace FastPick.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"加载多选预览失败: {ex.Message}");
+
             }
         }
 
@@ -1591,7 +1596,7 @@ namespace FastPick.Views
             {
                 _viewModel.IsLoading = false;
                 ShowToast($"导出失败：{ex.Message}");
-                System.Diagnostics.Debug.WriteLine($"导出失败：{ex.Message}");
+
             }
             finally
             {
@@ -1914,13 +1919,30 @@ namespace FastPick.Views
             if (_isUpdatingZoomComboBox) return;
             
             if (ZoomComboBox == null || ZoomComboBox.SelectedIndex < 0) return;
+            if (_viewModel == null) return;
             
-            var zoomValues = new[] { 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 4.0, 8.0 };
+            var item = _viewModel.CurrentPreviewItem;
+            if (item == null || item.Width <= 0 || item.Height <= 0) return;
+            
+            // 原图比例值
+            var originalScaleValues = new[] { 0.25, 0.5, 0.75, 1.0, 1.5, 2.0, 4.0, 8.0 };
             var index = ZoomComboBox.SelectedIndex;
             
-            if (index >= 0 && index < zoomValues.Length)
+            if (index >= 0 && index < originalScaleValues.Length)
             {
-                SetZoom(zoomValues[index]);
+                // 获取 fitScale
+                var fitScale = CalculateFitToScreenScale(item);
+                if (fitScale <= 0) return;
+                
+                // 将原图比例转换为 Fit 比例
+                // 原图比例 = _zoomScale * fitScale * dpiScale
+                // 所以 _zoomScale = 原图比例 / (fitScale * dpiScale)
+                var dpiScale = GetDpiScale();
+                var originalScale = originalScaleValues[index];
+                var fitScaleValue = originalScale / (fitScale * dpiScale);
+                
+                SetZoom(fitScaleValue);
+                CheckAndLoadHighResolution();
             }
         }
 
@@ -1985,7 +2007,7 @@ namespace FastPick.Views
             {
                 if (ToastContainer == null || ToastText == null)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Toast: {message}");
+
                     return;
                 }
 
@@ -2042,7 +2064,7 @@ namespace FastPick.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ShowToast 失败: {ex.Message}");
+
             }
         }
 
@@ -2060,8 +2082,58 @@ namespace FastPick.Views
                 // 等比缩放因子（每次缩放约 10%）
                 double zoomFactor = delta > 0 ? 1.1 : 0.909;
                 
+                var (minZoom, maxZoom) = GetZoomLimitsForOriginalScale();
+                
+                // 获取原图 100% 对应的 _zoomScale
+                double originalScaleForFit = 1.0;
+                var item = _viewModel?.CurrentPreviewItem;
+                if (item != null && item.Width > 0 && item.Height > 0)
+                {
+                    originalScaleForFit = CalculateOriginalScale(item);
+                }
+                
                 var oldScale = _zoomScale;
-                _zoomScale = Math.Min(_maxZoom, Math.Max(_minZoom, _zoomScale * zoomFactor));
+                var newScale = oldScale * zoomFactor;
+                
+                // 100% 吸附和停留逻辑
+                
+                if (_justSnappedTo100Percent)
+                {
+                    // 刚刚吸附到 100%，需要继续滚动才离开
+                    _snapStayCounter++;
+                    if (_snapStayCounter < SnapStayCount)
+                    {
+                        // 还没到离开的次数，保持在 100%
+                        newScale = originalScaleForFit;
+                    }
+                    else
+                    {
+                        // 达到离开次数，重置状态
+                        _justSnappedTo100Percent = false;
+                        _snapStayCounter = 0;
+                    }
+                }
+                else
+                {
+                    // 检查是否跨越 100% 阈值
+                    bool wasBelow100 = oldScale < originalScaleForFit * (1.0 - SnapThreshold);
+                    bool wasAbove100 = oldScale > originalScaleForFit * (1.0 + SnapThreshold);
+                    bool willBeAbove100 = newScale > originalScaleForFit * (1.0 + SnapThreshold);
+                    bool willBeBelow100 = newScale < originalScaleForFit * (1.0 - SnapThreshold);
+                    
+                    // 检查是否在 100% 附近（对于高像素图片更宽松的判断）
+                    bool isNear100 = Math.Abs(oldScale - originalScaleForFit) < originalScaleForFit * SnapThreshold * 1.5;
+                    
+                    if ((wasBelow100 && willBeAbove100) || (wasAbove100 && willBeBelow100) || isNear100)
+                    {
+                        // 跨越 100% 阈值或在 100% 附近，吸附到 100%
+                        newScale = originalScaleForFit;
+                        _justSnappedTo100Percent = true;
+                        _snapStayCounter = 0;
+                    }
+                }
+                
+                _zoomScale = Math.Min(maxZoom, Math.Max(minZoom, newScale));
                 
                 // 缩放时保持当前偏移比例，不跳变
                 var scaleRatio = _zoomScale / oldScale;
@@ -2255,43 +2327,62 @@ namespace FastPick.Views
                 
                 if (item != null && item.Width > 0 && item.Height > 0)
                 {
-                    // 有图片，显示相对于原图的比例
-                // _zoomScale = 1.0 表示 Fit 屏幕
-                // 原图比例 = _zoomScale * fitScale
-                var fitScale = CalculateFitToScreenScale(item);
-                
-                // 安全检查，避免除以 0 或 NaN
-                if (fitScale > 0 && !double.IsNaN(fitScale) && !double.IsInfinity(fitScale))
-                {
-                    var originalPercentage = (_zoomScale * fitScale) * 100;
+                    // 计算 fitScale
+                    var fitScale = CalculateFitToScreenScale(item);
+                    var dpiScale = GetDpiScale();
                     
-                    // 安全检查，确保百分比在合理范围内
-                    if (!double.IsNaN(originalPercentage) && !double.IsInfinity(originalPercentage))
+                    // 输出图片相关尺寸信息
+                    var previewWidth = _frontImage?.ActualWidth ?? 0;
+                    var previewHeight = _frontImage?.ActualHeight ?? 0;
+                    var displayWidth = item.Width * _zoomScale * fitScale * dpiScale;
+                    var displayHeight = item.Height * _zoomScale * fitScale * dpiScale;
+                    
+                    System.Diagnostics.Debug.WriteLine($"[图片尺寸] 原图: {item.Width}x{item.Height}, 预览: {previewWidth:F0}x{previewHeight:F0}, 显示: {displayWidth:F0}x{displayHeight:F0}, DPI: {dpiScale:F2}");
+                    
+                    // 输出解码尺寸（如果有图片源）
+                    if (_frontImage?.Source is BitmapImage bitmapImage)
                     {
-                        percentage = (int)originalPercentage;
+                        var pixelWidth = bitmapImage.PixelWidth;
+                        var pixelHeight = bitmapImage.PixelHeight;
+                        System.Diagnostics.Debug.WriteLine($"[解码尺寸]: {pixelWidth}x{pixelHeight}");
+                    }
+                    
+                    // 有图片，显示相对于原图的比例
+                    // _zoomScale = 1.0 表示 Fit 屏幕
+                    // 原图比例 = _zoomScale * fitScale * dpiScale
+                    
+                    // 安全检查，避免除以 0 或 NaN
+                    if (fitScale > 0 && !double.IsNaN(fitScale) && !double.IsInfinity(fitScale))
+                    {
+                        var originalPercentage = (_zoomScale * fitScale * dpiScale) * 100;
+                        
+                        // 安全检查，确保百分比在合理范围内
+                        if (!double.IsNaN(originalPercentage) && !double.IsInfinity(originalPercentage))
+                        {
+                            percentage = (int)Math.Round(originalPercentage);
+                        }
+                        else
+                        {
+                            // 如果计算失败，回退到原来的逻辑
+                            percentage = (int)Math.Round(_zoomScale * 100);
+                        }
                     }
                     else
                     {
-                        // 如果计算失败，回退到原来的逻辑
-                        percentage = (int)(_zoomScale * 100);
+                        // 如果 fitScale 无效，回退到原来的逻辑
+                        percentage = (int)Math.Round(_zoomScale * 100);
                     }
-                }
-                else
-                {
-                    // 如果 fitScale 无效，回退到原来的逻辑
-                    percentage = (int)(_zoomScale * 100);
-                }
                 }
                 else
                 {
                     // 没有图片，回退到原来的逻辑（基于 Fit 比例）
-                    percentage = (int)(_zoomScale * 100);
+                    percentage = (int)Math.Round(_zoomScale * 100);
                 }
             }
             catch
             {
                 // 发生任何异常，回退到原来的逻辑
-                percentage = (int)(_zoomScale * 100);
+                percentage = (int)Math.Round(_zoomScale * 100);
             }
             
             // 确保百分比在合理范围内
@@ -2300,27 +2391,13 @@ namespace FastPick.Views
             ZoomTextBlock.Text = $"{percentage}%";
             ZoomIndicator.Visibility = percentage != 100 ? Visibility.Visible : Visibility.Collapsed;
             
-            // 更新缩放下拉框（程序化更新，不触发缩放）
+            // 更新缩放下拉框显示文本（程序化更新，不触发缩放）
             if (ZoomComboBox != null)
             {
                 try
                 {
-                    var items = new[] { 25, 50, 75, 100, 150, 200, 400, 800 };
-                    var closestIndex = 0;
-                    var minDiff = Math.Abs(items[0] - percentage);
-                    for (int i = 1; i < items.Length; i++)
-                    {
-                        var diff = Math.Abs(items[i] - percentage);
-                        if (diff < minDiff)
-                        {
-                            minDiff = diff;
-                            closestIndex = i;
-                        }
-                    }
-                    
-                    // 设置标志位，避免触发 SelectionChanged 中的缩放逻辑
                     _isUpdatingZoomComboBox = true;
-                    ZoomComboBox.SelectedIndex = closestIndex;
+                    ZoomComboBox.Text = $"{percentage}%";
                     _isUpdatingZoomComboBox = false;
                 }
                 catch
@@ -2344,7 +2421,8 @@ namespace FastPick.Views
 
         private void SetZoom(double scale)
         {
-            _zoomScale = Math.Max(_minZoom, Math.Min(_maxZoom, scale));
+            var (minZoom, maxZoom) = GetZoomLimitsForOriginalScale();
+            _zoomScale = Math.Max(minZoom, Math.Min(maxZoom, scale));
             ApplyZoomTransformWithAnimation();
             UpdateZoomIndicator();
         }
@@ -2420,6 +2498,15 @@ namespace FastPick.Views
 
         #region 缩放计算辅助方法
 
+        private double GetDpiScale()
+        {
+            if (_window?.Content?.XamlRoot != null)
+            {
+                return _window.Content.XamlRoot.RasterizationScale;
+            }
+            return 1.0;
+        }
+
         private double CalculateFitToScreenScale(PhotoItem item)
         {
             if (item.Width <= 0 || item.Height <= 0) return 1.0;
@@ -2438,13 +2525,40 @@ namespace FastPick.Views
 
         private double CalculateOriginalScale(PhotoItem item)
         {
-            // 原图 100% = 图片以原始像素大小显示
+            // 原图 100% = 图片以原始物理像素大小显示
             // Fit 状态下 _zoomScale = 1.0 表示图片适应容器
-            // 原图 100% 的缩放比例 = 1 / fitScale
+            // 需要除以 DPI 缩放比例进行补偿，抵消系统缩放
             var fitScale = CalculateFitToScreenScale(item);
             if (fitScale <= 0) return 1.0;
             
-            return 1.0 / fitScale;
+            var dpiScale = GetDpiScale();
+            return (1.0 / fitScale) / dpiScale;
+        }
+
+        private (double minZoom, double maxZoom) GetZoomLimitsForOriginalScale()
+        {
+            var item = _viewModel?.CurrentPreviewItem;
+            if (item == null || item.Width <= 0 || item.Height <= 0)
+            {
+                return (_minZoom, _maxZoom);
+            }
+            
+            var fitScale = CalculateFitToScreenScale(item);
+            var dpiScale = GetDpiScale();
+            
+            if (fitScale <= 0)
+            {
+                return (_minZoom, _maxZoom);
+            }
+            
+            // _minZoom 和 _maxZoom 是相对于原图的比例
+            // 转换为相对于 Fit 状态的 _zoomScale
+            // 原图比例 = _zoomScale * fitScale * dpiScale
+            // 所以 _zoomScale = 原图比例 / (fitScale * dpiScale)
+            var minZoomForFit = _minZoom / (fitScale * dpiScale);
+            var maxZoomForFit = _maxZoom / (fitScale * dpiScale);
+            
+            return (minZoomForFit, maxZoomForFit);
         }
 
         #endregion
@@ -2506,8 +2620,8 @@ namespace FastPick.Views
             try
             {
                 // 使用原图尺寸作为目标尺寸
-                var targetWidth = (int)(item.Width * _zoomScale / CalculateOriginalScale(item));
-                var targetHeight = (int)(item.Height * _zoomScale / CalculateOriginalScale(item));
+                var targetWidth = (int)item.Width;
+                var targetHeight = (int)item.Height;
 
                 BitmapImage? highResBitmap = null;
 
@@ -2602,13 +2716,13 @@ namespace FastPick.Views
                 var path2 = Path2TextBox.Text;
                 var exportPath = ExportPathTextBox.Text;
                 
-                System.Diagnostics.Debug.WriteLine($"[设置] 保存路径 - Path1: '{path1}', Path2: '{path2}', Export: '{exportPath}'");
+
                 
                 _settingsService.SaveAllPaths(path1, path2, exportPath);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"保存路径失败: {ex.Message}");
+
             }
         }
 
@@ -2623,7 +2737,7 @@ namespace FastPick.Views
                 var path2 = _settingsService.Path2;
                 var exportPath = _settingsService.ExportPath;
                 
-                System.Diagnostics.Debug.WriteLine($"[设置] 加载路径 - Path1: '{path1}', Path2: '{path2}', Export: '{exportPath}'");
+
 
                 if (!string.IsNullOrEmpty(path1))
                 {
@@ -2646,7 +2760,7 @@ namespace FastPick.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"加载保存的路径失败: {ex.Message}");
+
             }
         }
 
