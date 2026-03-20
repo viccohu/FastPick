@@ -18,6 +18,7 @@ public class PreviewImageService
     private readonly ConcurrentDictionary<string, Task<BitmapImage?>> _loadingTasks = new();
     private readonly SemaphoreSlim _loadingSemaphore = new(3, 3);
     private readonly SemaphoreSlim _highResSemaphore = new(1, 1);
+    private readonly SemaphoreSlim _quickLoadLock = new(3, 3);
 
     public async Task<BitmapImage?> LoadPreviewAsync(PhotoItem photoItem, bool useEmbeddedPreview = true)
     {
@@ -540,26 +541,53 @@ public class PreviewImageService
                 return null;
             }
 
-            Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 开始获取 StorageFile");
-            var storageFile = await StorageFile.GetFileFromPathAsync(filePath).AsTask(cancellationToken);
-            Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 开始获取缩略图 (1024px)");
-            var thumbnail = await storageFile.GetThumbnailAsync(
-                ThumbnailMode.SingleItem,
-                1024,
-                ThumbnailOptions.ResizeThumbnail).AsTask(cancellationToken);
+            await _quickLoadLock.WaitAsync(cancellationToken);
+            try
+            {
+                Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 开始获取 StorageFile");
+                var storageFile = await StorageFile.GetFileFromPathAsync(filePath).AsTask(cancellationToken);
 
-            if (thumbnail != null)
-            {
-                Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 缩略图获取成功，开始设置到 BitmapImage");
-                var bitmap = new BitmapImage();
-                await bitmap.SetSourceAsync(thumbnail).AsTask(cancellationToken);
-                thumbnail.Dispose();
-                Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: BitmapImage 设置完成");
-                return bitmap;
+                // 第一步：先尝试 256px ReturnOnlyIfCached
+                Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 尝试 256px 缓存缩略图");
+                StorageItemThumbnail? thumbnail = null;
+                try
+                {
+                    thumbnail = await storageFile.GetThumbnailAsync(
+                        ThumbnailMode.SingleItem,
+                        256,
+                        ThumbnailOptions.ResizeThumbnail | ThumbnailOptions.ReturnOnlyIfCached).AsTask(cancellationToken);
+                }
+                catch (Exception)
+                {
+                    // 256px 获取失败也没关系，继续 1024px
+                }
+
+                // 如果没有缓存的 256px，直接用 1024px
+                if (thumbnail == null)
+                {
+                    Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 256px 未缓存，获取 1024px");
+                    thumbnail = await storageFile.GetThumbnailAsync(
+                        ThumbnailMode.SingleItem,
+                        1024,
+                        ThumbnailOptions.ResizeThumbnail).AsTask(cancellationToken);
+                }
+                else
+                {
+                    Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 使用缓存的 256px");
+                }
+
+                if (thumbnail != null)
+                {
+                    Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 缩略图获取成功");
+                    var bitmap = new BitmapImage();
+                    await bitmap.SetSourceAsync(thumbnail).AsTask(cancellationToken);
+                    thumbnail.Dispose();
+                    return bitmap;
+                }
             }
-            else
+            finally
             {
-                Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: thumbnail 为 null");
+                _quickLoadLock.Release();
             }
         }
         catch (OperationCanceledException)
