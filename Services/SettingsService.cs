@@ -3,6 +3,12 @@ using System.Text.Json;
 
 namespace FastPick.Services;
 
+public enum PreviewLoadMode
+{
+    OnDemand,
+    Hierarchical
+}
+
 public class SettingsService
 {
     private static readonly Lazy<SettingsService> _instance = new(() => new SettingsService());
@@ -26,6 +32,8 @@ public class SettingsService
         public string JpgFolderName { get; set; } = "JPG";
         public string RawFolderName { get; set; } = "RAW";
         public bool DeleteToRecycleBin { get; set; } = true;
+        public bool UseRawForHighResDecode { get; set; } = false;
+        public PreviewLoadMode PreviewLoadMode { get; set; } = PreviewLoadMode.OnDemand;
     }
 
     private static string SettingsFilePath => Path.Combine(
@@ -156,6 +164,34 @@ public class SettingsService
         set
         {
             _data.DeleteToRecycleBin = value;
+            Save();
+        }
+    }
+
+    public bool UseRawForHighResDecode
+    {
+        get
+        {
+            EnsureLoaded();
+            return _data.UseRawForHighResDecode;
+        }
+        set
+        {
+            _data.UseRawForHighResDecode = value;
+            Save();
+        }
+    }
+
+    public PreviewLoadMode PreviewLoadMode
+    {
+        get
+        {
+            EnsureLoaded();
+            return _data.PreviewLoadMode;
+        }
+        set
+        {
+            _data.PreviewLoadMode = value;
             Save();
         }
     }

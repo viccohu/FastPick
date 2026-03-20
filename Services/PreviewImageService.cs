@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Collections.Concurrent;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
+using Windows.Storage.FileProperties;
 using Windows.Storage.Streams;
 
 namespace FastPick.Services;
@@ -525,6 +526,54 @@ public class PreviewImageService
         {
             bitmap.UriSource = null;
         }
+    }
+
+    public async Task<BitmapImage?> LoadQuickPreviewAsync(PhotoItem photoItem, CancellationToken cancellationToken = default)
+    {
+        Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync 开始: {photoItem.FileName}, DisplayPath: {photoItem.DisplayPath}");
+        try
+        {
+            var filePath = photoItem.DisplayPath;
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+            {
+                Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 文件不存在，返回 null");
+                return null;
+            }
+
+            Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 开始获取 StorageFile");
+            var storageFile = await StorageFile.GetFileFromPathAsync(filePath).AsTask(cancellationToken);
+            Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 开始获取缩略图 (1024px)");
+            var thumbnail = await storageFile.GetThumbnailAsync(
+                ThumbnailMode.SingleItem,
+                1024,
+                ThumbnailOptions.ResizeThumbnail).AsTask(cancellationToken);
+
+            if (thumbnail != null)
+            {
+                Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 缩略图获取成功，开始设置到 BitmapImage");
+                var bitmap = new BitmapImage();
+                await bitmap.SetSourceAsync(thumbnail).AsTask(cancellationToken);
+                thumbnail.Dispose();
+                Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: BitmapImage 设置完成");
+                return bitmap;
+            }
+            else
+            {
+                Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: thumbnail 为 null");
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 被取消");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"[分级预取] 加载快速预览失败: {photoItem.DisplayPath}, 错误: {ex.Message}");
+        }
+
+        Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 返回 null");
+        return null;
     }
 
     public void ClearFailedCache()

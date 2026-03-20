@@ -25,10 +25,14 @@ namespace FastPick.Views
         {
             _isLoading = true;
             RawHighResDecodeToggle.IsOn = _settingsService.EnableRawHighResDecode;
+            UseRawForHighResDecodeToggle.IsOn = _settingsService.UseRawForHighResDecode;
             AutoLoadLastPathToggle.IsOn = _settingsService.AutoLoadLastPath;
             JpgFolderNameTextBox.Text = _settingsService.JpgFolderName;
             RawFolderNameTextBox.Text = _settingsService.RawFolderName;
             DeleteToRecycleBinToggle.IsOn = _settingsService.DeleteToRecycleBin;
+            
+            PreviewLoadModeComboBox.SelectedIndex = _settingsService.PreviewLoadMode == Services.PreviewLoadMode.Hierarchical ? 1 : 0;
+            
             _isLoading = false;
         }
 
@@ -68,6 +72,22 @@ namespace FastPick.Views
         {
             if (!_isLoading)
                 _settingsService.DeleteToRecycleBin = DeleteToRecycleBinToggle.IsOn;
+        }
+
+        private void UseRawForHighResDecodeToggle_Toggled(object sender, RoutedEventArgs e)
+        {
+            if (!_isLoading)
+                _settingsService.UseRawForHighResDecode = UseRawForHighResDecodeToggle.IsOn;
+        }
+
+        private void PreviewLoadModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!_isLoading && PreviewLoadModeComboBox.SelectedIndex >= 0)
+            {
+                _settingsService.PreviewLoadMode = PreviewLoadModeComboBox.SelectedIndex == 1 
+                    ? Services.PreviewLoadMode.Hierarchical 
+                    : Services.PreviewLoadMode.OnDemand;
+            }
         }
     }
 }

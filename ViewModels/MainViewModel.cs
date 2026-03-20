@@ -703,9 +703,9 @@ public class MainViewModel : INotifyPropertyChanged
     /// <summary>
     /// 获取缩略图
     /// </summary>
-    public async Task<object?> GetThumbnailAsync(PhotoItem item)
+    public async Task<object?> GetThumbnailAsync(PhotoItem item, System.Threading.CancellationToken cancellationToken = default)
     {
-        return await _thumbnailService.GetThumbnailAsync(item);
+        return await _thumbnailService.GetThumbnailAsync(item, cancellationToken);
     }
 
     /// <summary>

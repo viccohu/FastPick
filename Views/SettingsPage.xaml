@@ -91,6 +91,60 @@
 
                                 <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,4"/>
 
+                                <!-- J+R高清解码切换 -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Spacing="4">
+                                        <TextBlock Text="双文件（j+R）高清解码切换"
+                                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                                   FontSize="14"/>
+                                        <TextBlock Text="关闭时高清解码使用 JPG，开启时使用 RAW 文件"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   FontSize="12"
+                                                   TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <ToggleSwitch x:Name="UseRawForHighResDecodeToggle"
+                                                  Grid.Column="1"
+                                                  OnContent=""
+                                                  OffContent=""
+                                                  Toggled="UseRawForHighResDecodeToggle_Toggled"/>
+                                </Grid>
+
+                                <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,4"/>
+
+                                <!-- 预览加载模式 -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="140"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Spacing="4">
+                                        <TextBlock Text="预览加载模式"
+                                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                                   FontSize="14"/>
+                                        <TextBlock Text="按需加载：仅放大时加载高清；分级预取：每张图都后台预加载高清"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   FontSize="12"
+                                                   TextWrapping="Wrap"/>
+                                        <TextBlock Text="* 更改此设置后需要重启应用才能生效"
+                                                   Foreground="#D29922"
+                                                   FontSize="12"
+                                                   TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <ComboBox x:Name="PreviewLoadModeComboBox"
+                                              Grid.Column="1"
+                                              Style="{StaticResource DarkComboBoxStyle}"
+                                              SelectionChanged="PreviewLoadModeComboBox_SelectionChanged">
+                                        <ComboBoxItem Content="按需加载"/>
+                                        <ComboBoxItem Content="分级预取"/>
+                                    </ComboBox>
+                                </Grid>
+
+                                <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,4"/>
+
                                 <!-- 启动时自动加载上次路径 -->
                                 <Grid>
                                     <Grid.ColumnDefinitions>

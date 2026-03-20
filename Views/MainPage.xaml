@@ -634,6 +634,8 @@
               PointerPressed="PreviewContainer_PointerPressed"
               PointerMoved="PreviewContainer_PointerMoved"
               PointerReleased="PreviewContainer_PointerReleased"
+              PointerEntered="PreviewContainer_PointerEntered"
+              PointerExited="PreviewContainer_PointerExited"
               DoubleTapped="PreviewContainer_DoubleTapped">
             <Grid.Clip>
                 <RectangleGeometry x:Name="PreviewClip" />

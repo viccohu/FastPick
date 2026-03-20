@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace FastPick.Models;
 
@@ -15,6 +16,11 @@ public class PhotoItem : INotifyPropertyChanged
     private bool _isMarkedForDeletion;
     private bool _isSelected;
     private FileTypeEnum _fileType;
+    
+    /// <summary>
+    /// 缩略图加载取消令牌源（用于快速滚动时取消加载）
+    /// </summary>
+    public CancellationTokenSource? ThumbnailCts { get; set; }
 
     /// <summary>
     /// 文件名（不含扩展名）

@@ -4,6 +4,7 @@ using Windows.Storage.FileProperties;
 using Windows.Storage;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
+using System.Collections.Concurrent;
 
 namespace FastPick.Services;
 
@@ -11,19 +12,22 @@ public class ThumbnailService
 {
     private readonly LinkedList<string> _lruList = new();
     private readonly Dictionary<string, BitmapImage> _thumbnailCache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, PhotoItem> _photoItemMap = new(StringComparer.OrdinalIgnoreCase);
     private readonly SemaphoreSlim _cacheLock = new(1, 1);
-    private const int MaxCacheSize = 200;
+    private readonly SemaphoreSlim _throttler = new(4, 4);
+    private readonly ConcurrentDictionary<string, TaskCompletionSource<BitmapImage?>> _pendingLoads = new(StringComparer.OrdinalIgnoreCase);
+    private const int MaxCacheSize = 1000;
     private const int ThumbnailWidth = 100;
     private const int ThumbnailHeight = 80;
 
-    public async Task<BitmapImage?> GetThumbnailAsync(PhotoItem photoItem)
+    public async Task<BitmapImage?> GetThumbnailAsync(PhotoItem photoItem, CancellationToken cancellationToken = default)
     {
         var filePath = photoItem.DisplayPath;
         
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
             return null;
 
-        await _cacheLock.WaitAsync();
+        await _cacheLock.WaitAsync(cancellationToken);
         try
         {
             if (_thumbnailCache.TryGetValue(filePath, out var cachedImage))
@@ -37,40 +41,89 @@ public class ThumbnailService
             _cacheLock.Release();
         }
 
-        var systemThumbnail = await GetSystemThumbnailAsync(filePath);
-        if (systemThumbnail != null)
+        var tcs = new TaskCompletionSource<BitmapImage?>();
+        if (_pendingLoads.TryAdd(filePath, tcs))
         {
-            await AddToCacheAsync(filePath, systemThumbnail);
-            return systemThumbnail;
-        }
+            try
+            {
+                await _throttler.WaitAsync(cancellationToken);
+                try
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    
+                    var systemThumbnail = await GetSystemThumbnailAsync(filePath, cancellationToken);
+                    if (systemThumbnail != null)
+                    {
+                        await AddToCacheAsync(filePath, systemThumbnail, photoItem, cancellationToken);
+                        tcs.SetResult(systemThumbnail);
+                        return systemThumbnail;
+                    }
 
-        var wicThumbnail = await GenerateWicThumbnailAsync(filePath);
-        if (wicThumbnail != null)
+                    cancellationToken.ThrowIfCancellationRequested();
+                    
+                    var wicThumbnail = await GenerateWicThumbnailAsync(filePath, cancellationToken);
+                    if (wicThumbnail != null)
+                    {
+                        await AddToCacheAsync(filePath, wicThumbnail, photoItem, cancellationToken);
+                        tcs.SetResult(wicThumbnail);
+                        return wicThumbnail;
+                    }
+
+                    tcs.SetResult(null);
+                    return null;
+                }
+                finally
+                {
+                    _throttler.Release();
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                tcs.SetCanceled();
+                throw;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"获取缩略图失败: {filePath}, {ex.Message}");
+                tcs.SetResult(null);
+                return null;
+            }
+            finally
+            {
+                _pendingLoads.TryRemove(filePath, out _);
+            }
+        }
+        else
         {
-            await AddToCacheAsync(filePath, wicThumbnail);
-            return wicThumbnail;
+            if (_pendingLoads.TryGetValue(filePath, out var existingTcs))
+            {
+                return await existingTcs.Task;
+            }
+            return null;
         }
-
-        return null;
     }
 
-    private async Task<BitmapImage?> GetSystemThumbnailAsync(string filePath)
+    private async Task<BitmapImage?> GetSystemThumbnailAsync(string filePath, CancellationToken cancellationToken)
     {
         try
         {
-            var storageFile = await StorageFile.GetFileFromPathAsync(filePath);
+            var storageFile = await StorageFile.GetFileFromPathAsync(filePath).AsTask(cancellationToken);
             var thumbnail = await storageFile.GetThumbnailAsync(
-                ThumbnailMode.SingleItem,
+                ThumbnailMode.PicturesView,
                 (uint)ThumbnailWidth,
-                ThumbnailOptions.UseCurrentScale);
+                ThumbnailOptions.ResizeThumbnail).AsTask(cancellationToken);
 
             if (thumbnail != null)
             {
                 var bitmap = new BitmapImage();
-                await bitmap.SetSourceAsync(thumbnail);
+                await bitmap.SetSourceAsync(thumbnail).AsTask(cancellationToken);
                 thumbnail.Dispose();
                 return bitmap;
             }
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -80,13 +133,13 @@ public class ThumbnailService
         return null;
     }
 
-    private async Task<BitmapImage?> GenerateWicThumbnailAsync(string filePath)
+    private async Task<BitmapImage?> GenerateWicThumbnailAsync(string filePath, CancellationToken cancellationToken)
     {
         try
         {
-            var storageFile = await StorageFile.GetFileFromPathAsync(filePath);
-            using var stream = await storageFile.OpenAsync(FileAccessMode.Read);
-            var decoder = await BitmapDecoder.CreateAsync(stream);
+            var storageFile = await StorageFile.GetFileFromPathAsync(filePath).AsTask(cancellationToken);
+            using var stream = await storageFile.OpenAsync(FileAccessMode.Read).AsTask(cancellationToken);
+            var decoder = await BitmapDecoder.CreateAsync(stream).AsTask(cancellationToken);
 
             var orientedWidth = decoder.OrientedPixelWidth;
             var orientedHeight = decoder.OrientedPixelHeight;
@@ -109,19 +162,23 @@ public class ThumbnailService
                 BitmapAlphaMode.Premultiplied,
                 transform,
                 ExifOrientationMode.RespectExifOrientation,
-                ColorManagementMode.DoNotColorManage);
+                ColorManagementMode.DoNotColorManage).AsTask(cancellationToken);
 
             using var outputStream = new InMemoryRandomAccessStream();
-            var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, outputStream);
+            var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, outputStream).AsTask(cancellationToken);
             encoder.SetSoftwareBitmap(softwareBitmap);
-            await encoder.FlushAsync();
+            await encoder.FlushAsync().AsTask(cancellationToken);
 
             outputStream.Seek(0);
             var bitmap = new BitmapImage();
-            await bitmap.SetSourceAsync(outputStream);
+            await bitmap.SetSourceAsync(outputStream).AsTask(cancellationToken);
 
             softwareBitmap.Dispose();
             return bitmap;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -130,15 +187,23 @@ public class ThumbnailService
         }
     }
 
-    private async Task AddToCacheAsync(string filePath, BitmapImage thumbnail)
+    private async Task AddToCacheAsync(string filePath, BitmapImage thumbnail, PhotoItem? photoItem = null, CancellationToken cancellationToken = default)
     {
-        await _cacheLock.WaitAsync();
+        await _cacheLock.WaitAsync(cancellationToken);
         try
         {
             while (_thumbnailCache.Count >= MaxCacheSize && _lruList.Count > 0)
             {
                 var oldestKey = _lruList.Last!.Value;
                 _lruList.RemoveLast();
+                
+                // 清理对应的 PhotoItem.Thumbnail
+                if (_photoItemMap.TryGetValue(oldestKey, out var oldPhotoItem))
+                {
+                    oldPhotoItem.Thumbnail = null;
+                    _photoItemMap.Remove(oldestKey);
+                }
+                
                 if (_thumbnailCache.TryGetValue(oldestKey, out var oldImage))
                 {
                     oldImage.UriSource = null;
@@ -148,6 +213,12 @@ public class ThumbnailService
 
             _thumbnailCache[filePath] = thumbnail;
             _lruList.AddFirst(filePath);
+            
+            // 记录 PhotoItem 引用
+            if (photoItem != null)
+            {
+                _photoItemMap[filePath] = photoItem;
+            }
         }
         finally
         {
@@ -166,11 +237,18 @@ public class ThumbnailService
         await _cacheLock.WaitAsync();
         try
         {
+            // 清理所有 PhotoItem.Thumbnail
+            foreach (var photoItem in _photoItemMap.Values)
+            {
+                photoItem.Thumbnail = null;
+            }
+            
             foreach (var image in _thumbnailCache.Values)
             {
                 image.UriSource = null;
             }
             _thumbnailCache.Clear();
+            _photoItemMap.Clear();
             _lruList.Clear();
         }
         finally
@@ -189,24 +267,6 @@ public class ThumbnailService
         finally
         {
             _cacheLock.Release();
-        }
-    }
-
-    public async Task PreloadThumbnailsAsync(List<PhotoItem> items, int startIndex, int count)
-    {
-        var endIndex = Math.Min(startIndex + count, items.Count);
-        
-        for (int i = startIndex; i < endIndex; i++)
-        {
-            try
-            {
-                await GetThumbnailAsync(items[i]);
-                await Task.Delay(10);
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"预加载缩略图失败: {ex.Message}");
-            }
         }
     }
 }
