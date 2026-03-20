@@ -129,10 +129,6 @@
                                                    Foreground="{StaticResource TextSecondaryBrush}"
                                                    FontSize="12"
                                                    TextWrapping="Wrap"/>
-                                        <TextBlock Text="* 更改此设置后需要重启应用才能生效"
-                                                   Foreground="#D29922"
-                                                   FontSize="12"
-                                                   TextWrapping="Wrap"/>
                                     </StackPanel>
                                     <ComboBox x:Name="PreviewLoadModeComboBox"
                                               Grid.Column="1"

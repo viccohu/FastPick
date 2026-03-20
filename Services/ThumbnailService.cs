@@ -14,7 +14,7 @@ public class ThumbnailService
     private readonly Dictionary<string, BitmapImage> _thumbnailCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, PhotoItem> _photoItemMap = new(StringComparer.OrdinalIgnoreCase);
     private readonly SemaphoreSlim _cacheLock = new(1, 1);
-    private readonly SemaphoreSlim _throttler = new(4, 4);
+    private readonly SemaphoreSlim _throttler = new(Environment.ProcessorCount, Environment.ProcessorCount);
     private readonly ConcurrentDictionary<string, TaskCompletionSource<BitmapImage?>> _pendingLoads = new(StringComparer.OrdinalIgnoreCase);
     private const int MaxCacheSize = 1000;
     private const int ThumbnailWidth = 100;
@@ -108,6 +108,22 @@ public class ThumbnailService
         try
         {
             var storageFile = await StorageFile.GetFileFromPathAsync(filePath).AsTask(cancellationToken);
+            
+            // 第一步：先尝试仅从缓存读取，快速响应
+            var cachedThumbnail = await storageFile.GetThumbnailAsync(
+                ThumbnailMode.PicturesView,
+                (uint)ThumbnailWidth,
+                ThumbnailOptions.ReturnOnlyIfCached).AsTask(cancellationToken);
+
+            if (cachedThumbnail != null)
+            {
+                var bitmap = new BitmapImage();
+                await bitmap.SetSourceAsync(cachedThumbnail).AsTask(cancellationToken);
+                cachedThumbnail.Dispose();
+                return bitmap;
+            }
+
+            // 第二步：缓存未命中，使用常规方式获取
             var thumbnail = await storageFile.GetThumbnailAsync(
                 ThumbnailMode.PicturesView,
                 (uint)ThumbnailWidth,

@@ -53,6 +53,11 @@ namespace FastPick.Views
         private DispatcherTimer? _toastTimer;
         private DispatcherTimer? _zoomIndicatorTimer;
 
+        // 缩略图滚动相关
+        private bool _isThumbnailScrolling = false;
+        private DispatcherTimer? _thumbnailScrollDebounceTimer;
+        private readonly Dictionary<string, (Grid grid, PhotoItem item)> _pendingThumbnailLoads = new(StringComparer.OrdinalIgnoreCase);
+
         // 缩放动画
         private DispatcherTimer? _zoomAnimationTimer;
         private double _targetZoomScale = 1.0;
@@ -83,6 +88,11 @@ namespace FastPick.Views
         private DispatcherTimer? _previewDebounceTimer;
         private CancellationTokenSource? _hierarchicalLoadCts;
         private PhotoItem? _debounceItem;
+
+        // 快速切换预览防抖定时器
+        private DispatcherTimer? _previewNavigationDebounceTimer;
+        private CancellationTokenSource? _previewNavigationCts;
+        private PhotoItem? _pendingPreviewItem;
 
         // 高分辨率预览加载
         private PreviewImageService _previewImageService = new();
@@ -159,6 +169,16 @@ namespace FastPick.Views
             _zoomIndicatorTimer.Interval = TimeSpan.FromSeconds(2);
             _zoomIndicatorTimer.Tick += ZoomIndicatorTimer_Tick;
 
+            // 初始化缩略图滚动防抖定时器
+            _thumbnailScrollDebounceTimer = new DispatcherTimer();
+            _thumbnailScrollDebounceTimer.Interval = TimeSpan.FromMilliseconds(100);
+            _thumbnailScrollDebounceTimer.Tick += ThumbnailScrollDebounceTimer_Tick;
+
+            // 初始化预览导航防抖定时器
+            _previewNavigationDebounceTimer = new DispatcherTimer();
+            _previewNavigationDebounceTimer.Interval = TimeSpan.FromMilliseconds(150);
+            _previewNavigationDebounceTimer.Tick += PreviewNavigationDebounceTimer_Tick;
+
             // 在 Page.Loaded 事件中加载保存的路径（确保所有控件都已初始化）
             this.Loaded += MainPage_Loaded;
             this.Unloaded += MainPage_Unloaded;
@@ -227,16 +247,91 @@ namespace FastPick.Views
                 _currentPreviewItemForBinding.PropertyChanged -= CurrentPreviewItem_PropertyChanged;
             }
 
-            UpdatePreview();
+            // 立即更新 UI 部分（不加载图片）
+            var newItem = _viewModel.CurrentPreviewItem;
+            
+            if (_currentPreviewItemForBinding != null)
+            {
+                _currentPreviewItemForBinding.PropertyChanged -= CurrentPreviewItem_PropertyChanged;
+            }
 
-            _currentPreviewItemForBinding = _viewModel.CurrentPreviewItem;
+            _currentPreviewItemForBinding = newItem;
             if (_currentPreviewItemForBinding != null)
             {
                 _currentPreviewItemForBinding.PropertyChanged += CurrentPreviewItem_PropertyChanged;
+            }
+
+            // 更新 UI 信息（不等待图片加载）
+            ResetZoom();
+            
+            if (newItem == null)
+            {
+                // 清空双缓冲
+                if (_frontImage.Source is BitmapImage oldBitmap)
+                {
+                    oldBitmap.UriSource = null;
+                }
+                _frontImage.Source = null;
+                _backImage.Source = null;
                 
-                ScrollThumbnailIntoView(_currentPreviewItemForBinding);
-                
+                PreviewInfoPanel.Visibility = Visibility.Collapsed;
+                PreviewInfoPanel.DataContext = null;
+                ClearFileInfo();
+            }
+            else
+            {
+                PreviewInfoPanel.Visibility = Visibility.Visible;
+                PreviewInfoPanel.DataContext = newItem;
+                PreviewFileNameText.Text = newItem.FileName;
+                UpdateFileInfo(newItem);
+            }
+
+            if (newItem != null)
+            {
+                ScrollThumbnailIntoView(newItem);
                 UpdateNavigationInfo();
+            }
+
+            // 使用防抖延迟加载图片
+            _pendingPreviewItem = newItem;
+            _previewNavigationDebounceTimer?.Stop();
+            _previewNavigationDebounceTimer?.Start();
+        }
+
+        /// <summary>
+        /// 预览导航防抖定时器 - 稳定后才加载图片
+        /// </summary>
+        private async void PreviewNavigationDebounceTimer_Tick(object? sender, object e)
+        {
+            _previewNavigationDebounceTimer?.Stop();
+            
+            var item = _pendingPreviewItem;
+            if (item == null) return;
+
+            // 取消之前的导航加载
+            if (_previewNavigationCts != null)
+            {
+                try
+                {
+                    _previewNavigationCts.Cancel();
+                    _previewNavigationCts.Dispose();
+                }
+                catch { }
+            }
+            _previewNavigationCts = new CancellationTokenSource();
+
+            // 加载预览图（但不重置缩放和 UI，因为已经在 OnCurrentPreviewItemChanged 中处理了）
+            try
+            {
+                await LoadPreviewImageAsync(item, _previewNavigationCts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // 被取消，忽略
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"加载预览图失败: {ex.Message}");
             }
         }
 
@@ -343,6 +438,34 @@ namespace FastPick.Views
         }
 
         /// <summary>
+        /// 缩略图滚动视图变化事件 - 检测滚动状态
+        /// </summary>
+        private void ThumbnailScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+        {
+            _isThumbnailScrolling = true;
+            _thumbnailScrollDebounceTimer?.Stop();
+            _thumbnailScrollDebounceTimer?.Start();
+        }
+
+        /// <summary>
+        /// 缩略图滚动防抖定时器 - 滚动停止后加载缩略图
+        /// </summary>
+        private async void ThumbnailScrollDebounceTimer_Tick(object? sender, object e)
+        {
+            _thumbnailScrollDebounceTimer?.Stop();
+            _isThumbnailScrolling = false;
+
+            // 加载所有待加载的缩略图
+            var pendingLoads = _pendingThumbnailLoads.Values.ToList();
+            _pendingThumbnailLoads.Clear();
+
+            foreach (var (grid, item) in pendingLoads)
+            {
+                await LoadThumbnailToImageAsync(grid, item);
+            }
+        }
+
+        /// <summary>
         /// ItemsRepeater 元素准备事件 - 虚拟滚动核心
         /// </summary>
         private async void ThumbnailRepeater_ElementPrepared(ItemsRepeater sender, ItemsRepeaterElementPreparedEventArgs args)
@@ -376,8 +499,16 @@ namespace FastPick.Views
                 }
                 else
                 {
-                    // 没有缓存时才异步加载
-                    await LoadThumbnailToImageAsync(thumbnailGrid, photoItem);
+                    // 如果正在滚动，加入待加载队列；否则立即加载
+                    if (_isThumbnailScrolling)
+                    {
+                        _pendingThumbnailLoads[photoItem.DisplayPath] = (thumbnailGrid, photoItem);
+                    }
+                    else
+                    {
+                        // 没有缓存且不在滚动时才异步加载
+                        await LoadThumbnailToImageAsync(thumbnailGrid, photoItem);
+                    }
                 }
             }
         }
@@ -470,6 +601,12 @@ namespace FastPick.Views
         {
             if (args.Element is Grid thumbnailGrid)
             {
+                // 从待加载队列中移除（使用文件路径作为键）
+                if (thumbnailGrid.DataContext is PhotoItem item)
+                {
+                    _pendingThumbnailLoads.Remove(item.DisplayPath);
+                }
+                
                 // 只清空 Image 控件的 Source，保留 PhotoItem.Thumbnail 缓存
                 var image = thumbnailGrid.FindName("ThumbnailImage") as Image;
                 if (image != null)
@@ -534,36 +671,76 @@ namespace FastPick.Views
         }
 
         /// <summary>
-        /// 更新预览区
+        /// 加载预览图（双缓冲优化）- 接受取消令牌的版本
         /// </summary>
+        private async Task LoadPreviewImageAsync(PhotoItem item, CancellationToken token)
+        {
+            Debug.WriteLine($"[导航防抖] LoadPreviewImageAsync 开始: {item.FileName}");
+            
+            try
+            {
+                // 取消之前的加载任务（除了当前导航专用的）
+                if (_previewLoadCts != null)
+                {
+                    Debug.WriteLine($"[导航防抖] 取消之前的 _previewLoadCts");
+                    _previewLoadCts.Cancel();
+                    _previewLoadCts.Dispose();
+                }
+                _previewLoadCts = new CancellationTokenSource();
+                var loadToken = _previewLoadCts.Token;
+                Debug.WriteLine($"[导航防抖] 新的 CancellationTokenSource 已创建");
+
+                // 取消分级预取任务
+                if (_hierarchicalLoadCts != null)
+                {
+                    Debug.WriteLine($"[导航防抖] 取消之前的 _hierarchicalLoadCts");
+                    _hierarchicalLoadCts.Cancel();
+                    _hierarchicalLoadCts.Dispose();
+                    _hierarchicalLoadCts = null;
+                }
+                _previewDebounceTimer?.Stop();
+                Debug.WriteLine($"[导航防抖] _previewDebounceTimer 已停止");
+
+                // 取消高分辨率加载
+                CancelHighResolutionLoading();
+                Debug.WriteLine($"[导航防抖] CancelHighResolutionLoading 已调用");
+
+                // 检查是否被导航取消
+                if (token.IsCancellationRequested)
+                {
+                    Debug.WriteLine($"[导航防抖] 导航取消: {item.FileName}");
+                    return;
+                }
+
+                var loadMode = SettingsService.Instance.PreviewLoadMode;
+                Debug.WriteLine($"[导航防抖] 加载模式: {loadMode}");
+
+                if (loadMode == Services.PreviewLoadMode.Hierarchical)
+                {
+                    Debug.WriteLine($"[导航防抖] 进入分级预取模式");
+                    await LoadQuickPreviewFirst(item, loadToken);
+                }
+                else
+                {
+                    Debug.WriteLine($"[导航防抖] 进入按需加载模式");
+                    await LoadOnDemandPreview(item, loadToken);
+                }
+                Debug.WriteLine($"[导航防抖] 加载完成: {item.FileName}");
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.WriteLine($"[导航防抖] 加载被取消: {item.FileName}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[导航防抖] 加载预览图失败: {ex.Message}");
+                Debug.WriteLine($"[导航防抖] 堆栈跟踪: {ex.StackTrace}");
+            }
+        }
+
         private void UpdatePreview()
         {
-            ResetZoom();
-            
-            var item = _viewModel.CurrentPreviewItem;
-            if (item == null)
-            {
-                // 清空双缓冲
-                if (_frontImage.Source is BitmapImage oldBitmap)
-                {
-                    oldBitmap.UriSource = null;
-                }
-                _frontImage.Source = null;
-                _backImage.Source = null;
-                
-                PreviewInfoPanel.Visibility = Visibility.Collapsed;
-                PreviewInfoPanel.DataContext = null;
-                ClearFileInfo();
-                return;
-            }
-
-            LoadPreviewImage(item);
-            
-            PreviewInfoPanel.Visibility = Visibility.Visible;
-            PreviewInfoPanel.DataContext = item;
-            PreviewFileNameText.Text = item.FileName;
-            
-            UpdateFileInfo(item);
+            // 这个函数现在不再被调用，所有逻辑已移到 OnCurrentPreviewItemChanged 和 PreviewNavigationDebounceTimer_Tick
         }
 
         private void ClearFileInfo()
@@ -795,7 +972,10 @@ namespace FastPick.Views
             Debug.WriteLine($"[分级预取] 第二阶段：启动防抖定时器 (150ms)");
             if (_hierarchicalLoadCts != null)
             {
+                Debug.WriteLine($"[分级预取] 取消旧的 _hierarchicalLoadCts");
+                _hierarchicalLoadCts.Cancel();
                 _hierarchicalLoadCts.Dispose();
+                _hierarchicalLoadCts = null;
             }
             _hierarchicalLoadCts = new CancellationTokenSource();
             

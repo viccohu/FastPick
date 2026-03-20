@@ -746,7 +746,8 @@
                           HorizontalScrollMode="Enabled"
                           VerticalScrollMode="Disabled"
                           IsVerticalScrollChainingEnabled="False"
-                          PointerWheelChanged="ThumbnailScrollViewer_PointerWheelChanged">
+                          PointerWheelChanged="ThumbnailScrollViewer_PointerWheelChanged"
+                          ViewChanged="ThumbnailScrollViewer_ViewChanged">
                 <Grid Padding="8,5,8,5">
                     <ItemsRepeater x:Name="ThumbnailRepeater"
                                    ItemTemplate="{StaticResource ThumbnailItemTemplate}">
