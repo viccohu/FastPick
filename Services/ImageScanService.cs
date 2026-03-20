@@ -267,4 +267,125 @@ public class ImageScanService
             return (jpgCount, rawCount, bothCount);
         });
     }
+
+    /// <summary>
+    /// 快速扫描 - 仅获取文件名，不读取元数据
+    /// </summary>
+    public async Task<List<PhotoItem>> ScanFilesQuickAsync(
+        string path1, string? path2, CancellationToken cancellationToken)
+    {
+        var photoItems = new List<PhotoItem>();
+        var allFiles = new ConcurrentDictionary<string, (string? jpgPath, string? rawPath)>(StringComparer.OrdinalIgnoreCase);
+
+        // 扫描路径1
+        await ScanSinglePathAsync(path1, allFiles, cancellationToken);
+
+        // 扫描路径2
+        if (!string.IsNullOrEmpty(path2) && Directory.Exists(path2))
+        {
+            await ScanSinglePathAsync(path2, allFiles, cancellationToken);
+        }
+
+        // 快速生成 PhotoItem（仅包含文件名和路径）
+        foreach (var kvp in allFiles.OrderBy(x => x.Key))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var fileName = kvp.Key;
+            var (jpgPath, rawPath) = kvp.Value;
+
+            if (string.IsNullOrEmpty(jpgPath) && string.IsNullOrEmpty(rawPath))
+                continue;
+
+            photoItems.Add(new PhotoItem
+            {
+                FileName = fileName,
+                JpgPath = jpgPath ?? string.Empty,
+                RawPath = rawPath
+            });
+        }
+
+        return photoItems;
+    }
+
+    /// <summary>
+    /// 填充基础信息 - 仅文件大小和修改日期
+    /// </summary>
+    public async Task PopulateBasicInfoAsync(PhotoItem photoItem)
+    {
+        try
+        {
+            // 验证文件存在性
+            if (!string.IsNullOrEmpty(photoItem.JpgPath) && !File.Exists(photoItem.JpgPath))
+            {
+                photoItem.JpgPath = string.Empty;
+            }
+            if (!string.IsNullOrEmpty(photoItem.RawPath) && !File.Exists(photoItem.RawPath))
+            {
+                photoItem.RawPath = null;
+            }
+
+            if (string.IsNullOrEmpty(photoItem.JpgPath) && string.IsNullOrEmpty(photoItem.RawPath))
+                return;
+
+            // 优先从 JPG 获取文件信息
+            var filePath = photoItem.HasJpg ? photoItem.JpgPath : photoItem.RawPath;
+
+            if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
+            {
+                var fileInfo = new FileInfo(filePath);
+                photoItem.FileSize = fileInfo.Length;
+                photoItem.ModifiedDate = fileInfo.LastWriteTime;
+            }
+
+            // 如果同时有 JPG 和 RAW，计算总大小
+            if (photoItem.HasJpg && photoItem.HasRaw && photoItem.RawPath != null)
+            {
+                if (File.Exists(photoItem.RawPath))
+                {
+                    var rawInfo = new FileInfo(photoItem.RawPath);
+                    photoItem.FileSize += rawInfo.Length;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"获取基础信息失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 填充完整元数据 - EXIF、尺寸等
+    /// </summary>
+    public async Task PopulateFullMetadataAsync(PhotoItem photoItem)
+    {
+        try
+        {
+            var filePath = photoItem.HasJpg ? photoItem.JpgPath : photoItem.RawPath;
+
+            if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
+            {
+                var metadata = await MetadataService.ReadMetadataAsync(filePath);
+                if (metadata != null)
+                {
+                    photoItem.Width = metadata.Width;
+                    photoItem.Height = metadata.Height;
+                    photoItem.Dpi = metadata.Dpi;
+                    photoItem.DateTimeTaken = metadata.DateTimeTaken;
+                    photoItem.CameraModel = metadata.CameraModel;
+                    photoItem.LensModel = metadata.LensModel;
+                    photoItem.ISO = metadata.ISO;
+                    photoItem.FNumber = metadata.FNumber;
+                    photoItem.ExposureTime = metadata.ExposureTime;
+                    photoItem.Flash = metadata.Flash;
+                    photoItem.ExposureBias = metadata.ExposureBias;
+                    photoItem.Dimensions = metadata.Width > 0 ? $"{metadata.Width} x {metadata.Height}" : null;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"获取元数据失败: {ex.Message}");
+        }
+    }
 }

@@ -18,6 +18,11 @@ public class MainViewModel : INotifyPropertyChanged
     private readonly PreviewImageService _previewImageService;
     private SettingsService _settingsService => SettingsService.Instance;
 
+    // 增量加载配置
+    private const int InitialBatchSize = 100;
+    private const int IncrementalBatchSize = 200;
+    private CancellationTokenSource? _incrementalLoadCts;
+
     // 图片列表
     public ObservableCollection<PhotoItem> PhotoItems { get; } = new();
 
@@ -186,33 +191,132 @@ public class MainViewModel : INotifyPropertyChanged
 
         try
         {
+            // 取消之前的增量加载任务
+            _incrementalLoadCts?.Cancel();
+            _incrementalLoadCts?.Dispose();
+
             // 清空现有数据
             PhotoItems.Clear();
             SelectedItems.Clear();
             MarkedForDeletionItems.Clear();
             await _thumbnailService.ClearCacheAsync();
 
-            // 扫描图片
-            var items = await _imageScanService.ScanPathsAsync(Path1, Path2, progress, cancellationToken);
+            // 阶段 A：快速扫描 - 仅获取文件名
+            progress?.Report((10, 100, "快速扫描文件..."));
+            var quickItems = await _imageScanService.ScanFilesQuickAsync(Path1, Path2, cancellationToken);
 
-            // 读取评级并添加到集合
-            foreach (var item in items)
+            if (quickItems.Count == 0)
             {
-                // 从元数据读取评级
+                return;
+            }
+
+            // 立即显示前 100 个
+            progress?.Report((30, 100, $"显示前 {Math.Min(InitialBatchSize, quickItems.Count)} 张..."));
+            var initialBatch = quickItems.Take(InitialBatchSize).ToList();
+
+            // 为初始批次填充基础信息
+            foreach (var item in initialBatch)
+            {
+                await _imageScanService.PopulateBasicInfoAsync(item);
                 item.Rating = await ReadRatingFromMetadataAsync(item);
                 PhotoItems.Add(item);
             }
-
-            // 初始化筛选列表
             ApplyFilter();
-
             OnPropertyChanged(nameof(TotalCount));
-            OnPropertyChanged(nameof(MarkedForDeletionCount));
+
+            // 创建新的取消令牌用于增量加载
+            _incrementalLoadCts = new CancellationTokenSource();
+            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _incrementalLoadCts.Token);
+
+            // 启动后台增量加载
+            _ = LoadIncrementalAsync(quickItems.Skip(InitialBatchSize).ToList(), progress, linkedCts.Token);
         }
         finally
         {
             IsLoading = false;
             LoadingMessage = string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// 后台增量加载剩余图片
+    /// </summary>
+    private async Task LoadIncrementalAsync(
+        List<PhotoItem> remainingItems,
+        IProgress<(int current, int total, string message)>? progress,
+        CancellationToken token)
+    {
+        try
+        {
+            int totalProcessed = InitialBatchSize;
+            int totalCount = totalProcessed + remainingItems.Count;
+
+            for (int i = 0; i < remainingItems.Count; i += IncrementalBatchSize)
+            {
+                token.ThrowIfCancellationRequested();
+
+                var batch = remainingItems.Skip(i).Take(IncrementalBatchSize).ToList();
+
+                // 阶段 B：填充基础信息和评级
+                foreach (var item in batch)
+                {
+                    await _imageScanService.PopulateBasicInfoAsync(item);
+                    item.Rating = await ReadRatingFromMetadataAsync(item);
+                }
+
+                // 添加到集合
+                foreach (var item in batch)
+                {
+                    PhotoItems.Add(item);
+                }
+                ApplyFilter();
+
+                totalProcessed += batch.Count;
+                progress?.Report((30 + (totalProcessed * 70 / totalCount), 100, 
+                    $"已加载 {totalProcessed}/{totalCount}..."));
+
+                OnPropertyChanged(nameof(TotalCount));
+
+                // 给 UI 线程喘息机会
+                await Task.Delay(50, token);
+            }
+
+            // 阶段 C：后台读取完整元数据
+            _ = LoadMetadataAsync(token);
+
+            progress?.Report((100, 100, $"加载完成，共 {totalCount} 张照片"));
+        }
+        catch (OperationCanceledException)
+        {
+            System.Diagnostics.Debug.WriteLine("[增量加载] 任务已取消");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[增量加载] 出错: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 后台读取完整元数据
+    /// </summary>
+    private async Task LoadMetadataAsync(CancellationToken token)
+    {
+        try
+        {
+            foreach (var item in PhotoItems)
+            {
+                token.ThrowIfCancellationRequested();
+
+                await _imageScanService.PopulateFullMetadataAsync(item);
+
+                // 每 50 个给 UI 线程机会
+                if (PhotoItems.IndexOf(item) % 50 == 0)
+                    await Task.Delay(10, token);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            System.Diagnostics.Debug.WriteLine("[元数据加载] 任务已取消");
         }
     }
 
