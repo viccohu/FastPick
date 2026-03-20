@@ -97,6 +97,10 @@ namespace FastPick.Views
         private DispatcherTimer? _highResDebounceTimer;
         private const double HighResolutionZoomThreshold = 1.0;
 
+        // 快速切换防抖
+        private DispatcherTimer? _quickNavigationDebounceTimer;
+        private PhotoItem? _pendingPreviewItem;
+
         // 双缓冲预览
         private Image _frontImage;  // 当前显示的 Image
         private Image _backImage;   // 后台加载的 Image
@@ -154,6 +158,11 @@ namespace FastPick.Views
             _previewDebounceTimer = new DispatcherTimer();
             _previewDebounceTimer.Interval = TimeSpan.FromMilliseconds(250);
             _previewDebounceTimer.Tick += PreviewDebounceTimer_Tick;
+
+            // 初始化快速切换防抖定时器
+            _quickNavigationDebounceTimer = new DispatcherTimer();
+            _quickNavigationDebounceTimer.Interval = TimeSpan.FromMilliseconds(80);
+            _quickNavigationDebounceTimer.Tick += QuickNavigationDebounceTimer_Tick;
 
             // 初始化双缓冲预览
             _frontImage = PreviewImageFront;
@@ -237,16 +246,84 @@ namespace FastPick.Views
                 _currentPreviewItemForBinding.PropertyChanged -= CurrentPreviewItem_PropertyChanged;
             }
 
-            UpdatePreview();
-
-            _currentPreviewItemForBinding = _viewModel.CurrentPreviewItem;
-            if (_currentPreviewItemForBinding != null)
+            var newItem = _viewModel.CurrentPreviewItem;
+            _currentPreviewItemForBinding = newItem;
+            
+            if (newItem != null)
             {
-                _currentPreviewItemForBinding.PropertyChanged += CurrentPreviewItem_PropertyChanged;
+                newItem.PropertyChanged += CurrentPreviewItem_PropertyChanged;
                 
-                ScrollThumbnailIntoView(_currentPreviewItemForBinding);
-                
+                ScrollThumbnailIntoView(newItem);
                 UpdateNavigationInfo();
+            }
+
+            _quickNavigationDebounceTimer?.Stop();
+            _pendingPreviewItem = newItem;
+            
+            if (newItem == null)
+            {
+                UpdatePreview();
+                return;
+            }
+            
+            _quickNavigationDebounceTimer?.Start();
+        }
+
+        /// <summary>
+        /// 快速切换防抖定时器回调 - 防抖结束后才真正加载预览图
+        /// </summary>
+        private async void QuickNavigationDebounceTimer_Tick(object? sender, object e)
+        {
+            _quickNavigationDebounceTimer?.Stop();
+            
+            var item = _pendingPreviewItem;
+            if (item == null) return;
+            
+            if (_viewModel.CurrentPreviewItem != item)
+            {
+                return;
+            }
+
+            UpdatePreview();
+            
+            PreloadAdjacentImages(item);
+        }
+
+        /// <summary>
+        /// 预加载相邻图片（前后各2张）
+        /// </summary>
+        private async void PreloadAdjacentImages(PhotoItem currentItem)
+        {
+            try
+            {
+                var items = _viewModel.FilteredPhotoItems;
+                var currentIndex = items.IndexOf(currentItem);
+                if (currentIndex < 0) return;
+
+                var preloadIndices = new List<int>();
+                
+                for (int i = 1; i <= 2; i++)
+                {
+                    if (currentIndex - i >= 0)
+                        preloadIndices.Add(currentIndex - i);
+                    if (currentIndex + i < items.Count)
+                        preloadIndices.Add(currentIndex + i);
+                }
+
+                foreach (var index in preloadIndices)
+                {
+                    try
+                    {
+                        var preloadItem = items[index];
+                        await _previewImageService.LoadQuickPreviewAsync(preloadItem, CancellationToken.None);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+            catch
+            {
             }
         }
 
