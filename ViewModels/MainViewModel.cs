@@ -15,12 +15,11 @@ public class MainViewModel : INotifyPropertyChanged
     private readonly ImageScanService _imageScanService;
     private readonly ThumbnailService _thumbnailService;
     private readonly JpgMetadataService _jpgMetadataService;
-    private readonly PreviewImageService _previewImageService;
     private SettingsService _settingsService => SettingsService.Instance;
 
     // 增量加载配置
     private const int InitialBatchSize = 100;
-    private const int IncrementalBatchSize = 200;
+    private const int IncrementalBatchSize = 500;
     private CancellationTokenSource? _incrementalLoadCts;
 
     // 图片列表
@@ -175,7 +174,6 @@ public class MainViewModel : INotifyPropertyChanged
         _imageScanService = new ImageScanService();
         _thumbnailService = new ThumbnailService();
         _jpgMetadataService = new JpgMetadataService();
-        _previewImageService = new PreviewImageService();
     }
 
     /// <summary>
@@ -200,6 +198,10 @@ public class MainViewModel : INotifyPropertyChanged
             SelectedItems.Clear();
             MarkedForDeletionItems.Clear();
             await _thumbnailService.ClearCacheAsync();
+            
+            // 显式调用 GC 清理内存
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
 
             // 阶段 A：快速扫描 - 仅获取文件名
             progress?.Report((10, 100, "快速扫描文件..."));
@@ -250,6 +252,7 @@ public class MainViewModel : INotifyPropertyChanged
         {
             int totalProcessed = InitialBatchSize;
             int totalCount = totalProcessed + remainingItems.Count;
+            int batchCounter = 0;
 
             for (int i = 0; i < remainingItems.Count; i += IncrementalBatchSize)
             {
@@ -269,7 +272,13 @@ public class MainViewModel : INotifyPropertyChanged
                 {
                     PhotoItems.Add(item);
                 }
-                ApplyFilter();
+
+                batchCounter++;
+                // 每 2 批次才调用一次 ApplyFilter，减少 UI 线程阻塞
+                if (batchCounter % 2 == 0)
+                {
+                    ApplyFilter();
+                }
 
                 totalProcessed += batch.Count;
                 progress?.Report((30 + (totalProcessed * 70 / totalCount), 100, 
@@ -280,6 +289,9 @@ public class MainViewModel : INotifyPropertyChanged
                 // 给 UI 线程喘息机会
                 await Task.Delay(50, token);
             }
+
+            // 最后确保调用一次 ApplyFilter
+            ApplyFilter();
 
             // 阶段 C：后台读取完整元数据
             _ = LoadMetadataAsync(token);
@@ -812,21 +824,7 @@ public class MainViewModel : INotifyPropertyChanged
         return await _thumbnailService.GetThumbnailAsync(item, cancellationToken);
     }
 
-    /// <summary>
-    /// 加载预览图
-    /// </summary>
-    public async Task<Microsoft.UI.Xaml.Media.Imaging.BitmapImage?> LoadPreviewAsync(PhotoItem item)
-    {
-        return await _previewImageService.LoadPreviewAsync(item);
-    }
 
-    /// <summary>
-    /// 加载多选预览图（前5张）
-    /// </summary>
-    public async Task<List<Microsoft.UI.Xaml.Media.Imaging.BitmapImage>> LoadMultiPreviewAsync(int maxCount = 5)
-    {
-        return await _previewImageService.LoadMultiPreviewAsync(SelectedItems.ToList(), maxCount);
-    }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 

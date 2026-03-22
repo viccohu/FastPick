@@ -1,10 +1,10 @@
 using FastPick.Models;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Windows.Storage.FileProperties;
 using Windows.Storage;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 using System.Collections.Concurrent;
+using System.IO;
 
 namespace FastPick.Services;
 
@@ -17,8 +17,7 @@ public class ThumbnailService
     private readonly SemaphoreSlim _throttler = new(Environment.ProcessorCount, Environment.ProcessorCount);
     private readonly ConcurrentDictionary<string, TaskCompletionSource<BitmapImage?>> _pendingLoads = new(StringComparer.OrdinalIgnoreCase);
     private const int MaxCacheSize = 1000;
-    private const int ThumbnailWidth = 100;
-    private const int ThumbnailHeight = 80;
+    private const int ThumbnailWidth = 256;
 
     public async Task<BitmapImage?> GetThumbnailAsync(PhotoItem photoItem, CancellationToken cancellationToken = default)
     {
@@ -49,16 +48,6 @@ public class ThumbnailService
                 await _throttler.WaitAsync(cancellationToken);
                 try
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    
-                    var systemThumbnail = await GetSystemThumbnailAsync(filePath, cancellationToken);
-                    if (systemThumbnail != null)
-                    {
-                        await AddToCacheAsync(filePath, systemThumbnail, photoItem, cancellationToken);
-                        tcs.SetResult(systemThumbnail);
-                        return systemThumbnail;
-                    }
-
                     cancellationToken.ThrowIfCancellationRequested();
                     
                     var wicThumbnail = await GenerateWicThumbnailAsync(filePath, cancellationToken);
@@ -103,52 +92,6 @@ public class ThumbnailService
         }
     }
 
-    private async Task<BitmapImage?> GetSystemThumbnailAsync(string filePath, CancellationToken cancellationToken)
-    {
-        try
-        {
-            var storageFile = await StorageFile.GetFileFromPathAsync(filePath).AsTask(cancellationToken);
-            
-            // 第一步：先尝试仅从缓存读取，快速响应
-            var cachedThumbnail = await storageFile.GetThumbnailAsync(
-                ThumbnailMode.PicturesView,
-                (uint)ThumbnailWidth,
-                ThumbnailOptions.ReturnOnlyIfCached).AsTask(cancellationToken);
-
-            if (cachedThumbnail != null)
-            {
-                var bitmap = new BitmapImage();
-                await bitmap.SetSourceAsync(cachedThumbnail).AsTask(cancellationToken);
-                cachedThumbnail.Dispose();
-                return bitmap;
-            }
-
-            // 第二步：缓存未命中，使用常规方式获取
-            var thumbnail = await storageFile.GetThumbnailAsync(
-                ThumbnailMode.PicturesView,
-                (uint)ThumbnailWidth,
-                ThumbnailOptions.ResizeThumbnail).AsTask(cancellationToken);
-
-            if (thumbnail != null)
-            {
-                var bitmap = new BitmapImage();
-                await bitmap.SetSourceAsync(thumbnail).AsTask(cancellationToken);
-                thumbnail.Dispose();
-                return bitmap;
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"获取系统缩略图失败: {filePath}, {ex.Message}");
-        }
-
-        return null;
-    }
-
     private async Task<BitmapImage?> GenerateWicThumbnailAsync(string filePath, CancellationToken cancellationToken)
     {
         try
@@ -157,15 +100,51 @@ public class ThumbnailService
             using var stream = await storageFile.OpenAsync(FileAccessMode.Read).AsTask(cancellationToken);
             var decoder = await BitmapDecoder.CreateAsync(stream).AsTask(cancellationToken);
 
-            var orientedWidth = decoder.OrientedPixelWidth;
-            var orientedHeight = decoder.OrientedPixelHeight;
-            var originalWidth = decoder.PixelWidth;
-            var originalHeight = decoder.PixelHeight;
+            cancellationToken.ThrowIfCancellationRequested();
+
+            BitmapDecoder decoderToUse = decoder;
+            string strategyUsed = "原图";
+            string failureReason = "";
+
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                
+                var preview = await decoder.GetPreviewAsync().AsTask(cancellationToken);
+                if (preview != null && preview.Size > 0)
+                {
+                    decoderToUse = await BitmapDecoder.CreateAsync(preview).AsTask(cancellationToken);
+                    strategyUsed = "Preview";
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG-缩略图] 文件: {Path.GetFileName(filePath)}, 使用策略: {strategyUsed}, Preview尺寸: {preview.Size}");
+                }
+                else
+                {
+                    failureReason = "Preview 为空或尺寸为0";
+                }
+            }
+            catch (Exception ex)
+            {
+                failureReason = $"Preview 异常: {ex.Message}";
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            if (!string.IsNullOrEmpty(failureReason))
+            {
+                System.Diagnostics.Debug.WriteLine($"[DEBUG-缩略图] 文件: {Path.GetFileName(filePath)}, {failureReason}, 回退到原图策略");
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var orientedWidth = decoderToUse.OrientedPixelWidth;
+            var orientedHeight = decoderToUse.OrientedPixelHeight;
+            var originalWidth = decoderToUse.PixelWidth;
+            var originalHeight = decoderToUse.PixelHeight;
+
+            System.Diagnostics.Debug.WriteLine($"[DEBUG-缩略图] 文件: {Path.GetFileName(filePath)}, 原始尺寸: {originalWidth}x{originalHeight}, 方向后尺寸: {orientedWidth}x{orientedHeight}");
 
             var transform = new BitmapTransform();
-            var scaleFactor = Math.Min(
-                (double)ThumbnailWidth / orientedWidth,
-                (double)ThumbnailHeight / orientedHeight);
+            transform.InterpolationMode = BitmapInterpolationMode.Fant;
+            var scaleFactor = (double)ThumbnailWidth / Math.Max(orientedWidth, orientedHeight);
             
             if (scaleFactor < 1)
             {
@@ -173,12 +152,14 @@ public class ThumbnailService
                 transform.ScaledHeight = (uint)(originalHeight * scaleFactor);
             }
 
-            var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
+            var softwareBitmap = await decoderToUse.GetSoftwareBitmapAsync(
                 BitmapPixelFormat.Bgra8,
                 BitmapAlphaMode.Premultiplied,
                 transform,
                 ExifOrientationMode.RespectExifOrientation,
                 ColorManagementMode.DoNotColorManage).AsTask(cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             using var outputStream = new InMemoryRandomAccessStream();
             var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, outputStream).AsTask(cancellationToken);
@@ -188,6 +169,7 @@ public class ThumbnailService
             outputStream.Seek(0);
             var bitmap = new BitmapImage();
             await bitmap.SetSourceAsync(outputStream).AsTask(cancellationToken);
+            System.Diagnostics.Debug.WriteLine($"[DEBUG-缩略图] 文件: {Path.GetFileName(filePath)}, 最终策略: {strategyUsed}, 输出尺寸: {bitmap.PixelWidth}x{bitmap.PixelHeight}");
 
             softwareBitmap.Dispose();
             return bitmap;
