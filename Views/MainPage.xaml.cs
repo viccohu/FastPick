@@ -89,6 +89,18 @@ namespace FastPick.Views
         private CancellationTokenSource? _hierarchicalLoadCts;
         private PhotoItem? _debounceItem;
 
+        // 浏览速度跟踪 - 用于动态调整防抖时间
+        private readonly Queue<DateTime> _navigationHistory = new();
+        private const int NavigationHistorySize = 5;
+        private const int FastNavigationThresholdMs = 200; // 快速浏览阈值（毫秒）- 从300调整为更灵敏的200
+        private const int FastNavigationStopIntervalMs = 500; // 快速浏览停止检测间隔（毫秒）
+        private const int FastNavigationDebounceMs = 30; // 快速浏览时的防抖时间（毫秒）
+        
+        // 快速浏览相关
+        private DispatcherTimer? _fastNavigationStopTimer;
+        private bool _isInFastNavigation = false;
+        private PhotoItem? _lastFastNavigationItem;
+
         // 高分辨率预览加载
         private PreviewImageService _previewImageService = new();
         private CancellationTokenSource? _highResLoadCts;
@@ -97,13 +109,24 @@ namespace FastPick.Views
         private DispatcherTimer? _highResDebounceTimer;
         private const double HighResolutionZoomThreshold = 1.0;
 
-        // 快速切换防抖
-        private DispatcherTimer? _quickNavigationDebounceTimer;
-        private PhotoItem? _pendingPreviewItem;
-
         // 双缓冲预览
         private Image _frontImage;  // 当前显示的 Image
         private Image _backImage;   // 后台加载的 Image
+
+        // 智能预加载相关
+        private CancellationTokenSource? _preloadCts;
+        private const int PreloadCount = 3; // 前后各预加载3张
+        private const int PreloadQuickThumbSize = 1024;
+
+        // 浏览方向检测
+        private readonly Queue<int> _browseHistory = new();
+        private const int BrowseHistorySize = 5;
+        private enum BrowseDirection
+        {
+            Unknown,
+            Forward,
+            Backward
+        }
 
         // 设置服务
         private Services.SettingsService _settingsService => Services.SettingsService.Instance;
@@ -115,7 +138,7 @@ namespace FastPick.Views
             
             // 订阅设置变更事件
             _settingsService.FolderNameChanged += SettingsService_FolderNameChanged;
-            
+            LoggerService.Instance.Disable();
             // 初始化 ViewModel
             _viewModel = new MainViewModel();
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
@@ -156,13 +179,8 @@ namespace FastPick.Views
 
             // 初始化分级预取防抖定时器
             _previewDebounceTimer = new DispatcherTimer();
-            _previewDebounceTimer.Interval = TimeSpan.FromMilliseconds(250);
+            _previewDebounceTimer.Interval = TimeSpan.FromMilliseconds(1);
             _previewDebounceTimer.Tick += PreviewDebounceTimer_Tick;
-
-            // 初始化快速切换防抖定时器
-            _quickNavigationDebounceTimer = new DispatcherTimer();
-            _quickNavigationDebounceTimer.Interval = TimeSpan.FromMilliseconds(80);
-            _quickNavigationDebounceTimer.Tick += QuickNavigationDebounceTimer_Tick;
 
             // 初始化双缓冲预览
             _frontImage = PreviewImageFront;
@@ -177,6 +195,11 @@ namespace FastPick.Views
             _thumbnailScrollDebounceTimer = new DispatcherTimer();
             _thumbnailScrollDebounceTimer.Interval = TimeSpan.FromMilliseconds(100);
             _thumbnailScrollDebounceTimer.Tick += ThumbnailScrollDebounceTimer_Tick;
+
+            // 初始化快速浏览停止检测定时器
+            _fastNavigationStopTimer = new DispatcherTimer();
+            _fastNavigationStopTimer.Interval = TimeSpan.FromMilliseconds(FastNavigationStopIntervalMs);
+            _fastNavigationStopTimer.Tick += FastNavigationStopTimer_Tick;
 
             // 在 Page.Loaded 事件中加载保存的路径（确保所有控件都已初始化）
             this.Loaded += MainPage_Loaded;
@@ -255,75 +278,179 @@ namespace FastPick.Views
                 
                 ScrollThumbnailIntoView(newItem);
                 UpdateNavigationInfo();
+                
+                var currentIndex = _viewModel.FilteredPhotoItems.IndexOf(newItem);
+                if (currentIndex >= 0)
+                {
+                    RecordBrowseHistory(currentIndex);
+                }
             }
 
-            _quickNavigationDebounceTimer?.Stop();
-            _pendingPreviewItem = newItem;
-            
             if (newItem == null)
             {
                 UpdatePreview();
                 return;
             }
             
-            _quickNavigationDebounceTimer?.Start();
+            UpdatePreview();
+            PreloadAdjacentImages(newItem);
         }
 
         /// <summary>
-        /// 快速切换防抖定时器回调 - 防抖结束后才真正加载预览图
+        /// 记录浏览历史
         /// </summary>
-        private async void QuickNavigationDebounceTimer_Tick(object? sender, object e)
+        private void RecordBrowseHistory(int index)
         {
-            _quickNavigationDebounceTimer?.Stop();
-            
-            var item = _pendingPreviewItem;
-            if (item == null) return;
-            
-            if (_viewModel.CurrentPreviewItem != item)
+            _browseHistory.Enqueue(index);
+            while (_browseHistory.Count > BrowseHistorySize)
             {
-                return;
+                _browseHistory.Dequeue();
+            }
+        }
+
+        /// <summary>
+        /// 检测浏览方向
+        /// </summary>
+        private BrowseDirection DetectBrowseDirection()
+        {
+            if (_browseHistory.Count < 2)
+                return BrowseDirection.Unknown;
+
+            var history = _browseHistory.ToArray();
+            var forwardCount = 0;
+            var backwardCount = 0;
+
+            for (int i = 1; i < history.Length; i++)
+            {
+                var diff = history[i] - history[i - 1];
+                if (diff > 0)
+                    forwardCount++;
+                else if (diff < 0)
+                    backwardCount++;
             }
 
-            UpdatePreview();
-            
-            PreloadAdjacentImages(item);
+            if (forwardCount > backwardCount)
+                return BrowseDirection.Forward;
+            if (backwardCount > forwardCount)
+                return BrowseDirection.Backward;
+            return BrowseDirection.Unknown;
         }
 
         /// <summary>
-        /// 预加载相邻图片（前后各2张）
+        /// 智能预加载相邻图片
         /// </summary>
         private async void PreloadAdjacentImages(PhotoItem currentItem)
         {
             try
             {
+                _preloadCts?.Cancel();
+                _preloadCts?.Dispose();
+                _preloadCts = new CancellationTokenSource();
+                var token = _preloadCts.Token;
+
                 var items = _viewModel.FilteredPhotoItems;
                 var currentIndex = items.IndexOf(currentItem);
                 if (currentIndex < 0) return;
 
+                var browseDirection = DetectBrowseDirection();
+                var isFastNavigation = IsFastNavigation();
+
                 var preloadIndices = new List<int>();
-                
-                for (int i = 1; i <= 2; i++)
+                int actualPreloadCount;
+                string strategyMessage;
+
+                if (isFastNavigation)
                 {
-                    if (currentIndex - i >= 0)
-                        preloadIndices.Add(currentIndex - i);
-                    if (currentIndex + i < items.Count)
-                        preloadIndices.Add(currentIndex + i);
+                    actualPreloadCount = 1;
+                    strategyMessage = "快速浏览模式：仅预加载1张";
+                }
+                else
+                {
+                    actualPreloadCount = PreloadCount;
+                    strategyMessage = "正常浏览模式：预加载3张";
                 }
 
-                foreach (var index in preloadIndices)
+                switch (browseDirection)
                 {
-                    try
+                    case BrowseDirection.Forward:
+                        LoggerService.Instance.Info(LogCategory.Preload, $"检测到向前浏览，{strategyMessage}");
+                        for (int i = 1; i <= actualPreloadCount; i++)
+                        {
+                            if (currentIndex + i < items.Count)
+                                preloadIndices.Add(currentIndex + i);
+                        }
+                        if (!isFastNavigation)
+                        {
+                            for (int i = 1; i <= 1; i++)
+                            {
+                                if (currentIndex - i >= 0)
+                                    preloadIndices.Add(currentIndex - i);
+                            }
+                        }
+                        break;
+
+                    case BrowseDirection.Backward:
+                        LoggerService.Instance.Info(LogCategory.Preload, $"检测到向后浏览，{strategyMessage}");
+                        for (int i = 1; i <= actualPreloadCount; i++)
+                        {
+                            if (currentIndex - i >= 0)
+                                preloadIndices.Add(currentIndex - i);
+                        }
+                        if (!isFastNavigation)
+                        {
+                            for (int i = 1; i <= 1; i++)
+                            {
+                                if (currentIndex + i < items.Count)
+                                    preloadIndices.Add(currentIndex + i);
+                            }
+                        }
+                        break;
+
+                    case BrowseDirection.Unknown:
+                    default:
+                        LoggerService.Instance.Info(LogCategory.Preload, $"检测到未知浏览方向，{strategyMessage}");
+                        for (int i = 1; i <= actualPreloadCount; i++)
+                        {
+                            if (currentIndex + i < items.Count)
+                                preloadIndices.Add(currentIndex + i);
+                            if (currentIndex - i >= 0)
+                                preloadIndices.Add(currentIndex - i);
+                        }
+                        break;
+                }
+
+                LoggerService.Instance.Info(LogCategory.Preload, $"开始预加载: {preloadIndices.Count} 张图片");
+
+                using (LoggerService.Instance.StartTimer(LogCategory.Preload, "智能预加载完成"))
+                {
+                    foreach (var index in preloadIndices)
                     {
-                        var preloadItem = items[index];
-                        await _previewImageService.LoadQuickPreviewAsync(preloadItem, CancellationToken.None);
-                    }
-                    catch
-                    {
+                        if (token.IsCancellationRequested)
+                        {
+                            LoggerService.Instance.Verbose(LogCategory.Preload, "预加载已取消");
+                            break;
+                        }
+
+                        try
+                        {
+                            var preloadItem = items[index];
+                            await _previewImageService.LoadQuickPreviewAsync(preloadItem, PreloadQuickThumbSize, token);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            LoggerService.Instance.Verbose(LogCategory.Preload, "单张预加载已取消");
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            LoggerService.Instance.Warning(LogCategory.Preload, $"预加载失败: {ex.Message}");
+                        }
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                LoggerService.Instance.Error(LogCategory.Preload, "预加载过程异常", ex);
             }
         }
 
@@ -816,59 +943,55 @@ namespace FastPick.Views
         /// </summary>
         private async void LoadPreviewImage(PhotoItem item)
         {
-            Debug.WriteLine($"[分级预取] LoadPreviewImage 开始: {item.FileName}");
-            
-            try
+            var loadMode = SettingsService.Instance.PreviewLoadMode;
+            LoggerService.Instance.Info(LogCategory.Hierarchical, $"开始加载: {item.FileName} (模式: {loadMode})");
+
+            var startTime = DateTime.Now;
+
+            using (LoggerService.Instance.StartTimer(LogCategory.Hierarchical, "预览加载完成"))
             {
-                // 取消之前的加载任务
-                if (_previewLoadCts != null)
+                try
                 {
-                    Debug.WriteLine($"[分级预取] 取消之前的 _previewLoadCts");
-                    _previewLoadCts.Cancel();
-                    _previewLoadCts.Dispose();
-                }
-                _previewLoadCts = new CancellationTokenSource();
-                var token = _previewLoadCts.Token;
-                Debug.WriteLine($"[分级预取] 新的 CancellationTokenSource 已创建");
+                    if (_previewLoadCts != null)
+                    {
+                        _previewLoadCts.Cancel();
+                        _previewLoadCts.Dispose();
+                    }
+                    _previewLoadCts = new CancellationTokenSource();
+                    var token = _previewLoadCts.Token;
 
-                // 取消分级预取任务
-                if (_hierarchicalLoadCts != null)
+                    if (_hierarchicalLoadCts != null)
+                    {
+                        _hierarchicalLoadCts.Cancel();
+                        _hierarchicalLoadCts.Dispose();
+                        _hierarchicalLoadCts = null;
+                    }
+                    _previewDebounceTimer?.Stop();
+
+                    CancelHighResolutionLoading();
+
+                    if (loadMode == Services.PreviewLoadMode.Hierarchical)
+                    {
+                        await LoadQuickPreviewFirst(item, token);
+                    }
+                    else
+                    {
+                        await LoadOnDemandPreview(item, token);
+                    }
+                }
+                catch (OperationCanceledException)
                 {
-                    Debug.WriteLine($"[分级预取] 取消之前的 _hierarchicalLoadCts");
-                    _hierarchicalLoadCts.Cancel();
-                    _hierarchicalLoadCts.Dispose();
-                    _hierarchicalLoadCts = null;
+                    LoggerService.Instance.Verbose(LogCategory.Hierarchical, $"加载被取消: {item.FileName}");
                 }
-                _previewDebounceTimer?.Stop();
-                Debug.WriteLine($"[分级预取] _previewDebounceTimer 已停止");
-
-                // 取消高分辨率加载
-                CancelHighResolutionLoading();
-                Debug.WriteLine($"[分级预取] CancelHighResolutionLoading 已调用");
-
-                var loadMode = SettingsService.Instance.PreviewLoadMode;
-                Debug.WriteLine($"[分级预取] 加载模式: {loadMode}");
-
-                if (loadMode == Services.PreviewLoadMode.Hierarchical)
+                catch (Exception ex)
                 {
-                    Debug.WriteLine($"[分级预取] 进入分级预取模式");
-                    await LoadQuickPreviewFirst(item, token);
+                    LoggerService.Instance.Error(LogCategory.Hierarchical, "加载预览图失败", ex);
                 }
-                else
+                finally
                 {
-                    Debug.WriteLine($"[分级预取] 进入按需加载模式");
-                    await LoadOnDemandPreview(item, token);
+                    var totalDuration = (long)(DateTime.Now - startTime).TotalMilliseconds;
+                    LoggerService.Instance.Performance(LogCategory.Performance, $"预览切换总耗时: {item.FileName}", totalDuration);
                 }
-                Debug.WriteLine($"[分级预取] 加载完成: {item.FileName}");
-            }
-            catch (OperationCanceledException)
-            {
-                Debug.WriteLine($"[分级预取] 加载被取消: {item.FileName}");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[分级预取] 加载预览图失败: {ex.Message}");
-                Debug.WriteLine($"[分级预取] 堆栈跟踪: {ex.StackTrace}");
             }
         }
 
@@ -877,63 +1000,349 @@ namespace FastPick.Views
         /// </summary>
         private async Task LoadQuickPreviewFirst(PhotoItem item, CancellationToken token)
         {
-            Debug.WriteLine($"[分级预取] LoadQuickPreviewFirst 开始: {item.FileName}");
-            
-            // 第一阶段：极速加载 1024px 缩略图
-            Debug.WriteLine($"[分级预取] 第一阶段：开始加载快速缩略图");
-            var quickBitmap = await _previewImageService.LoadQuickPreviewAsync(item, token);
-            Debug.WriteLine($"[分级预取] 快速缩略图加载结果: {(quickBitmap != null ? "成功" : "失败")}");
-            
-            if (token.IsCancellationRequested)
+            RecordNavigationTime();
+            var quickLoadStartTime = DateTime.Now;
+            var isFastNavigation = IsFastNavigation();
+
+            // 重启快速浏览停止检测定时器
+            _fastNavigationStopTimer?.Stop();
+            _lastFastNavigationItem = item;
+
+            // 检测快速浏览状态变化
+            if (isFastNavigation && !_isInFastNavigation)
             {
-                Debug.WriteLine($"[分级预取] 第一阶段被取消");
-                return;
-            }
-            
-            if (_viewModel.CurrentPreviewItem != item)
-            {
-                Debug.WriteLine($"[分级预取] 当前项已切换，取消第一阶段");
-                return;
+                _isInFastNavigation = true;
+                LoggerService.Instance.Info(LogCategory.Hierarchical, "检测到快速浏览模式开始");
             }
 
-            if (quickBitmap != null)
+            using (LoggerService.Instance.StartTimer(LogCategory.Hierarchical, "快速缩略图加载"))
             {
-                _backImage.Source = quickBitmap;
-                SwapPreviewBuffers();
-                Debug.WriteLine($"[分级预取] 快速缩略图已显示");
-            }
-            else
-            {
-                Debug.WriteLine($"[分级预取] 快速加载失败，回退到普通加载");
-                var fallbackBitmap = await _viewModel.LoadPreviewAsync(item);
+                var quickThumbSize = CalculateQuickThumbnailSize();
+                var quickBitmap = await _previewImageService.LoadQuickPreviewAsync(item, quickThumbSize, token);
+
                 if (token.IsCancellationRequested || _viewModel.CurrentPreviewItem != item)
+                    return;
+
+                if (quickBitmap != null)
                 {
-                    Debug.WriteLine($"[分级预取] 回退加载被取消");
+                    if (quickBitmap.PixelWidth == 0)
+                    {
+                        var tcs = new TaskCompletionSource<bool>();
+                        quickBitmap.ImageOpened += (s, e) => tcs.TrySetResult(true);
+                        quickBitmap.ImageFailed += (s, e) => tcs.TrySetResult(false);
+                        var loaded = await tcs.Task;
+                        if (!loaded)
+                        {
+                            LoggerService.Instance.Warning(LogCategory.Hierarchical, "快速缩略图加载失败");
+                            return;
+                        }
+                    }
+                    
+                    _backImage.Source = quickBitmap;
+                    SwapPreviewBuffers();
+                    var quickLoadDuration = (DateTime.Now - quickLoadStartTime).TotalMilliseconds;
+                    LoggerService.Instance.Performance(LogCategory.Hierarchical, "快速缩略图已显示", (long)quickLoadDuration);
+
+                    var highResSize = CalculateHighResolutionSize(item);
+                    
+                    double dpi = 1.0;
+                    double previewWidth = 1920;
+                    double previewHeight = 1080;
+                    if (PreviewContainer != null && PreviewContainer.XamlRoot != null)
+                    {
+                        dpi = PreviewContainer.XamlRoot.RasterizationScale;
+                        previewWidth = PreviewContainer.ActualWidth;
+                        previewHeight = PreviewContainer.ActualHeight;
+                    }
+                    
+                    var displayWidth = previewWidth * dpi;
+                    var displayHeight = previewHeight * dpi;
+                    
+                    LoggerService.Instance.Verbose(LogCategory.Hierarchical, 
+                        $"快速缩略图尺寸: {quickBitmap.PixelWidth}x{quickBitmap.PixelHeight}, " +
+                        $"显示尺寸: {displayWidth:F0}x{displayHeight:F0}, " +
+                        $"高清目标尺寸: {highResSize.width}x{highResSize.height}");
+                    
+                    if (quickBitmap.PixelWidth >= displayWidth * 0.8 && 
+                        quickBitmap.PixelHeight >= displayHeight * 0.8)
+                    {
+                        LoggerService.Instance.Info(LogCategory.Hierarchical, "快速缩略图已足够清晰，跳过高清加载");
+                        return;
+                    }
+
+                    if (_isInFastNavigation)
+                    {
+                        LoggerService.Instance.Verbose(LogCategory.Hierarchical, "快速浏览模式：跳过高清加载，等待浏览停止");
+                        _fastNavigationStopTimer?.Start();
+                    }
+                    else
+                    {
+                        var debounceMs = CalculateDynamicDebounceTime(quickLoadDuration);
+                        LoggerService.Instance.Verbose(LogCategory.Hierarchical, $"启动防抖定时器: {debounceMs}ms");
+
+                        if (_hierarchicalLoadCts != null)
+                        {
+                            _hierarchicalLoadCts.Cancel();
+                            _hierarchicalLoadCts.Dispose();
+                            _hierarchicalLoadCts = null;
+                        }
+                        _hierarchicalLoadCts = new CancellationTokenSource();
+
+                        if (_previewDebounceTimer != null)
+                        {
+                            _previewDebounceTimer.Stop();
+                            _previewDebounceTimer.Interval = TimeSpan.FromMilliseconds(debounceMs);
+                        }
+
+                        _debounceItem = item;
+                        _previewDebounceTimer.Start();
+                    }
+                }
+                else
+                {
+                    LoggerService.Instance.Warning(LogCategory.Hierarchical, "快速加载失败，直接启动高清加载");
+                    _debounceItem = item;
+                    _ = LoadHighResolutionDirectAsync(item, token);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 直接加载高清图（不走防抖）
+        /// </summary>
+        private async Task LoadHighResolutionDirectAsync(PhotoItem item, CancellationToken token)
+        {
+            try
+            {
+                if (_viewModel.CurrentPreviewItem != item || (!item.HasRaw && !item.HasJpg))
+                    return;
+
+                var highResSize = CalculateHighResolutionSize(item);
+                var targetWidth = highResSize.width;
+                var targetHeight = highResSize.height;
+
+                if (_frontImage.Source is BitmapImage currentBitmap && 
+                    currentBitmap.PixelWidth >= targetWidth * 0.9 && 
+                    currentBitmap.PixelHeight >= targetHeight * 0.9)
+                {
+                    LoggerService.Instance.Info(LogCategory.Hierarchical, "当前图片已足够清晰，跳过高清加载");
                     return;
                 }
-                if (fallbackBitmap != null)
+
+                using (LoggerService.Instance.StartTimer(LogCategory.Hierarchical, "高清预览加载"))
                 {
-                    _backImage.Source = fallbackBitmap;
-                    SwapPreviewBuffers();
-                    Debug.WriteLine($"[分级预取] 回退加载完成并显示");
+
+                    BitmapImage? highResBitmap = null;
+                    var useRawForHighRes = _settingsService.UseRawForHighResDecode;
+
+                    if (useRawForHighRes && item.HasRaw && item.RawPath != null)
+                    {
+                        highResBitmap = await _previewImageService.LoadRawFullResolutionAsync(
+                            item.RawPath, targetWidth, targetHeight, token);
+                    }
+                    else if (item.HasJpg && !string.IsNullOrEmpty(item.JpgPath))
+                    {
+                        highResBitmap = await _previewImageService.LoadJpgFullResolutionAsync(
+                            item.JpgPath, targetWidth, targetHeight, token);
+                    }
+                    else if (item.HasRaw && item.RawPath != null)
+                    {
+                        highResBitmap = await _previewImageService.LoadRawFullResolutionAsync(
+                            item.RawPath, targetWidth, targetHeight, token);
+                    }
+
+                    if (!token.IsCancellationRequested && _viewModel.CurrentPreviewItem == item && highResBitmap != null)
+                    {
+                        _backImage.Source = highResBitmap;
+                        SwapPreviewBuffers();
+                        LoggerService.Instance.Info(LogCategory.Hierarchical, "高清原图已显示");
+                    }
                 }
-                return;
+            }
+            catch (OperationCanceledException)
+            {
+                LoggerService.Instance.Verbose(LogCategory.Hierarchical, "高清加载被取消");
+            }
+            catch (Exception ex)
+            {
+                LoggerService.Instance.Error(LogCategory.Hierarchical, "高清加载失败", ex);
+            }
+        }
+
+        /// <summary>
+        /// 记录导航时间
+        /// </summary>
+        private void RecordNavigationTime()
+        {
+            var now = DateTime.Now;
+            _navigationHistory.Enqueue(now);
+
+            while (_navigationHistory.Count > NavigationHistorySize)
+            {
+                _navigationHistory.Dequeue();
+            }
+        }
+
+        /// <summary>
+        /// 计算动态防抖时间
+        /// </summary>
+        private int CalculateDynamicDebounceTime(double quickLoadDurationMs)
+        {
+            var baseDebounce = _settingsService.HierarchicalDebounceMs;
+
+            if (quickLoadDurationMs > 200)
+            {
+                baseDebounce = Math.Max(50, baseDebounce - 50);
             }
 
-            // 第二阶段：防抖后后台解码高清原图
-            Debug.WriteLine($"[分级预取] 第二阶段：启动防抖定时器 (150ms)");
-            if (_hierarchicalLoadCts != null)
+            if (_isInFastNavigation)
             {
-                Debug.WriteLine($"[分级预取] 取消旧的 _hierarchicalLoadCts");
-                _hierarchicalLoadCts.Cancel();
-                _hierarchicalLoadCts.Dispose();
-                _hierarchicalLoadCts = null;
+                baseDebounce = FastNavigationDebounceMs;
             }
-            _hierarchicalLoadCts = new CancellationTokenSource();
-            
-            _debounceItem = item;
-            _previewDebounceTimer.Start();
-            Debug.WriteLine($"[分级预取] 防抖定时器已启动");
+
+            return baseDebounce;
+        }
+
+        /// <summary>
+        /// 检测是否正在快速浏览
+        /// </summary>
+        private bool IsFastNavigation()
+        {
+            if (_navigationHistory.Count < 3)
+                return false;
+
+            var times = _navigationHistory.ToArray();
+            var fastCount = 0;
+            var totalCount = 0;
+
+            // 检查最近的导航间隔，至少需要2次快速导航才算
+            for (int i = 1; i < times.Length; i++)
+            {
+                var interval = (times[i] - times[i - 1]).TotalMilliseconds;
+                totalCount++;
+                if (interval < FastNavigationThresholdMs)
+                {
+                    fastCount++;
+                }
+            }
+
+            // 至少有一半的导航是快速的才算快速浏览
+            return totalCount > 0 && fastCount >= totalCount / 2;
+        }
+
+        /// &lt;summary&gt;
+        /// 快速浏览停止检测定时器回调
+        /// &lt;/summary&gt;
+        private async void FastNavigationStopTimer_Tick(object? sender, object e)
+        {
+            _fastNavigationStopTimer?.Stop();
+
+            if (_isInFastNavigation && _lastFastNavigationItem != null)
+            {
+                _isInFastNavigation = false;
+                LoggerService.Instance.Info(LogCategory.Hierarchical, "快速浏览已停止，开始加载高清图");
+
+                // 快速浏览停止后，启动高清加载
+                if (_hierarchicalLoadCts == null)
+                {
+                    _hierarchicalLoadCts = new CancellationTokenSource();
+                }
+                var token = _hierarchicalLoadCts.Token;
+                await LoadHighResolutionDirectAsync(_lastFastNavigationItem, token);
+            }
+        }
+
+        /// &lt;summary&gt;
+        /// 计算快速缩略图的目标尺寸（根据窗口和DPI自适应）
+        /// </summary>
+        private int CalculateQuickThumbnailSize()
+        {
+            try
+            {
+                double dpi = 1.0;
+                double previewWidth = 1920;
+
+                if (PreviewContainer != null && PreviewContainer.XamlRoot != null)
+                {
+                    dpi = PreviewContainer.XamlRoot.RasterizationScale;
+                    previewWidth = PreviewContainer.ActualWidth;
+                }
+
+                var baseSize = Math.Max(1024, previewWidth / 2);
+                var dpiAdjustedSize = baseSize * dpi;
+                var finalSize = (int)Math.Ceiling(dpiAdjustedSize / 100.0) * 100;
+                finalSize = Math.Clamp(finalSize, 1024, 4096);
+
+                return finalSize;
+            }
+            catch (Exception ex)
+            {
+                LoggerService.Instance.Error("分辨率自适应", "计算快速缩略图尺寸失败", ex);
+                return 1024;
+            }
+        }
+
+        /// <summary>
+        /// 计算高清图的目标尺寸（根据窗口和DPI自适应）
+        /// </summary>
+        private (int width, int height) CalculateHighResolutionSize(PhotoItem item)
+        {
+            try
+            {
+                double dpi = 1.0;
+                double previewWidth = 1920;
+                double previewHeight = 1080;
+
+                if (PreviewContainer != null && PreviewContainer.XamlRoot != null)
+                {
+                    dpi = PreviewContainer.XamlRoot.RasterizationScale;
+                    previewWidth = PreviewContainer.ActualWidth;
+                    previewHeight = PreviewContainer.ActualHeight;
+                }
+
+                var baseWidth = previewWidth;
+                var baseHeight = previewHeight;
+                var dpiWidth = baseWidth * dpi;
+                var dpiHeight = baseHeight * dpi;
+
+                var originalWidth = item.Width;
+                var originalHeight = item.Height;
+
+                if (originalWidth > 0 && originalHeight > 0)
+                {
+                    var imageAspect = originalWidth / originalHeight;
+                    var containerAspect = dpiWidth / dpiHeight;
+
+                    if (imageAspect > containerAspect)
+                    {
+                        dpiWidth = Math.Min(dpiWidth, originalWidth);
+                        dpiHeight = dpiWidth / imageAspect;
+                    }
+                    else
+                    {
+                        dpiHeight = Math.Min(dpiHeight, originalHeight);
+                        dpiWidth = dpiHeight * imageAspect;
+                    }
+                }
+
+                LoggerService.Instance.Verbose(LogCategory.Hierarchical, 
+                    $"高清尺寸计算前: 预览容器={previewWidth:F0}x{previewHeight:F0}, DPI={dpi:F2}, 计算后={dpiWidth:F0}x{dpiHeight:F0}");
+
+                if (originalWidth > 0)
+                    dpiWidth = Math.Min(dpiWidth, originalWidth);
+                if (originalHeight > 0)
+                    dpiHeight = Math.Min(dpiHeight, originalHeight);
+
+                var finalWidth = (int)Math.Round(dpiWidth);
+                var finalHeight = (int)Math.Round(dpiHeight);
+
+                return (finalWidth, finalHeight);
+            }
+            catch (Exception ex)
+            {
+                LoggerService.Instance.Error("分辨率自适应", "计算高清图尺寸失败", ex);
+                return ((int)item.Width, (int)item.Height);
+            }
         }
 
         /// <summary>
@@ -941,32 +1350,16 @@ namespace FastPick.Views
         /// </summary>
         private async Task LoadOnDemandPreview(PhotoItem item, CancellationToken token)
         {
-            Debug.WriteLine($"[分级预取] LoadOnDemandPreview 开始: {item.FileName}");
-            Debug.WriteLine($"[分级预取] 调用 _viewModel.LoadPreviewAsync...");
-            var bitmap = await _viewModel.LoadPreviewAsync(item);
-            Debug.WriteLine($"[分级预取] _viewModel.LoadPreviewAsync 返回: {(bitmap != null ? "有图片" : "null")}");
-            
-            if (token.IsCancellationRequested)
+            using (LoggerService.Instance.StartTimer(LogCategory.Hierarchical, "按需预览加载"))
             {
-                Debug.WriteLine($"[分级预取] token 已取消");
-                return;
-            }
-            if (_viewModel.CurrentPreviewItem != item)
-            {
-                Debug.WriteLine($"[分级预取] 当前项已切换");
-                return;
-            }
+                var bitmap = await _viewModel.LoadPreviewAsync(item);
 
-            if (bitmap != null)
-            {
-                Debug.WriteLine($"[分级预取] 设置 _backImage.Source 并交换缓冲区");
-                _backImage.Source = bitmap;
-                SwapPreviewBuffers();
-                Debug.WriteLine($"[分级预取] 按需加载预览图已显示");
-            }
-            else
-            {
-                Debug.WriteLine($"[分级预取] bitmap 为 null，无法显示");
+                if (!token.IsCancellationRequested && _viewModel.CurrentPreviewItem == item && bitmap != null)
+                {
+                    _backImage.Source = bitmap;
+                    SwapPreviewBuffers();
+                    LoggerService.Instance.Info(LogCategory.Hierarchical, "按需加载预览图已显示");
+                }
             }
         }
 
@@ -975,110 +1368,18 @@ namespace FastPick.Views
         /// </summary>
         private async void PreviewDebounceTimer_Tick(object? sender, object e)
         {
-            Debug.WriteLine($"[分级预取] PreviewDebounceTimer_Tick 触发");
             _previewDebounceTimer?.Stop();
-            
+
             if (_hierarchicalLoadCts == null)
-            {
-                Debug.WriteLine($"[分级预取] _hierarchicalLoadCts 为 null，跳过");
                 return;
-            }
 
             var token = _hierarchicalLoadCts.Token;
             var item = _debounceItem;
-            
+
             if (item == null)
-            {
-                Debug.WriteLine($"[分级预取] _debounceItem 为 null，跳过");
                 return;
-            }
-            
-            Debug.WriteLine($"[分级预取] 准备加载高清原图: {item.FileName}");
-            
-            if (_viewModel.CurrentPreviewItem != item)
-            {
-                Debug.WriteLine($"[分级预取] 当前项已切换，取消高清加载");
-                return;
-            }
 
-            if (!item.HasRaw && !item.HasJpg)
-            {
-                Debug.WriteLine($"[分级预取] 图片既没有 RAW 也没有 JPG，跳过");
-                return;
-            }
-
-            try
-            {
-                Debug.WriteLine($"[分级预取] 开始加载高清原图");
-                var targetWidth = (int)item.Width;
-                var targetHeight = (int)item.Height;
-                Debug.WriteLine($"[分级预取] 目标尺寸: {targetWidth}x{targetHeight}");
-
-                BitmapImage? highResBitmap = null;
-                var useRawForHighRes = SettingsService.Instance.UseRawForHighResDecode;
-                Debug.WriteLine($"[分级预取] 使用 RAW 解码高清: {useRawForHighRes}");
-
-                if (useRawForHighRes && item.HasRaw && item.RawPath != null)
-                {
-                    Debug.WriteLine($"[分级预取] 使用 RAW 加载高清: {item.RawPath}");
-                    highResBitmap = await _previewImageService.LoadRawFullResolutionAsync(
-                        item.RawPath,
-                        targetWidth,
-                        targetHeight,
-                        token);
-                }
-                else if (item.HasJpg && !string.IsNullOrEmpty(item.JpgPath))
-                {
-                    Debug.WriteLine($"[分级预取] 使用 JPG 加载高清: {item.JpgPath}");
-                    highResBitmap = await _previewImageService.LoadJpgFullResolutionAsync(
-                        item.JpgPath,
-                        targetWidth,
-                        targetHeight,
-                        token);
-                }
-                else if (item.HasRaw && item.RawPath != null)
-                {
-                    Debug.WriteLine($"[分级预取] 回退到 RAW 加载高清: {item.RawPath}");
-                    highResBitmap = await _previewImageService.LoadRawFullResolutionAsync(
-                        item.RawPath,
-                        targetWidth,
-                        targetHeight,
-                        token);
-                }
-                
-                Debug.WriteLine($"[分级预取] 高清加载结果: {(highResBitmap != null ? "成功" : "失败")}");
-                
-                if (token.IsCancellationRequested)
-                {
-                    Debug.WriteLine($"[分级预取] 高清加载被取消");
-                    return;
-                }
-                
-                if (_viewModel.CurrentPreviewItem != item)
-                {
-                    Debug.WriteLine($"[分级预取] 当前项已切换，取消显示高清图");
-                    return;
-                }
-
-                if (highResBitmap != null)
-                {
-                    _backImage.Source = highResBitmap;
-                    SwapPreviewBuffers();
-                    Debug.WriteLine($"[分级预取] 高清原图已显示");
-                }
-                else
-                {
-                    Debug.WriteLine($"[分级预取] highResBitmap 为 null，不显示");
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                Debug.WriteLine($"[分级预取] 高清加载被取消 (OperationCanceledException)");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"[分级预取] 高清加载失败: {ex.Message}");
-            }
+            await LoadHighResolutionDirectAsync(item, token);
         }
 
         /// <summary>
@@ -1086,28 +1387,33 @@ namespace FastPick.Views
         /// </summary>
         private void SwapPreviewBuffers()
         {
-            // 交换前后缓冲引用
+            var frontSource = _frontImage.Source;
+            var backSource = _backImage.Source;
+            
+            var isSameImage = frontSource != null && backSource != null && 
+                              frontSource == backSource;
+            
+            if (isSameImage)
+            {
+                LoggerService.Instance.Verbose(LogCategory.Cache, "缓存命中：前后缓冲为同一图片，跳过交换");
+                return;
+            }
+            
             var temp = _frontImage;
             _frontImage = _backImage;
             _backImage = temp;
             
-            // 更新可见性
             _frontImage.Visibility = Visibility.Visible;
             _frontImage.Opacity = 1;
             _backImage.Visibility = Visibility.Collapsed;
             _backImage.Opacity = 0;
             
-            // 延迟清空后台缓冲，避免立即释放导致闪烁
             _ = Task.Run(async () =>
             {
                 await Task.Delay(100);
                 this.DispatcherQueue.TryEnqueue(() =>
                 {
-                    if (_backImage.Source is BitmapImage oldBitmap)
-                    {
-                        oldBitmap.UriSource = null;
-                        _backImage.Source = null;
-                    }
+                    _backImage.Source = null;
                 });
             });
         }
@@ -2764,20 +3070,20 @@ namespace FastPick.Views
                     var dpiScale = GetDpiScale();
                     
                     // 输出图片相关尺寸信息
-                    var previewWidth = _frontImage?.ActualWidth ?? 0;
-                    var previewHeight = _frontImage?.ActualHeight ?? 0;
-                    var displayWidth = item.Width * _zoomScale * fitScale * dpiScale;
-                    var displayHeight = item.Height * _zoomScale * fitScale * dpiScale;
+                    // var previewWidth = _frontImage?.ActualWidth ?? 0;
+                    // var previewHeight = _frontImage?.ActualHeight ?? 0;
+                    // var displayWidth = item.Width * _zoomScale * fitScale * dpiScale;
+                    // var displayHeight = item.Height * _zoomScale * fitScale * dpiScale;
                     
-                    System.Diagnostics.Debug.WriteLine($"[图片尺寸] 原图: {item.Width}x{item.Height}, 预览: {previewWidth:F0}x{previewHeight:F0}, 显示: {displayWidth:F0}x{displayHeight:F0}, DPI: {dpiScale:F2}");
+                    // System.Diagnostics.Debug.WriteLine($"[图片尺寸] 原图: {item.Width}x{item.Height}, 预览: {previewWidth:F0}x{previewHeight:F0}, 显示: {displayWidth:F0}x{displayHeight:F0}, DPI: {dpiScale:F2}");
                     
                     // 输出解码尺寸（如果有图片源）
-                    if (_frontImage?.Source is BitmapImage bitmapImage)
-                    {
-                        var pixelWidth = bitmapImage.PixelWidth;
-                        var pixelHeight = bitmapImage.PixelHeight;
-                        System.Diagnostics.Debug.WriteLine($"[解码尺寸]: {pixelWidth}x{pixelHeight}");
-                    }
+                    // if (_frontImage?.Source is BitmapImage bitmapImage)
+                    // {
+                    //     var pixelWidth = bitmapImage.PixelWidth;
+                    //     var pixelHeight = bitmapImage.PixelHeight;
+                    //     System.Diagnostics.Debug.WriteLine($"[解码尺寸]: {pixelWidth}x{pixelHeight}");
+                    // }
                     
                     // 有图片，显示相对于原图的比例
                     // _zoomScale = 1.0 表示 Fit 屏幕

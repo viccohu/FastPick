@@ -34,6 +34,9 @@ public class SettingsService
         public bool DeleteToRecycleBin { get; set; } = true;
         public bool UseRawForHighResDecode { get; set; } = false;
         public PreviewLoadMode PreviewLoadMode { get; set; } = PreviewLoadMode.OnDemand;
+        public int HierarchicalDebounceMs { get; set; } = 150;
+        public LogLevel LogLevel { get; set; } = LogLevel.Info;
+        public bool EnablePerformanceLogging { get; set; } = true;
     }
 
     private static string SettingsFilePath => Path.Combine(
@@ -196,12 +199,57 @@ public class SettingsService
         }
     }
 
+    public int HierarchicalDebounceMs
+    {
+        get
+        {
+            EnsureLoaded();
+            return _data.HierarchicalDebounceMs;
+        }
+        set
+        {
+            _data.HierarchicalDebounceMs = Math.Clamp(value, 50, 500);
+            Save();
+        }
+    }
+
+    public LogLevel LogLevel
+    {
+        get
+        {
+            EnsureLoaded();
+            return _data.LogLevel;
+        }
+        set
+        {
+            _data.LogLevel = value;
+            Save();
+            LoggerService.Instance.Configure(_data.LogLevel, _data.EnablePerformanceLogging);
+        }
+    }
+
+    public bool EnablePerformanceLogging
+    {
+        get
+        {
+            EnsureLoaded();
+            return _data.EnablePerformanceLogging;
+        }
+        set
+        {
+            _data.EnablePerformanceLogging = value;
+            Save();
+            LoggerService.Instance.Configure(_data.LogLevel, _data.EnablePerformanceLogging);
+        }
+    }
+
     private void EnsureLoaded()
     {
         if (_isLoaded) return;
         
         Load();
         _isLoaded = true;
+        LoggerService.Instance.Configure(_data.LogLevel, _data.EnablePerformanceLogging);
     }
 
     private void Load()
@@ -216,7 +264,7 @@ public class SettingsService
         }
         catch (System.Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[SettingsService] 加载文件失败: {ex.Message}");
+            LoggerService.Instance.Error("设置", "加载文件失败", ex);
             _data = new SettingsData();
         }
     }
@@ -236,7 +284,7 @@ public class SettingsService
         }
         catch (System.Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[SettingsService] 保存文件失败: {ex.Message}");
+            LoggerService.Instance.Error("设置", "保存文件失败", ex);
         }
     }
 

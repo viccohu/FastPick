@@ -19,6 +19,7 @@ public class PreviewImageService
     private readonly SemaphoreSlim _loadingSemaphore = new(3, 3);
     private readonly SemaphoreSlim _highResSemaphore = new(1, 1);
     private readonly SemaphoreSlim _quickLoadLock = new(3, 3);
+    private readonly ImageCacheService _imageCache = new();
 
     public async Task<BitmapImage?> LoadPreviewAsync(PhotoItem photoItem, bool useEmbeddedPreview = true)
     {
@@ -32,7 +33,7 @@ public class PreviewImageService
             if (photoItem.HasRaw && photoItem.RawPath != null)
             {
                 var rawPath = photoItem.RawPath;
-                
+
                 if (_loadingTasks.TryGetValue(rawPath, out var existingTask))
                 {
                     return await existingTask;
@@ -53,9 +54,8 @@ public class PreviewImageService
 
             return null;
         }
-        catch (Exception ex)
+        catch
         {
-
             return null;
         }
     }
@@ -64,7 +64,6 @@ public class PreviewImageService
     {
         if (!File.Exists(rawPath))
         {
-
             return null;
         }
 
@@ -74,7 +73,7 @@ public class PreviewImageService
         {
             if (_embeddedPreviewFailedCache.ContainsKey(rawPath))
             {
-                Debug.WriteLine($"[缓存命中] 直接解码完整 RAW: {Path.GetFileName(rawPath)}");
+                LoggerService.Instance.Verbose(LogCategory.Cache, $"直接解码完整 RAW: {Path.GetFileName(rawPath)}");
                 return await LoadRawFullAsync(rawPath);
             }
 
@@ -84,12 +83,12 @@ public class PreviewImageService
                 if (embeddedPreview != null)
                 {
                     _embeddedPreviewFailedCache.TryRemove(rawPath, out _);
-                    Debug.WriteLine($"[成功] 提取 RAW 内嵌预览: {Path.GetFileName(rawPath)}");
+                    LoggerService.Instance.Info(LogCategory.RawProcessing, $"提取 RAW 内嵌预览成功: {Path.GetFileName(rawPath)}");
                     return embeddedPreview;
                 }
                 
                 _embeddedPreviewFailedCache[rawPath] = true;
-                Debug.WriteLine($"[降级] 内嵌预览提取失败，尝试解码完整 RAW: {Path.GetFileName(rawPath)}");
+                LoggerService.Instance.Warning(LogCategory.RawProcessing, $"内嵌预览提取失败，尝试解码完整 RAW: {Path.GetFileName(rawPath)}");
             }
 
             return await LoadRawFullAsync(rawPath);
@@ -104,7 +103,7 @@ public class PreviewImageService
     {
         if (!File.Exists(filePath))
         {
-            Debug.WriteLine($"JPG 文件不存在: {filePath}");
+            LoggerService.Instance.Warning(LogCategory.ImageDecode, $"JPG 文件不存在: {filePath}");
             return null;
         }
 
@@ -123,7 +122,7 @@ public class PreviewImageService
             var scaleFactor = Math.Min(
                 (double)MaxPreviewWidth / orientedWidth,
                 (double)MaxPreviewHeight / orientedHeight);
-            
+
             if (scaleFactor < 1)
             {
                 transform.ScaledWidth = (uint)(originalWidth * scaleFactor);
@@ -141,7 +140,7 @@ public class PreviewImageService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"加载 JPG 预览失败: {filePath}, 错误: {ex.Message}");
+            LoggerService.Instance.Error(LogCategory.ImageDecode, $"加载 JPG 预览失败: {filePath}", ex);
             return null;
         }
     }
@@ -161,11 +160,11 @@ public class PreviewImageService
             {
                 var orientation = GetOrientationFromDecoder(decoder);
                 (orientationRotation, isFlippedHorizontal) = ConvertOrientationToTransform(orientation);
-                Debug.WriteLine($"[EXIF方向] {Path.GetFileName(rawPath)}: Orientation={orientation}, Rotation={orientationRotation}, Flip={isFlippedHorizontal}");
+                LoggerService.Instance.Verbose(LogCategory.RawProcessing, $"{Path.GetFileName(rawPath)}: Orientation={orientation}, Rotation={orientationRotation}, Flip={isFlippedHorizontal}");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[提示] 无法读取EXIF方向: {ex.Message}");
+                LoggerService.Instance.Verbose(LogCategory.RawProcessing, $"无法读取EXIF方向: {ex.Message}");
             }
 
             BitmapFrame? previewFrame = null;
@@ -180,13 +179,13 @@ public class PreviewImageService
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[提示] {Path.GetFileName(rawPath)} 不支持内嵌预览: {ex.Message}");
+                LoggerService.Instance.Verbose(LogCategory.RawProcessing, $"{Path.GetFileName(rawPath)} 不支持内嵌预览: {ex.Message}");
                 return null;
             }
 
             if (previewFrame == null)
             {
-                Debug.WriteLine($"[提示] {Path.GetFileName(rawPath)} 内嵌预览为空");
+                LoggerService.Instance.Verbose(LogCategory.RawProcessing, $"{Path.GetFileName(rawPath)} 内嵌预览为空");
                 return null;
             }
 
@@ -205,7 +204,7 @@ public class PreviewImageService
 
             if (softwareBitmap == null)
             {
-                Debug.WriteLine($"[提示] {Path.GetFileName(rawPath)} 无法获取 SoftwareBitmap");
+                LoggerService.Instance.Verbose(LogCategory.RawProcessing, $"{Path.GetFileName(rawPath)} 无法获取 SoftwareBitmap");
                 return null;
             }
 
@@ -221,7 +220,7 @@ public class PreviewImageService
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"加载 RAW 内嵌预览失败: {rawPath}, 错误: {ex.Message}");
+            LoggerService.Instance.Error(LogCategory.RawProcessing, $"加载 RAW 内嵌预览失败: {rawPath}", ex);
             return null;
         }
     }
@@ -296,13 +295,13 @@ public class PreviewImageService
                 ColorManagementMode.DoNotColorManage);
 
             var bitmap = await SoftwareBitmapToBitmapImageAsync(softwareBitmap);
-            
-            Debug.WriteLine($"[降级成功] 解码完整 RAW: {Path.GetFileName(rawPath)}");
+
+            LoggerService.Instance.Info(LogCategory.RawProcessing, $"解码完整 RAW: {Path.GetFileName(rawPath)}");
             return bitmap;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"加载完整 RAW 失败: {rawPath}, 错误: {ex.Message}");
+            LoggerService.Instance.Error(LogCategory.RawProcessing, $"加载完整 RAW 失败: {rawPath}", ex);
             return null;
         }
     }
@@ -315,76 +314,98 @@ public class PreviewImageService
     {
         if (!File.Exists(rawPath))
         {
-            Debug.WriteLine($"[高分辨率] RAW 文件不存在: {rawPath}");
+            LoggerService.Instance.Warning(LogCategory.ImageDecode, $"RAW 文件不存在: {rawPath}");
             return null;
         }
+
+        string cacheKey = $"raw_{rawPath}_{targetWidth}_{targetHeight}";
+        var cachedImage = _imageCache.Get(cacheKey);
+        if (cachedImage != null)
+        {
+            LoggerService.Instance.Verbose(LogCategory.Cache, $"RAW高清预览缓存命中: {Path.GetFileName(rawPath)}, 目标尺寸: {targetWidth}x{targetHeight}");
+            _imageCache.LogCacheStatistics();
+            return cachedImage;
+        }
+
+        LoggerService.Instance.Verbose(LogCategory.Cache, $"RAW高清预览缓存未命中: {Path.GetFileName(rawPath)}, 目标尺寸: {targetWidth}x{targetHeight}");
+        _imageCache.LogCacheStatistics();
 
         await _highResSemaphore.WaitAsync(cancellationToken);
-        
-        try
+
+        using (LoggerService.Instance.StartTimer(LogCategory.ImageDecode, $"解码RAW高清: {Path.GetFileName(rawPath)}"))
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var storageFile = await StorageFile.GetFileFromPathAsync(rawPath);
-            using var stream = await storageFile.OpenAsync(FileAccessMode.Read);
-            var decoder = await BitmapDecoder.CreateAsync(stream);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var orientedWidth = decoder.OrientedPixelWidth;
-            var orientedHeight = decoder.OrientedPixelHeight;
-            var originalWidth = decoder.PixelWidth;
-            var originalHeight = decoder.PixelHeight;
-
-            var transform = new BitmapTransform
+            try
             {
-                InterpolationMode = BitmapInterpolationMode.Fant
-            };
+                cancellationToken.ThrowIfCancellationRequested();
 
-            var scaleFactor = Math.Min(
-                (double)targetWidth / orientedWidth,
-                (double)targetHeight / orientedHeight);
-            
-            if (scaleFactor > 1)
-            {
-                scaleFactor = Math.Min(scaleFactor, 1);
+                var storageFile = await StorageFile.GetFileFromPathAsync(rawPath);
+                using var stream = await storageFile.OpenAsync(FileAccessMode.Read);
+                var decoder = await BitmapDecoder.CreateAsync(stream);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var orientedWidth = decoder.OrientedPixelWidth;
+                var orientedHeight = decoder.OrientedPixelHeight;
+                var originalWidth = decoder.PixelWidth;
+                var originalHeight = decoder.PixelHeight;
+
+                var transform = new BitmapTransform
+                {
+                    InterpolationMode = BitmapInterpolationMode.Fant
+                };
+
+                var scaleFactor = Math.Min(
+                    (double)targetWidth / orientedWidth,
+                    (double)targetHeight / orientedHeight);
+
+                if (scaleFactor > 1)
+                {
+                    scaleFactor = Math.Min(scaleFactor, 1);
+                }
+
+                if (scaleFactor < 1)
+                {
+                    transform.ScaledWidth = (uint)(originalWidth * scaleFactor);
+                    transform.ScaledHeight = (uint)(originalHeight * scaleFactor);
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
+                    BitmapPixelFormat.Bgra8,
+                    BitmapAlphaMode.Premultiplied,
+                    transform,
+                    ExifOrientationMode.RespectExifOrientation,
+                    ColorManagementMode.DoNotColorManage);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var bitmap = await SoftwareBitmapToBitmapImageAsync(softwareBitmap);
+
+                LoggerService.Instance.Verbose(LogCategory.ImageDecode,
+                    $"解码RAW: 目标={targetWidth}x{targetHeight}, 原始={originalWidth}x{originalHeight}, 旋转后={orientedWidth}x{orientedHeight}, 缩放={scaleFactor:F2}");
+
+                if (bitmap != null)
+                {
+                    _imageCache.Set(cacheKey, bitmap);
+                }
+
+                return bitmap;
             }
-
-            if (scaleFactor < 1)
+            catch (OperationCanceledException)
             {
-                transform.ScaledWidth = (uint)(originalWidth * scaleFactor);
-                transform.ScaledHeight = (uint)(originalHeight * scaleFactor);
+                LoggerService.Instance.Verbose(LogCategory.ImageDecode, $"解码取消: {Path.GetFileName(rawPath)}");
+                throw;
             }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
-                BitmapPixelFormat.Bgra8,
-                BitmapAlphaMode.Premultiplied,
-                transform,
-                ExifOrientationMode.RespectExifOrientation,
-                ColorManagementMode.DoNotColorManage);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var bitmap = await SoftwareBitmapToBitmapImageAsync(softwareBitmap);
-            
-            Debug.WriteLine($"[高分辨率] 解码 RAW:  目标: {targetWidth}x{targetHeight}, 原始: {originalWidth}x{originalHeight}, 旋转后: {orientedWidth}x{orientedHeight}, 缩放: {scaleFactor:F2}");
-            return bitmap;
-        }
-        catch (OperationCanceledException)
-        {
-            Debug.WriteLine($"[高分辨率] 解码取消: {Path.GetFileName(rawPath)}");
-            throw;
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"[高分辨率] 解码失败: {rawPath}, 错误: {ex.Message}");
-            return null;
-        }
-        finally
-        {
-            _highResSemaphore.Release();
+            catch (Exception ex)
+            {
+                LoggerService.Instance.Error(LogCategory.ImageDecode, $"解码失败: {rawPath}", ex);
+                return null;
+            }
+            finally
+            {
+                _highResSemaphore.Release();
+            }
         }
     }
 
@@ -396,76 +417,98 @@ public class PreviewImageService
     {
         if (!File.Exists(jpgPath))
         {
-            Debug.WriteLine($"[高分辨率] JPG 文件不存在: {jpgPath}");
+            LoggerService.Instance.Warning(LogCategory.ImageDecode, $"JPG 文件不存在: {jpgPath}");
             return null;
         }
+
+        string cacheKey = $"jpg_{jpgPath}_{targetWidth}_{targetHeight}";
+        var cachedImage = _imageCache.Get(cacheKey);
+        if (cachedImage != null)
+        {
+            LoggerService.Instance.Verbose(LogCategory.Cache, $"JPG高清预览缓存命中: {Path.GetFileName(jpgPath)}, 目标尺寸: {targetWidth}x{targetHeight}");
+            _imageCache.LogCacheStatistics();
+            return cachedImage;
+        }
+
+        LoggerService.Instance.Verbose(LogCategory.Cache, $"JPG高清预览缓存未命中: {Path.GetFileName(jpgPath)}, 目标尺寸: {targetWidth}x{targetHeight}");
+        _imageCache.LogCacheStatistics();
 
         await _highResSemaphore.WaitAsync(cancellationToken);
-        
-        try
+
+        using (LoggerService.Instance.StartTimer(LogCategory.ImageDecode, $"解码JPG高清: {Path.GetFileName(jpgPath)}"))
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var storageFile = await StorageFile.GetFileFromPathAsync(jpgPath);
-            using var stream = await storageFile.OpenAsync(FileAccessMode.Read);
-            var decoder = await BitmapDecoder.CreateAsync(stream);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var orientedWidth = decoder.OrientedPixelWidth;
-            var orientedHeight = decoder.OrientedPixelHeight;
-            var originalWidth = decoder.PixelWidth;
-            var originalHeight = decoder.PixelHeight;
-
-            var transform = new BitmapTransform
+            try
             {
-                InterpolationMode = BitmapInterpolationMode.Fant
-            };
+                cancellationToken.ThrowIfCancellationRequested();
 
-            var scaleFactor = Math.Min(
-                (double)targetWidth / orientedWidth,
-                (double)targetHeight / orientedHeight);
-            
-            if (scaleFactor > 1)
-            {
-                scaleFactor = Math.Min(scaleFactor, 1);
+                var storageFile = await StorageFile.GetFileFromPathAsync(jpgPath);
+                using var stream = await storageFile.OpenAsync(FileAccessMode.Read);
+                var decoder = await BitmapDecoder.CreateAsync(stream);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var orientedWidth = decoder.OrientedPixelWidth;
+                var orientedHeight = decoder.OrientedPixelHeight;
+                var originalWidth = decoder.PixelWidth;
+                var originalHeight = decoder.PixelHeight;
+
+                var transform = new BitmapTransform
+                {
+                    InterpolationMode = BitmapInterpolationMode.Fant
+                };
+
+                var scaleFactor = Math.Min(
+                    (double)targetWidth / orientedWidth,
+                    (double)targetHeight / orientedHeight);
+
+                if (scaleFactor > 1)
+                {
+                    scaleFactor = Math.Min(scaleFactor, 1);
+                }
+
+                if (scaleFactor < 1)
+                {
+                    transform.ScaledWidth = (uint)(originalWidth * scaleFactor);
+                    transform.ScaledHeight = (uint)(originalHeight * scaleFactor);
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
+                    BitmapPixelFormat.Bgra8,
+                    BitmapAlphaMode.Premultiplied,
+                    transform,
+                    ExifOrientationMode.RespectExifOrientation,
+                    ColorManagementMode.DoNotColorManage);
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var bitmap = await SoftwareBitmapToBitmapImageAsync(softwareBitmap);
+
+                LoggerService.Instance.Verbose(LogCategory.ImageDecode,
+                    $"解码JPG: 目标={targetWidth}x{targetHeight}, 原始={originalWidth}x{originalHeight}, 旋转后={orientedWidth}x{orientedHeight}, 缩放={scaleFactor:F2}");
+
+                if (bitmap != null)
+                {
+                    _imageCache.Set(cacheKey, bitmap);
+                }
+
+                return bitmap;
             }
-
-            if (scaleFactor < 1)
+            catch (OperationCanceledException)
             {
-                transform.ScaledWidth = (uint)(originalWidth * scaleFactor);
-                transform.ScaledHeight = (uint)(originalHeight * scaleFactor);
+                LoggerService.Instance.Verbose(LogCategory.ImageDecode, $"解码取消: {Path.GetFileName(jpgPath)}");
+                throw;
             }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
-                BitmapPixelFormat.Bgra8,
-                BitmapAlphaMode.Premultiplied,
-                transform,
-                ExifOrientationMode.RespectExifOrientation,
-                ColorManagementMode.DoNotColorManage);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var bitmap = await SoftwareBitmapToBitmapImageAsync(softwareBitmap);
-            
-            Debug.WriteLine($"[高分辨率] 解码 JPG: 目标: {targetWidth}x{targetHeight}, 原始: {originalWidth}x{originalHeight}, 旋转后: {orientedWidth}x{orientedHeight}, 缩放: {scaleFactor:F2}");
-            return bitmap;
-        }
-        catch (OperationCanceledException)
-        {
-            Debug.WriteLine($"[高分辨率] 解码取消: {Path.GetFileName(jpgPath)}");
-            throw;
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine($"[高分辨率] 解码失败: {jpgPath}, 错误: {ex.Message}");
-            return null;
-        }
-        finally
-        {
-            _highResSemaphore.Release();
+            catch (Exception ex)
+            {
+                LoggerService.Instance.Error(LogCategory.ImageDecode, $"解码失败: {jpgPath}", ex);
+                return null;
+            }
+            finally
+            {
+                _highResSemaphore.Release();
+            }
         }
     }
 
@@ -531,81 +574,261 @@ public class PreviewImageService
 
     public async Task<BitmapImage?> LoadQuickPreviewAsync(PhotoItem photoItem, CancellationToken cancellationToken = default)
     {
-        Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync 开始: {photoItem.FileName}, DisplayPath: {photoItem.DisplayPath}");
-        try
-        {
-            var filePath = photoItem.DisplayPath;
-            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
-            {
-                Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 文件不存在，返回 null");
-                return null;
-            }
+        return await LoadQuickPreviewAsync(photoItem, 1024, cancellationToken);
+    }
 
-            await _quickLoadLock.WaitAsync(cancellationToken);
+    public async Task<BitmapImage?> LoadQuickPreviewAsync(PhotoItem photoItem, int targetSize, CancellationToken cancellationToken = default)
+    {
+        LoggerService.Instance.Verbose(LogCategory.Hierarchical, $"开始加载快速预览: {photoItem.FileName}, 目标尺寸: {targetSize}");
+
+        string cacheKey = $"quick_{photoItem.DisplayPath}_{targetSize}";
+        var cachedImage = _imageCache.Get(cacheKey);
+        if (cachedImage != null)
+        {
+            LoggerService.Instance.Verbose(LogCategory.Cache, $"快速预览缓存命中: {photoItem.FileName}, 目标尺寸: {targetSize}");
+            _imageCache.LogCacheStatistics();
+            return cachedImage;
+        }
+
+        LoggerService.Instance.Verbose(LogCategory.Cache, $"快速预览缓存未命中: {photoItem.FileName}, 目标尺寸: {targetSize}");
+        _imageCache.LogCacheStatistics();
+
+        using (LoggerService.Instance.StartTimer(LogCategory.Hierarchical, $"快速预览: {photoItem.FileName}"))
+        {
             try
             {
-                Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 开始获取 StorageFile");
-                var storageFile = await StorageFile.GetFileFromPathAsync(filePath).AsTask(cancellationToken);
-
-                // 第一步：先尝试 256px ReturnOnlyIfCached
-                Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 尝试 256px 缓存缩略图");
-                StorageItemThumbnail? thumbnail = null;
+                await _quickLoadLock.WaitAsync(cancellationToken);
                 try
                 {
-                    thumbnail = await storageFile.GetThumbnailAsync(
-                        ThumbnailMode.SingleItem,
-                        256,
-                        ThumbnailOptions.ResizeThumbnail | ThumbnailOptions.ReturnOnlyIfCached).AsTask(cancellationToken);
-                }
-                catch (Exception)
-                {
-                    // 256px 获取失败也没关系，继续 1024px
-                }
+                    BitmapImage? bitmap = null;
 
-                // 如果没有缓存的 256px，直接用 1024px
-                if (thumbnail == null)
-                {
-                    Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 256px 未缓存，获取 1024px");
-                    thumbnail = await storageFile.GetThumbnailAsync(
-                        ThumbnailMode.SingleItem,
-                        1024,
-                        ThumbnailOptions.ResizeThumbnail).AsTask(cancellationToken);
-                }
-                else
-                {
-                    Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 使用缓存的 256px");
-                }
+                    if (photoItem.HasJpg && !string.IsNullOrEmpty(photoItem.JpgPath) && File.Exists(photoItem.JpgPath))
+                    {
+                        bitmap = await LoadQuickPreviewDirectAsync(photoItem.JpgPath, targetSize, cancellationToken);
+                    }
 
-                if (thumbnail != null)
-                {
-                    Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 缩略图获取成功");
-                    var bitmap = new BitmapImage();
-                    await bitmap.SetSourceAsync(thumbnail).AsTask(cancellationToken);
-                    thumbnail.Dispose();
+                    if (bitmap == null && photoItem.HasRaw && !string.IsNullOrEmpty(photoItem.RawPath) && File.Exists(photoItem.RawPath))
+                    {
+                        bitmap = await LoadQuickPreviewFromRawAsync(photoItem.RawPath, targetSize, cancellationToken);
+                    }
+
+                    if (bitmap == null && !string.IsNullOrEmpty(photoItem.DisplayPath) && File.Exists(photoItem.DisplayPath))
+                    {
+                        if (photoItem.HasJpg)
+                        {
+                            bitmap = await LoadQuickPreviewDirectAsync(photoItem.DisplayPath, targetSize, cancellationToken);
+                        }
+                        else
+                        {
+                            bitmap = await LoadQuickPreviewFromRawAsync(photoItem.DisplayPath, targetSize, cancellationToken);
+                        }
+                    }
+
+                    if (bitmap != null)
+                    {
+                        _imageCache.Set(cacheKey, bitmap);
+                    }
+
                     return bitmap;
                 }
+                finally
+                {
+                    _quickLoadLock.Release();
+                }
             }
-            finally
+            catch (OperationCanceledException)
             {
-                _quickLoadLock.Release();
+                LoggerService.Instance.Verbose(LogCategory.Hierarchical, "快速预览加载被取消");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                LoggerService.Instance.Error(LogCategory.Hierarchical, $"加载快速预览失败: {photoItem.FileName}", ex);
+                return null;
             }
         }
-        catch (OperationCanceledException)
+    }
+
+    private async Task<BitmapImage?> LoadQuickPreviewDirectAsync(string filePath, int targetSize, CancellationToken cancellationToken)
+    {
+        try
         {
-            Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 被取消");
-            throw;
+            var storageFile = await StorageFile.GetFileFromPathAsync(filePath).AsTask(cancellationToken);
+            using var stream = await storageFile.OpenAsync(FileAccessMode.Read);
+            var decoder = await BitmapDecoder.CreateAsync(stream);
+
+            var orientedWidth = decoder.OrientedPixelWidth;
+            var orientedHeight = decoder.OrientedPixelHeight;
+            var originalWidth = decoder.PixelWidth;
+            var originalHeight = decoder.PixelHeight;
+
+            var transform = new BitmapTransform();
+            var scaleFactor = Math.Min(
+                (double)targetSize / orientedWidth,
+                (double)targetSize / orientedHeight);
+            
+            if (scaleFactor < 1)
+            {
+                transform.ScaledWidth = (uint)(originalWidth * scaleFactor);
+                transform.ScaledHeight = (uint)(originalHeight * scaleFactor);
+            }
+
+            var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
+                BitmapPixelFormat.Bgra8,
+                BitmapAlphaMode.Premultiplied,
+                transform,
+                ExifOrientationMode.RespectExifOrientation,
+                ColorManagementMode.DoNotColorManage);
+
+            return await SoftwareBitmapToBitmapImageAsync(softwareBitmap);
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"[分级预取] 加载快速预览失败: {photoItem.DisplayPath}, 错误: {ex.Message}");
+            LoggerService.Instance.Error(LogCategory.Hierarchical, $"快速预览加载失败: {Path.GetFileName(filePath)}", ex);
+            return null;
         }
+    }
 
-        Debug.WriteLine($"[分级预取] LoadQuickPreviewAsync: 返回 null");
-        return null;
+    private async Task<BitmapImage?> LoadQuickPreviewFromRawAsync(string rawPath, int targetSize, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var embeddedSoftwareBitmap = await LoadRawEmbeddedPreviewAsSoftwareBitmapAsync(rawPath);
+            if (embeddedSoftwareBitmap != null)
+            {
+                LoggerService.Instance.Verbose(LogCategory.Hierarchical, "使用 RAW 内嵌预览");
+
+                var scaleFactor = Math.Min(
+                    (double)targetSize / embeddedSoftwareBitmap.PixelWidth,
+                    (double)targetSize / embeddedSoftwareBitmap.PixelHeight);
+
+                SoftwareBitmap finalBitmap = embeddedSoftwareBitmap;
+                if (scaleFactor < 1)
+                {
+                    finalBitmap = await ResizeSoftwareBitmapAsync(embeddedSoftwareBitmap, scaleFactor);
+                    embeddedSoftwareBitmap.Dispose();
+                }
+
+                var result = await SoftwareBitmapToBitmapImageAsync(finalBitmap);
+                finalBitmap.Dispose();
+                return result;
+            }
+
+            LoggerService.Instance.Verbose(LogCategory.Hierarchical, "内嵌预览失败，使用完整解码");
+            return await LoadRawPreviewScaledAsync(rawPath, targetSize, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            LoggerService.Instance.Error(LogCategory.Hierarchical, $"RAW快速预览失败: {Path.GetFileName(rawPath)}", ex);
+            return null;
+        }
+    }
+
+    private async Task<SoftwareBitmap?> LoadRawEmbeddedPreviewAsSoftwareBitmapAsync(string rawPath)
+    {
+        try
+        {
+            var storageFile = await StorageFile.GetFileFromPathAsync(rawPath);
+
+            using var stream = await storageFile.OpenAsync(FileAccessMode.Read);
+            var decoder = await BitmapDecoder.CreateAsync(stream);
+
+            BitmapRotation orientationRotation = BitmapRotation.None;
+            bool isFlippedHorizontal = false;
+            try
+            {
+                var orientation = GetOrientationFromDecoder(decoder);
+                (orientationRotation, isFlippedHorizontal) = ConvertOrientationToTransform(orientation);
+            }
+            catch (Exception)
+            {
+            }
+
+            BitmapFrame? previewFrame = null;
+            try
+            {
+                var previewStream = await decoder.GetPreviewAsync();
+                if (previewStream != null)
+                {
+                    var previewDecoder = await BitmapDecoder.CreateAsync(previewStream);
+                    previewFrame = await previewDecoder.GetFrameAsync(0);
+                }
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+
+            if (previewFrame == null)
+            {
+                return null;
+            }
+
+            var transform = new BitmapTransform
+            {
+                Rotation = orientationRotation,
+                Flip = isFlippedHorizontal ? BitmapFlip.Horizontal : BitmapFlip.None
+            };
+
+            var softwareBitmap = await previewFrame.GetSoftwareBitmapAsync(
+                BitmapPixelFormat.Bgra8,
+                BitmapAlphaMode.Premultiplied,
+                transform,
+                ExifOrientationMode.IgnoreExifOrientation,
+                ColorManagementMode.DoNotColorManage);
+
+            return softwareBitmap;
+        }
+        catch (Exception ex)
+        {
+            LoggerService.Instance.Error(LogCategory.RawProcessing, $"加载 RAW 内嵌预览失败: {rawPath}", ex);
+            return null;
+        }
+    }
+
+    private async Task<BitmapImage?> LoadRawPreviewScaledAsync(string rawPath, int targetSize, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var storageFile = await StorageFile.GetFileFromPathAsync(rawPath).AsTask(cancellationToken);
+            using var stream = await storageFile.OpenAsync(FileAccessMode.Read);
+            var decoder = await BitmapDecoder.CreateAsync(stream);
+
+            var orientedWidth = decoder.OrientedPixelWidth;
+            var orientedHeight = decoder.OrientedPixelHeight;
+            var originalWidth = decoder.PixelWidth;
+            var originalHeight = decoder.PixelHeight;
+
+            var transform = new BitmapTransform();
+            var scaleFactor = Math.Min(
+                (double)targetSize / orientedWidth,
+                (double)targetSize / orientedHeight);
+            
+            if (scaleFactor < 1)
+            {
+                transform.ScaledWidth = (uint)(originalWidth * scaleFactor);
+                transform.ScaledHeight = (uint)(originalHeight * scaleFactor);
+            }
+
+            var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
+                BitmapPixelFormat.Bgra8,
+                BitmapAlphaMode.Premultiplied,
+                transform,
+                ExifOrientationMode.RespectExifOrientation,
+                ColorManagementMode.DoNotColorManage);
+
+            return await SoftwareBitmapToBitmapImageAsync(softwareBitmap);
+        }
+        catch (Exception ex)
+        {
+            LoggerService.Instance.Error(LogCategory.Hierarchical, $"RAW缩放预览失败: {Path.GetFileName(rawPath)}", ex);
+            return null;
+        }
     }
 
     public void ClearFailedCache()
     {
         _embeddedPreviewFailedCache.Clear();
+        _imageCache.Clear();
     }
 }

@@ -17,12 +17,16 @@ public class ThumbnailService
     private readonly SemaphoreSlim _throttler = new(Environment.ProcessorCount, Environment.ProcessorCount);
     private readonly ConcurrentDictionary<string, TaskCompletionSource<BitmapImage?>> _pendingLoads = new(StringComparer.OrdinalIgnoreCase);
     private const int MaxCacheSize = 1000;
-    private const int ThumbnailWidth = 100;
-    private const int ThumbnailHeight = 80;
+    private const int MaxThumbnailSize = 120;
 
     public async Task<BitmapImage?> GetThumbnailAsync(PhotoItem photoItem, CancellationToken cancellationToken = default)
     {
         var filePath = photoItem.DisplayPath;
+        
+        if (photoItem.HasJpg && !string.IsNullOrEmpty(photoItem.JpgPath) && File.Exists(photoItem.JpgPath))
+        {
+            filePath = photoItem.JpgPath;
+        }
         
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
             return null;
@@ -61,6 +65,27 @@ public class ThumbnailService
 
                     cancellationToken.ThrowIfCancellationRequested();
                     
+                    var extension = Path.GetExtension(filePath).ToLowerInvariant();
+                    var rawExtensions = new[] { ".arw", ".cr2", ".cr3", ".nef", ".nrw", ".orf", ".pef", ".raf", ".raw", ".rw2", ".srw" };
+                    
+                    if (rawExtensions.Contains(extension))
+                    {
+                        LoggerService.Instance.Verbose(LogCategory.Thumbnail, $"尝试获取RAW内嵌预览: {Path.GetFileName(filePath)}");
+                        var embeddedPreview = await TryGetRawEmbeddedPreviewAsync(filePath, cancellationToken);
+                        if (embeddedPreview != null)
+                        {
+                            var embeddedBitmap = await SoftwareBitmapToBitmapImageAsync(embeddedPreview, cancellationToken);
+                            if (embeddedBitmap != null)
+                            {
+                                await AddToCacheAsync(filePath, embeddedBitmap, photoItem, cancellationToken);
+                                tcs.SetResult(embeddedBitmap);
+                                return embeddedBitmap;
+                            }
+                        }
+                    }
+
+                    cancellationToken.ThrowIfCancellationRequested();
+                    
                     var wicThumbnail = await GenerateWicThumbnailAsync(filePath, cancellationToken);
                     if (wicThumbnail != null)
                     {
@@ -84,7 +109,7 @@ public class ThumbnailService
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"获取缩略图失败: {filePath}, {ex.Message}");
+                LoggerService.Instance.Error(LogCategory.Thumbnail, $"获取缩略图失败: {filePath}", ex);
                 tcs.SetResult(null);
                 return null;
             }
@@ -109,10 +134,9 @@ public class ThumbnailService
         {
             var storageFile = await StorageFile.GetFileFromPathAsync(filePath).AsTask(cancellationToken);
             
-            // 第一步：先尝试仅从缓存读取，快速响应
             var cachedThumbnail = await storageFile.GetThumbnailAsync(
                 ThumbnailMode.PicturesView,
-                (uint)ThumbnailWidth,
+                (uint)MaxThumbnailSize,
                 ThumbnailOptions.ReturnOnlyIfCached).AsTask(cancellationToken);
 
             if (cachedThumbnail != null)
@@ -123,10 +147,9 @@ public class ThumbnailService
                 return bitmap;
             }
 
-            // 第二步：缓存未命中，使用常规方式获取
             var thumbnail = await storageFile.GetThumbnailAsync(
                 ThumbnailMode.PicturesView,
-                (uint)ThumbnailWidth,
+                (uint)MaxThumbnailSize,
                 ThumbnailOptions.ResizeThumbnail).AsTask(cancellationToken);
 
             if (thumbnail != null)
@@ -143,7 +166,7 @@ public class ThumbnailService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"获取系统缩略图失败: {filePath}, {ex.Message}");
+            LoggerService.Instance.Warning(LogCategory.Thumbnail, $"获取系统缩略图失败: {filePath}: {ex.Message}");
         }
 
         return null;
@@ -163,9 +186,7 @@ public class ThumbnailService
             var originalHeight = decoder.PixelHeight;
 
             var transform = new BitmapTransform();
-            var scaleFactor = Math.Min(
-                (double)ThumbnailWidth / orientedWidth,
-                (double)ThumbnailHeight / orientedHeight);
+            var scaleFactor = (double)MaxThumbnailSize / Math.Max(orientedWidth, orientedHeight);
             
             if (scaleFactor < 1)
             {
@@ -198,7 +219,131 @@ public class ThumbnailService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"WIC 生成缩略图失败: {filePath}, {ex.Message}");
+            LoggerService.Instance.Warning(LogCategory.Thumbnail, $"WIC 生成缩略图失败: {filePath}: {ex.Message}");
+            return null;
+        }
+    }
+
+    private async Task<SoftwareBitmap?> TryGetRawEmbeddedPreviewAsync(string filePath, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var storageFile = await StorageFile.GetFileFromPathAsync(filePath).AsTask(cancellationToken);
+            using var stream = await storageFile.OpenAsync(FileAccessMode.Read).AsTask(cancellationToken);
+            var decoder = await BitmapDecoder.CreateAsync(stream).AsTask(cancellationToken);
+
+            BitmapRotation orientationRotation = BitmapRotation.None;
+            bool isFlippedHorizontal = false;
+            try
+            {
+                var properties = decoder.BitmapProperties;
+                const string orientationQuery = "System.Photo.Orientation";
+                var result = properties.GetPropertiesAsync(new[] { orientationQuery }).AsTask(cancellationToken).Result;
+                if (result.TryGetValue(orientationQuery, out var orientationValue) && orientationValue.Value is ushort orientation)
+                {
+                    (orientationRotation, isFlippedHorizontal) = orientation switch
+                    {
+                        1 => (BitmapRotation.None, false),
+                        2 => (BitmapRotation.None, true),
+                        3 => (BitmapRotation.Clockwise180Degrees, false),
+                        4 => (BitmapRotation.Clockwise180Degrees, true),
+                        5 => (BitmapRotation.Clockwise90Degrees, true),
+                        6 => (BitmapRotation.Clockwise90Degrees, false),
+                        7 => (BitmapRotation.Clockwise270Degrees, true),
+                        8 => (BitmapRotation.Clockwise270Degrees, false),
+                        _ => (BitmapRotation.None, false)
+                    };
+                }
+            }
+            catch
+            {
+            }
+
+            BitmapFrame? previewFrame = null;
+            try
+            {
+                var previewStream = await decoder.GetPreviewAsync().AsTask(cancellationToken);
+                if (previewStream != null)
+                {
+                    var previewDecoder = await BitmapDecoder.CreateAsync(previewStream).AsTask(cancellationToken);
+                    previewFrame = await previewDecoder.GetFrameAsync(0).AsTask(cancellationToken);
+                }
+            }
+            catch
+            {
+                return null;
+            }
+
+            if (previewFrame == null)
+            {
+                return null;
+            }
+
+            var transform = new BitmapTransform
+            {
+                Rotation = orientationRotation,
+                Flip = isFlippedHorizontal ? BitmapFlip.Horizontal : BitmapFlip.None
+            };
+
+            var softwareBitmap = await previewFrame.GetSoftwareBitmapAsync(
+                BitmapPixelFormat.Bgra8,
+                BitmapAlphaMode.Premultiplied,
+                transform,
+                ExifOrientationMode.IgnoreExifOrientation,
+                ColorManagementMode.DoNotColorManage).AsTask(cancellationToken);
+
+            return softwareBitmap;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private async Task<BitmapImage?> SoftwareBitmapToBitmapImageAsync(SoftwareBitmap softwareBitmap, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var orientedWidth = softwareBitmap.PixelWidth;
+            var orientedHeight = softwareBitmap.PixelHeight;
+
+            var transform = new BitmapTransform();
+            var scaleFactor = (double)MaxThumbnailSize / Math.Max(orientedWidth, orientedHeight);
+
+            SoftwareBitmap finalBitmap = softwareBitmap;
+            if (scaleFactor < 1)
+            {
+                var newWidth = (uint)(orientedWidth * scaleFactor);
+                var newHeight = (uint)(orientedHeight * scaleFactor);
+
+                using var outputStream = new InMemoryRandomAccessStream();
+                var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, outputStream).AsTask(cancellationToken);
+                encoder.SetSoftwareBitmap(softwareBitmap);
+                encoder.BitmapTransform.ScaledWidth = newWidth;
+                encoder.BitmapTransform.ScaledHeight = newHeight;
+                await encoder.FlushAsync().AsTask(cancellationToken);
+
+                outputStream.Seek(0);
+                var decoder = await BitmapDecoder.CreateAsync(outputStream).AsTask(cancellationToken);
+                finalBitmap = await decoder.GetSoftwareBitmapAsync().AsTask(cancellationToken);
+                softwareBitmap.Dispose();
+            }
+
+            using var bmpStream = new InMemoryRandomAccessStream();
+            var bmpEncoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, bmpStream).AsTask(cancellationToken);
+            bmpEncoder.SetSoftwareBitmap(finalBitmap);
+            await bmpEncoder.FlushAsync().AsTask(cancellationToken);
+
+            bmpStream.Seek(0);
+            var bitmap = new BitmapImage();
+            await bitmap.SetSourceAsync(bmpStream).AsTask(cancellationToken);
+
+            finalBitmap.Dispose();
+            return bitmap;
+        }
+        catch
+        {
+            softwareBitmap?.Dispose();
             return null;
         }
     }
@@ -213,7 +358,6 @@ public class ThumbnailService
                 var oldestKey = _lruList.Last!.Value;
                 _lruList.RemoveLast();
                 
-                // 清理对应的 PhotoItem.Thumbnail
                 if (_photoItemMap.TryGetValue(oldestKey, out var oldPhotoItem))
                 {
                     oldPhotoItem.Thumbnail = null;
@@ -230,7 +374,6 @@ public class ThumbnailService
             _thumbnailCache[filePath] = thumbnail;
             _lruList.AddFirst(filePath);
             
-            // 记录 PhotoItem 引用
             if (photoItem != null)
             {
                 _photoItemMap[filePath] = photoItem;
@@ -253,7 +396,6 @@ public class ThumbnailService
         await _cacheLock.WaitAsync();
         try
         {
-            // 清理所有 PhotoItem.Thumbnail
             foreach (var photoItem in _photoItemMap.Values)
             {
                 photoItem.Thumbnail = null;

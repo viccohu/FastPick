@@ -701,7 +701,9 @@ public class MainViewModel : INotifyPropertyChanged
     /// </summary>
     public void NavigatePrevious()
     {
-        if (PhotoItems.Count == 0)
+        var items = HasActiveFilter ? FilteredPhotoItems : PhotoItems;
+        LoggerService.Instance.Info(LogCategory.Navigation, $"NavigatePrevious - 使用筛选列表: {HasActiveFilter}, 列表数量: {items.Count}");
+        if (items.Count == 0)
             return;
 
         // 多选模式：在选中项之间切换
@@ -721,10 +723,10 @@ public class MainViewModel : INotifyPropertyChanged
             return;
         }
 
-        // 单选/无选模式：在所有图片之间切换
+        // 单选/无选模式：在图片之间切换
         if (CurrentPreviewItem == null)
         {
-            var firstItem = PhotoItems[0];
+            var firstItem = items[0];
             CurrentPreviewItem = firstItem;
             // 同步选中状态并更新锚点
             DeselectAll();
@@ -733,10 +735,10 @@ public class MainViewModel : INotifyPropertyChanged
             return;
         }
 
-        var index = PhotoItems.IndexOf(CurrentPreviewItem);
+        var index = items.IndexOf(CurrentPreviewItem);
         if (index > 0)
         {
-            var newItem = PhotoItems[index - 1];
+            var newItem = items[index - 1];
             CurrentPreviewItem = newItem;
             // 同步选中状态（单选模式）并更新锚点
             DeselectAll();
@@ -750,7 +752,9 @@ public class MainViewModel : INotifyPropertyChanged
     /// </summary>
     public void NavigateNext()
     {
-        if (PhotoItems.Count == 0)
+        var items = HasActiveFilter ? FilteredPhotoItems : PhotoItems;
+        LoggerService.Instance.Info(LogCategory.Navigation, $"NavigateNext - 使用筛选列表: {HasActiveFilter}, 列表数量: {items.Count}");
+        if (items.Count == 0)
             return;
 
         // 多选模式：在选中项之间切换
@@ -770,10 +774,10 @@ public class MainViewModel : INotifyPropertyChanged
             return;
         }
 
-        // 单选/无选模式：在所有图片之间切换
+        // 单选/无选模式：在图片之间切换
         if (CurrentPreviewItem == null)
         {
-            var firstItem = PhotoItems[0];
+            var firstItem = items[0];
             CurrentPreviewItem = firstItem;
             // 同步选中状态并更新锚点
             DeselectAll();
@@ -782,10 +786,10 @@ public class MainViewModel : INotifyPropertyChanged
             return;
         }
 
-        var index = PhotoItems.IndexOf(CurrentPreviewItem);
-        if (index >= 0 && index < PhotoItems.Count - 1)
+        var index = items.IndexOf(CurrentPreviewItem);
+        if (index >= 0 && index < items.Count - 1)
         {
-            var newItem = PhotoItems[index + 1];
+            var newItem = items[index + 1];
             CurrentPreviewItem = newItem;
             // 同步选中状态（单选模式）并更新锚点
             DeselectAll();

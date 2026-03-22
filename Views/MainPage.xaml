@@ -1160,7 +1160,7 @@
                     <Run x:Name="TotalCountRun" Text="0" />
                 </TextBlock>
                 <mycontrols:RatingControl x:Name="BottomRatingControl"
-                                          Rating="{Binding CurrentPreviewItem.Rating, Mode=OneWay}"
+                                          Rating="{Binding Rating, Mode=OneWay}"
                                           RatingChanged="BottomRatingControl_RatingChanged"
                                           DataContext="{Binding CurrentPreviewItem}"
                                           VerticalAlignment="Center"/>
