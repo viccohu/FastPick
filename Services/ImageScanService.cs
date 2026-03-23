@@ -1,4 +1,5 @@
 using FastPick.Models;
+using FastPick.Services;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 
@@ -135,7 +136,7 @@ public class ImageScanService
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"扫描路径失败: {path}, 错误: {ex.Message}");
+                DebugService.WriteLine($"扫描路径失败: {path}, 错误: {ex.Message}");
             }
         }, cancellationToken);
     }

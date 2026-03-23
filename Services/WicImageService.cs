@@ -1,4 +1,5 @@
 using FastPick.Models;
+using FastPick.Services;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System.Collections.Concurrent;
 using Windows.Graphics.Imaging;
@@ -86,7 +87,7 @@ public static class WicImageService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"加载缩略图失败: {filePath}, 错误: {ex.Message}");
+            DebugService.WriteLine($"加载缩略图失败: {filePath}, 错误: {ex.Message}");
             return null;
         }
     }
@@ -151,7 +152,7 @@ public static class WicImageService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"加载预览图失败: {filePath}, 错误: {ex.Message}");
+            DebugService.WriteLine($"加载预览图失败: {filePath}, 错误: {ex.Message}");
             return null;
         }
     }

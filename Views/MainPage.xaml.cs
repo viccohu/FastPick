@@ -341,23 +341,146 @@ namespace FastPick.Views
             _isThumbnailScrolling = true;
             _thumbnailScrollDebounceTimer?.Stop();
             _thumbnailScrollDebounceTimer?.Start();
+            
+            // 实时预加载：滚动过程中也进行预加载
+            if (!e.IsIntermediate) // 滚动结束时由防抖定时器处理
+            {
+                return;
+            }
+            
+            // 计算显示区域的范围
+            var scrollViewer = ThumbnailScrollViewer;
+            var viewportWidth = scrollViewer.ViewportWidth;
+            var horizontalOffset = scrollViewer.HorizontalOffset;
+            var visibleStart = horizontalOffset;
+            var visibleEnd = horizontalOffset + viewportWidth;
+            
+            // 计算视区的开始和结束索引
+            int startIndex = (int)(visibleStart / 150); // 假设每个缩略图宽度为150
+            int endIndex = (int)(visibleEnd / 150) + 1; // 加1确保覆盖完整视区
+            
+            // 更新视区信息到缩略图服务，用于后台解码优先级排序
+            _viewModel.UpdateThumbnailViewportInfo(startIndex, endIndex);
+            
+            // 实时预加载视区附近的缩略图
+            var visibleItems = _viewModel.FilteredPhotoItems.Skip(Math.Max(0, startIndex - 5)).Take((endIndex - startIndex) + 10).ToList();
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await _viewModel.PreloadThumbnailsAsync(visibleItems);
+                }
+                catch (Exception ex)
+                {
+                    DebugService.WriteLine($"实时预加载失败: {ex.Message}");
+                }
+            });
         }
 
         /// <summary>
-        /// 缩略图滚动防抖定时器 - 滚动停止后加载缩略图
+        /// 缩略图滚动防抖定时器 - 滚动停止后加载缩略图（带优先级）
         /// </summary>
         private async void ThumbnailScrollDebounceTimer_Tick(object? sender, object e)
         {
             _thumbnailScrollDebounceTimer?.Stop();
             _isThumbnailScrolling = false;
 
-            // 加载所有待加载的缩略图
+            // 计算显示区域的范围
+            var scrollViewer = ThumbnailScrollViewer;
+            var viewportWidth = scrollViewer.ViewportWidth;
+            var horizontalOffset = scrollViewer.HorizontalOffset;
+            var visibleStart = horizontalOffset;
+            var visibleEnd = horizontalOffset + viewportWidth;
+
+            // 计算视区的开始和结束索引
+            int startIndex = (int)(visibleStart / 150); // 假设每个缩略图宽度为150
+            int endIndex = (int)(visibleEnd / 150) + 1; // 加1确保覆盖完整视区
+            
+            // 更新视区信息到缩略图服务，用于后台解码优先级排序
+            _viewModel.UpdateThumbnailViewportInfo(startIndex, endIndex);
+
+            // 对待加载的缩略图进行优先级排序
             var pendingLoads = _pendingThumbnailLoads.Values.ToList();
             _pendingThumbnailLoads.Clear();
 
-            foreach (var (grid, item) in pendingLoads)
+            // 计算每个缩略图的优先级
+            var prioritizedLoads = pendingLoads.Select(item =>
             {
-                await LoadThumbnailToImageAsync(grid, item);
+                var index = _viewModel.FilteredPhotoItems.IndexOf(item.item);
+                // 假设每个缩略图的宽度为 150（根据实际布局调整）
+                var itemLeft = index * 150;
+                var itemRight = itemLeft + 150;
+
+                // 计算与显示区域的重叠程度
+                var overlapStart = Math.Max(visibleStart, itemLeft);
+                var overlapEnd = Math.Min(visibleEnd, itemRight);
+                var overlap = Math.Max(0, overlapEnd - overlapStart);
+
+                // 优先级计算：
+                // 1. 显示区域内的缩略图优先级最高
+                // 2. 显示区域附近的缩略图优先级次之
+                // 3. 其他缩略图优先级最低
+                int priority;
+                if (overlap > 0)
+                {
+                    priority = 0; // 显示区域内
+                }
+                else if (Math.Abs((itemLeft + itemRight) / 2 - (visibleStart + visibleEnd) / 2) < viewportWidth * 2)
+                {
+                    priority = 1; // 显示区域附近
+                }
+                else
+                {
+                    priority = 2; // 其他区域
+                }
+
+                return (grid: item.grid, photoItem: item.item, priority: priority, distance: Math.Abs((itemLeft + itemRight) / 2 - (visibleStart + visibleEnd) / 2));
+            })
+            .OrderBy(x => x.priority) // 按优先级排序
+            .ThenBy(x => x.distance)  // 同优先级按距离排序
+            .ToList();
+
+            // 按优先级分组并并行加载
+            var priorityGroups = prioritizedLoads.GroupBy(x => x.priority).OrderBy(g => g.Key).ToList();
+            
+            foreach (var group in priorityGroups)
+            {
+                var items = group.ToList();
+                
+                // 为不同优先级设置不同的并行度
+                int maxDegreeOfParallelism;
+                switch (group.Key)
+                {
+                    case 0: // 显示区域内，最高优先级，使用更多线程
+                        maxDegreeOfParallelism = Math.Max(4, Environment.ProcessorCount);
+                        break;
+                    case 1: // 显示区域附近，中等优先级
+                        maxDegreeOfParallelism = Math.Max(2, Environment.ProcessorCount / 2);
+                        break;
+                    default: // 其他区域，低优先级
+                        maxDegreeOfParallelism = 1;
+                        break;
+                }
+                
+                // 并行加载当前优先级的缩略图
+                var tasks = new List<Task>();
+                foreach (var item in items)
+                {
+                    // 限制并行度
+                    if (tasks.Count >= maxDegreeOfParallelism)
+                    {
+                        await Task.WhenAny(tasks);
+                        tasks.RemoveAll(t => t.IsCompleted);
+                    }
+                    
+                    tasks.Add(LoadThumbnailToImageAsync(item.grid, item.photoItem));
+                }
+                
+                // 等待当前优先级的所有任务完成
+                if (tasks.Count > 0)
+                {
+                    await Task.WhenAll(tasks);
+                }
             }
         }
 
@@ -384,13 +507,14 @@ namespace FastPick.Views
                 // 更新选中状态显示
                 UpdateSelectionVisual(thumbnailGrid, photoItem.IsSelected);
                 
-                // 优先检查缓存，如果有缓存直接设置
-                if (photoItem.Thumbnail is Microsoft.UI.Xaml.Media.Imaging.BitmapImage cachedBitmap)
+                // 优先检查缓存，使用 ThumbnailService 的缓存检查方法
+                var cachedThumbnail = await _viewModel.GetCachedThumbnailAsync(photoItem);
+                if (cachedThumbnail != null)
                 {
                     var image = thumbnailGrid.FindName("ThumbnailImage") as Image;
                     if (image != null)
                     {
-                        image.Source = cachedBitmap;
+                        image.Source = cachedThumbnail;
                     }
                     return;
                 }
@@ -461,6 +585,23 @@ namespace FastPick.Views
                     return;
                 }
                 
+                // 显示占位符
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    // 创建一个灰色的占位符
+                    var placeholderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.LightGray);
+                    var placeholder = new Microsoft.UI.Xaml.Shapes.Rectangle
+                    {
+                        Fill = placeholderBrush,
+                        Width = 150,
+                        Height = 150
+                    };
+                    
+                    // 临时替换为占位符
+                    image.Source = null;
+                    image.Opacity = 0.5;
+                }
+                
                 // 再次检查是否已取消
                 cancellationToken.ThrowIfCancellationRequested();
                 
@@ -473,8 +614,14 @@ namespace FastPick.Views
                     // 缓存到 PhotoItem
                     photoItem.Thumbnail = bitmap;
                     
-                    // 直接设置到 Image 控件
+                    // 直接设置到 Image 控件，并恢复不透明度
                     image.Source = bitmap;
+                    image.Opacity = 1.0;
+                }
+                else if (!cancellationToken.IsCancellationRequested)
+                {
+                    // 加载失败，恢复不透明度
+                    image.Opacity = 1.0;
                 }
             }
             catch (OperationCanceledException)
@@ -483,7 +630,14 @@ namespace FastPick.Views
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"加载缩略图失败: {photoItem.DisplayPath}, {ex.Message}");
+                DebugService.WriteLine($"加载缩略图失败: {photoItem.DisplayPath}, {ex.Message}");
+                
+                // 加载失败，恢复不透明度
+                var image = thumbnailGrid.FindName("ThumbnailImage") as Image;
+                if (image != null)
+                {
+                    image.Opacity = 1.0;
+                }
             }
         }
 
@@ -2342,14 +2496,14 @@ namespace FastPick.Views
                     var displayWidth = item.Width * _zoomScale * fitScale * dpiScale;
                     var displayHeight = item.Height * _zoomScale * fitScale * dpiScale;
                     
-                    System.Diagnostics.Debug.WriteLine($"[图片尺寸] 原图: {item.Width}x{item.Height}, 预览: {previewWidth:F0}x{previewHeight:F0}, 显示: {displayWidth:F0}x{displayHeight:F0}, DPI: {dpiScale:F2}");
+                    DebugService.WriteLine($"[图片尺寸] 原图: {item.Width}x{item.Height}, 预览: {previewWidth:F0}x{previewHeight:F0}, 显示: {displayWidth:F0}x{displayHeight:F0}, DPI: {dpiScale:F2}");
                     
                     // 输出解码尺寸（如果有图片源）
                     if (_frontImage?.Source is BitmapImage bitmapImage)
                     {
                         var pixelWidth = bitmapImage.PixelWidth;
                         var pixelHeight = bitmapImage.PixelHeight;
-                        System.Diagnostics.Debug.WriteLine($"[解码尺寸]: {pixelWidth}x{pixelHeight}");
+                        DebugService.WriteLine($"[解码尺寸]: {pixelWidth}x{pixelHeight}");
                     }
                     
                     // 有图片，显示相对于原图的比例

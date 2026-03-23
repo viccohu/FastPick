@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using FastPick.Services;
 
 namespace FastPick.Services;
 
@@ -34,6 +35,7 @@ public class SettingsService
         public bool DeleteToRecycleBin { get; set; } = true;
         public bool UseRawForHighResDecode { get; set; } = false;
         public PreviewLoadMode PreviewLoadMode { get; set; } = PreviewLoadMode.OnDemand;
+        public bool EnableBackgroundThumbnailDecoding { get; set; } = true;
     }
 
     private static string SettingsFilePath => Path.Combine(
@@ -196,6 +198,20 @@ public class SettingsService
         }
     }
 
+    public bool EnableBackgroundThumbnailDecoding
+    {
+        get
+        {
+            EnsureLoaded();
+            return _data.EnableBackgroundThumbnailDecoding;
+        }
+        set
+        {
+            _data.EnableBackgroundThumbnailDecoding = value;
+            Save();
+        }
+    }
+
     private void EnsureLoaded()
     {
         if (_isLoaded) return;
@@ -216,7 +232,7 @@ public class SettingsService
         }
         catch (System.Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[SettingsService] 加载文件失败: {ex.Message}");
+            DebugService.WriteLine($"[SettingsService] 加载文件失败: {ex.Message}");
             _data = new SettingsData();
         }
     }
@@ -236,7 +252,7 @@ public class SettingsService
         }
         catch (System.Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[SettingsService] 保存文件失败: {ex.Message}");
+            DebugService.WriteLine($"[SettingsService] 保存文件失败: {ex.Message}");
         }
     }
 

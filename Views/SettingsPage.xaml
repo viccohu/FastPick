@@ -162,6 +162,30 @@
                                                   OffContent=""
                                                   Toggled="AutoLoadLastPathToggle_Toggled"/>
                                 </Grid>
+
+                                <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,4"/>
+
+                                <!-- 后台持续解码缩略图 -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Spacing="4">
+                                        <TextBlock Text="后台持续解码缩略图"
+                                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                                   FontSize="14"/>
+                                        <TextBlock Text="开启后，应用会在后台持续解码所有缩略图，提高浏览流畅度"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   FontSize="12"
+                                                   TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <ToggleSwitch x:Name="BackgroundThumbnailDecodingToggle"
+                                                  Grid.Column="1"
+                                                  OnContent=""
+                                                  OffContent=""
+                                                  Toggled="BackgroundThumbnailDecodingToggle_Toggled"/>
+                                </Grid>
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -246,6 +270,59 @@
                                               OffContent=""
                                               Toggled="DeleteToRecycleBinToggle_Toggled"/>
                             </Grid>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- 缓存管理 -->
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="缓存管理"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+
+                        <Border Background="{StaticResource ElevatedBackgroundBrush}"
+                                CornerRadius="8"
+                                Padding="16,12">
+                            <StackPanel Spacing="16">
+                                <!-- 缓存大小显示 -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Spacing="4">
+                                        <TextBlock Text="缩略图缓存"
+                                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                                   FontSize="14"/>
+                                        <TextBlock x:Name="CacheSizeTextBlock"
+                                                   Text="计算中..."
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   FontSize="12"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,4"/>
+
+                                <!-- 按钮区域 -->
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="12"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Button x:Name="OpenCacheFolderButton"
+                                            Grid.Column="0"
+                                            Content="打开缓存目录"
+                                            HorizontalAlignment="Stretch"
+                                            Style="{StaticResource AccentButtonStyle}"
+                                            Click="OpenCacheFolderButton_Click"/>
+                                    <Button x:Name="ClearCacheButton"
+                                            Grid.Column="2"
+                                            Content="清除缓存"
+                                            HorizontalAlignment="Stretch"
+                                            Click="ClearCacheButton_Click"/>
+                                </Grid>
+                            </StackPanel>
                         </Border>
                     </StackPanel>
 

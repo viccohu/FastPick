@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace FastPick.ViewModels;
 
@@ -177,6 +178,26 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
     /// <summary>
+    /// 更新缩略图视区信息，用于后台解码优先级排序
+    /// </summary>
+    /// <param name="startIndex">视区开始索引</param>
+    /// <param name="endIndex">视区结束索引</param>
+    public void UpdateThumbnailViewportInfo(int startIndex, int endIndex)
+    {
+        _thumbnailService.UpdateViewportInfo(startIndex, endIndex);
+    }
+
+    /// <summary>
+    /// 预加载缩略图
+    /// </summary>
+    /// <param name="photoItems">要预加载的照片项</param>
+    /// <returns></returns>
+    public async Task PreloadThumbnailsAsync(IEnumerable<PhotoItem> photoItems)
+    {
+        await _thumbnailService.PreloadThumbnailsAsync(photoItems);
+    }
+
+    /// <summary>
     /// 加载图片
     /// </summary>
     public async Task LoadPhotosAsync(IProgress<(int current, int total, string message)>? progress = null, CancellationToken cancellationToken = default)
@@ -296,15 +317,22 @@ public class MainViewModel : INotifyPropertyChanged
             // 阶段 C：后台读取完整元数据
             _ = LoadMetadataAsync(token);
 
+            // 阶段 D：后台持续解码缩略图
+            if (_settingsService.EnableBackgroundThumbnailDecoding)
+            {
+                _ = _thumbnailService.StartBackgroundDecodingAsync(PhotoItems, token);
+                DebugService.WriteLine("启动后台缩略图解码任务");
+            }
+
             progress?.Report((100, 100, $"加载完成，共 {totalCount} 张照片"));
         }
         catch (OperationCanceledException)
         {
-            System.Diagnostics.Debug.WriteLine("[增量加载] 任务已取消");
+            DebugService.WriteLine("[增量加载] 任务已取消");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[增量加载] 出错: {ex.Message}");
+            DebugService.WriteLine($"[增量加载] 出错: {ex.Message}");
         }
     }
 
@@ -328,7 +356,7 @@ public class MainViewModel : INotifyPropertyChanged
         }
         catch (OperationCanceledException)
         {
-            System.Diagnostics.Debug.WriteLine("[元数据加载] 任务已取消");
+            DebugService.WriteLine("[元数据加载] 任务已取消");
         }
     }
 
@@ -487,7 +515,7 @@ public class MainViewModel : INotifyPropertyChanged
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"删除文件失败: {ex.Message}");
+                DebugService.WriteLine($"删除文件失败: {ex.Message}");
             }
         }
 
@@ -516,7 +544,7 @@ public class MainViewModel : INotifyPropertyChanged
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"删除文件失败: {filePath}, {ex.Message}");
+                DebugService.WriteLine($"删除文件失败: {filePath}, {ex.Message}");
                 throw;
             }
         });
@@ -824,6 +852,16 @@ public class MainViewModel : INotifyPropertyChanged
         return await _thumbnailService.GetThumbnailAsync(item, cancellationToken);
     }
 
+    /// <summary>
+    /// 获取缓存的缩略图（优先从内存缓存和本地缓存加载）
+    /// </summary>
+    /// <param name="photoItem">照片项</param>
+    /// <returns>缓存的缩略图，如果不存在则返回 null</returns>
+    public async Task<BitmapImage?> GetCachedThumbnailAsync(PhotoItem photoItem)
+    {
+        return await _thumbnailService.GetCachedThumbnailAsync(photoItem);
+    }
+
 
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -914,16 +952,16 @@ public class MainViewModel : INotifyPropertyChanged
 
     public void DebugFilter()
     {
-        System.Diagnostics.Debug.WriteLine($"=== 筛选调试 ===");
-        System.Diagnostics.Debug.WriteLine($"筛选类型: {_filterState.FileType}");
-        System.Diagnostics.Debug.WriteLine($"星级条件: {_filterState.RatingCondition}, 值: {_filterState.RatingValue}");
-        System.Diagnostics.Debug.WriteLine($"总图片数: {PhotoItems.Count}");
+        DebugService.WriteLine($"=== 筛选调试 ===");
+        DebugService.WriteLine($"筛选类型: {_filterState.FileType}");
+        DebugService.WriteLine($"星级条件: {_filterState.RatingCondition}, 值: {_filterState.RatingValue}");
+        DebugService.WriteLine($"总图片数: {PhotoItems.Count}");
         
         int both = PhotoItems.Count(p => p.HasJpg && p.HasRaw);
         int jpgOnly = PhotoItems.Count(p => p.HasJpg && !p.HasRaw);
         int rawOnly = PhotoItems.Count(p => p.HasRaw && !p.HasJpg);
-        System.Diagnostics.Debug.WriteLine($"双文件: {both}, 仅JPG: {jpgOnly}, 仅RAW: {rawOnly}");
-        System.Diagnostics.Debug.WriteLine($"筛选后数量: {FilteredPhotoItems.Count}");
+        DebugService.WriteLine($"双文件: {both}, 仅JPG: {jpgOnly}, 仅RAW: {rawOnly}");
+        DebugService.WriteLine($"筛选后数量: {FilteredPhotoItems.Count}");
     }
 
     #endregion
