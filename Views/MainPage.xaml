@@ -127,6 +127,9 @@
               Background="{StaticResource SurfaceBackgroundBrush}"
               BorderBrush="{StaticResource BorderBrush}"
               BorderThickness="0,0,0,1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
@@ -134,7 +137,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- 左侧功能按钮（图标化） -->
-            <StackPanel x:Name="TitleBarButtonsPanel" Grid.Column="0" Orientation="Horizontal" Margin="8,0" Spacing="4">
+            <StackPanel x:Name="TitleBarButtonsPanel" Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Margin="8,0" Spacing="4">
                 <Button x:Name="PathButton"
                         Content="&#xE8B7;"
                         FontFamily="Segoe Fluent Icons"
@@ -182,41 +185,54 @@
                         ToolTipService.ToolTip="设置" />
             </StackPanel>
 
-            <!-- 中间标题（可拖拽区域） -->
-            <Grid Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                
+            <!-- 中间区域（包含标题和进度条） -->
+            <Grid Grid.Row="0" Grid.Column="1" VerticalAlignment="Center">
                 <!-- 标题文本 -->
-                <!-- <TextBlock x:Name="TitleBarText"
-                           Grid.Row="0"
+                <TextBlock x:Name="TitleBarText"
                            Text=""
                            HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
                            FontSize="16"
                            Foreground="{StaticResource TextPrimaryBrush}" />
-                 -->
-                <!-- 进度条方框 -->
-                <Border x:Name="ProgressBox"
-                        Grid.Row="1"
-                        Width="240"
-                        Height="30"
+
+                <!-- 进度条 -->
+                <Border Width="240"
+                        Height="35"
                         Background="{StaticResource HoverBackgroundBrush}"
                         CornerRadius="4"
-                        Visibility="{Binding IsProgressVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                        Padding="0">
-                    <!-- 行为名称 -->
-                    <TextBlock Text="{Binding ProgressText}"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               FontSize="11"
-                               Foreground="{StaticResource TextSecondaryBrush}" />
+                        Padding="12,0"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding IsProgressVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        
+                        <!-- 进度标题 -->
+                        <TextBlock Grid.Row="0"
+                                   Text="{Binding ProgressTitle}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}" />
+                        
+                        <!-- 进度条 -->
+                        <ProgressBar Grid.Row="1"
+                                     Value="{Binding ProgressValue}"
+                                     Maximum="100"
+                                     Minimum="0"
+                                     Height="4"
+                                     Margin="0,4,0,0"
+                                     Foreground="{StaticResource TextSecondaryBrush}"
+                                     Background="{StaticResource DisabledBackgroundBrush}" />
+                    </Grid>
                 </Border>
             </Grid>
 
             <!-- 右侧窗口控制（使用系统标题栏按钮） -->
-            <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="8,0" x:Name="WindowControlsPanel">
+            <StackPanel Grid.Row="0" Grid.Column="2" Orientation="Horizontal" Margin="8,0" x:Name="WindowControlsPanel">
             </StackPanel>
         </Grid>
 
@@ -1153,8 +1169,6 @@
                 </ScrollViewer>
             </Grid>
         </Border>
-
-
 
         <!-- ==================== 底部工具栏 (Row 4) ==================== -->
         <Grid Grid.Row="4" 

@@ -99,7 +99,6 @@ namespace FastPick.Views
             
             // 初始化 ViewModel
             _viewModel = new MainViewModel();
-            _viewModel.InitializeDispatcherQueue(); // 初始化 MainViewModel 的 DispatcherQueue
             _viewModel.InitializeThumbnailServiceDispatcherQueue(); // 初始化缩略图服务的 DispatcherQueue
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
             
@@ -159,6 +158,8 @@ namespace FastPick.Views
         private void MainPage_Loaded(object sender, RoutedEventArgs e)
         {
             LoadSavedPaths();
+            
+            _viewModel.SetDispatcherQueue(Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
         }
 
         private void MainPage_Unloaded(object sender, RoutedEventArgs e)
@@ -1729,33 +1730,31 @@ namespace FastPick.Views
                     MinRating = minRatingForRaw
                 };
 
-                var photos = _viewModel.PhotoItems.ToList();
-                _viewModel.StartProgress("正在导出", photos.Count);
-
-                var progress = new Progress<Services.FileOperationService.ExportProgress>(p =>
+                var exportProgress = new Progress<Services.FileOperationService.ExportProgress>(progress =>
                 {
-                    _viewModel.UpdateProgress(p.ProcessedFiles);
+                    var currentProgress = (double)progress.ProcessedFiles / progress.TotalFiles * 100;
+                    _viewModel.UpdateProgress(currentProgress);
                 });
 
+                _viewModel.StartProgress("正在导出");
+
                 var (jpgCount, rawCount) = await Services.FileOperationService.ExportPhotosAsync(
-                    photos,
+                    _viewModel.PhotoItems.ToList(),
                     exportPath,
                     options,
-                    progress,
+                    exportProgress,
                     default
                 );
 
-                _viewModel.EndProgress();
                 ShowToast($"导出完成：JPG {jpgCount} 张，RAW {rawCount} 张");
             }
             catch (Exception ex)
             {
-                _viewModel.EndProgress();
                 ShowToast($"导出失败：{ex.Message}");
-
             }
             finally
             {
+                _viewModel.EndProgress();
                 _isExporting = false;
             }
         }

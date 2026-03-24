@@ -4,7 +4,6 @@ using Windows.Storage;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -974,7 +973,7 @@ public class ThumbnailService
     /// <summary>
     /// 后台持续解码缩略图
     /// </summary>
-    public async Task StartBackgroundDecodingAsync(IEnumerable<PhotoItem> allPhotoItems, IProgress<int>? progress = null, CancellationToken cancellationToken = default)
+    public async Task StartBackgroundDecodingAsync(IEnumerable<PhotoItem> allPhotoItems, CancellationToken cancellationToken = default)
     {
         // DebugService.WriteLine("[StartBackgroundDecoding] 开始后台解码缩略图");
         try
@@ -995,8 +994,6 @@ public class ThumbnailService
             }
 
             // DebugService.WriteLine($"[StartBackgroundDecoding] 发现 {itemsWithoutThumbnail.Count} 个需要解码的缩略图");
-            int totalCount = itemsWithoutThumbnail.Count;
-            int processedCount = 0;
             // 根据视区信息对缩略图进行优先级排序
             var prioritizedItems = itemsWithoutThumbnail.OrderBy(item =>
             {
@@ -1046,14 +1043,10 @@ public class ThumbnailService
                             // DebugService.WriteLine($"[StartBackgroundDecoding] 解码: {Path.GetFileName(item.DisplayPath)}");
                             await GetThumbnailAsync(item, cancellationToken);
                             // DebugService.WriteLine($"[StartBackgroundDecoding] 解码完成: {Path.GetFileName(item.DisplayPath)}");
-                            processedCount++;
-                            progress?.Report(processedCount);
                         }
                         else
                         {
                             // DebugService.WriteLine($"[StartBackgroundDecoding] 跳过已解码: {Path.GetFileName(item.DisplayPath)}");
-                            processedCount++;
-                            progress?.Report(processedCount);
                         }
                     }
                     catch (OperationCanceledException)
@@ -1062,8 +1055,7 @@ public class ThumbnailService
                     }
                     catch (Exception ex)
                     {
-                        DebugService.WriteLine($"[后台解码] 出错: {item.DisplayPath}, {ex.Message}");
-                        DebugService.WriteLine($"[后台解码] 堆栈跟踪: {ex.StackTrace}");
+                        // DebugService.WriteLine($"后台解码失败: {item.DisplayPath}, {ex.Message}");
                     }
                 }
 

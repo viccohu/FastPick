@@ -4,8 +4,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Dispatching;
 
 namespace FastPick.ViewModels;
 
@@ -18,7 +18,6 @@ public class MainViewModel : INotifyPropertyChanged
     private readonly ThumbnailService _thumbnailService;
     private readonly JpgMetadataService _jpgMetadataService;
     private SettingsService _settingsService => SettingsService.Instance;
-    private DispatcherQueue? _dispatcherQueue;
 
     // 增量加载配置
     private const int InitialBatchSize = 100;
@@ -126,133 +125,6 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    // 进度条是否可见
-    private bool _isProgressVisible;
-    public bool IsProgressVisible
-    {
-        get => _isProgressVisible;
-        set
-        {
-            if (_isProgressVisible != value)
-            {
-                _isProgressVisible = value;
-                OnPropertyChanged();
-            }
-        }
-    }
-
-    // 当前进度值
-    private int _progressValue;
-    public int ProgressValue
-    {
-        get => _progressValue;
-        set
-        {
-            if (_progressValue != value)
-            {
-                _progressValue = value;
-                OnPropertyChanged();
-            }
-        }
-    }
-
-    // 进度最大值
-    private int _progressMaximum = 100;
-    public int ProgressMaximum
-    {
-        get => _progressMaximum;
-        set
-        {
-            if (_progressMaximum != value)
-            {
-                _progressMaximum = value;
-                OnPropertyChanged();
-            }
-        }
-    }
-
-    // 进度说明文字
-    private string _progressText = string.Empty;
-    public string ProgressText
-    {
-        get => _progressText;
-        set
-        {
-            if (_progressText != value)
-            {
-                _progressText = value;
-                OnPropertyChanged();
-            }
-        }
-    }
-
-    /// <summary>
-    /// 开始进度显示
-    /// </summary>
-    /// <param name="description">进度说明</param>
-    /// <param name="maximum">进度最大值</param>
-    public void StartProgress(string description, int maximum = 100)
-    {
-        if (_dispatcherQueue != null)
-        {
-            _dispatcherQueue.TryEnqueue(() =>
-            {
-                ProgressText = description;
-                ProgressMaximum = maximum;
-                ProgressValue = 0;
-                IsProgressVisible = true;
-            });
-        }
-        else
-        {
-            ProgressText = description;
-            ProgressMaximum = maximum;
-            ProgressValue = 0;
-            IsProgressVisible = true;
-        }
-    }
-
-    /// <summary>
-    /// 更新进度值
-    /// </summary>
-    /// <param name="value">当前进度值</param>
-    public void UpdateProgress(int value)
-    {
-        if (_dispatcherQueue != null)
-        {
-            _dispatcherQueue.TryEnqueue(() =>
-            {
-                ProgressValue = Math.Clamp(value, 0, ProgressMaximum);
-            });
-        }
-        else
-        {
-            ProgressValue = Math.Clamp(value, 0, ProgressMaximum);
-        }
-    }
-
-    /// <summary>
-    /// 结束进度显示
-    /// </summary>
-    public void EndProgress()
-    {
-        if (_dispatcherQueue != null)
-        {
-            _dispatcherQueue.TryEnqueue(() =>
-            {
-                IsProgressVisible = false;
-                ProgressValue = 0;
-                ProgressText = string.Empty;
-            });
-        }
-        else
-        {
-            IsProgressVisible = false;
-            ProgressValue = 0;
-            ProgressText = string.Empty;
-        }
-    }
-
     // 预删除数量
     public int MarkedForDeletionCount => MarkedForDeletionItems.Count;
 
@@ -299,6 +171,99 @@ public class MainViewModel : INotifyPropertyChanged
     
     public int FilteredCount => FilteredPhotoItems.Count;
 
+    // 进度条显示状态
+    private bool _isProgressVisible;
+    public bool IsProgressVisible
+    {
+        get => _isProgressVisible;
+        set
+        {
+            if (_isProgressVisible != value)
+            {
+                _isProgressVisible = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    // 进度条标题
+    private string _progressTitle = string.Empty;
+    public string ProgressTitle
+    {
+        get => _progressTitle;
+        set
+        {
+            if (_progressTitle != value)
+            {
+                _progressTitle = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    // 进度值 (0-100)
+    private double _progressValue;
+    public double ProgressValue
+    {
+        get => _progressValue;
+        set
+        {
+            if (_progressValue != value)
+            {
+                _progressValue = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    // DispatcherQueue 用于线程安全更新
+    private DispatcherQueue? _dispatcherQueue;
+
+    public void SetDispatcherQueue(DispatcherQueue dispatcherQueue)
+    {
+        _dispatcherQueue = dispatcherQueue;
+    }
+
+    private void UpdateOnUIThread(Action action)
+    {
+        if (_dispatcherQueue != null)
+        {
+            _dispatcherQueue.TryEnqueue(() => action());
+        }
+        else
+        {
+            action();
+        }
+    }
+
+    public void StartProgress(string title)
+    {
+        UpdateOnUIThread(() =>
+        {
+            ProgressTitle = title;
+            ProgressValue = 0;
+            IsProgressVisible = true;
+        });
+    }
+
+    public void UpdateProgress(double value)
+    {
+        UpdateOnUIThread(() =>
+        {
+            ProgressValue = Math.Clamp(value, 0, 100);
+        });
+    }
+
+    public void EndProgress()
+    {
+        UpdateOnUIThread(() =>
+        {
+            IsProgressVisible = false;
+            ProgressValue = 0;
+            ProgressTitle = string.Empty;
+        });
+    }
+
     public MainViewModel()
     {
         _imageScanService = new ImageScanService();
@@ -312,14 +277,6 @@ public class MainViewModel : INotifyPropertyChanged
     public void InitializeThumbnailServiceDispatcherQueue()
     {
         _thumbnailService.InitializeDispatcherQueue();
-    }
-
-    /// <summary>
-    /// 初始化 MainViewModel 的 DispatcherQueue（必须在 UI 线程上调用）
-    /// </summary>
-    public void InitializeDispatcherQueue()
-    {
-        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
     }
 
     /// <summary>
@@ -476,23 +433,14 @@ public class MainViewModel : INotifyPropertyChanged
                 {
                     try
                     {
-                        var items = PhotoItems.ToList();
-                        var itemsWithoutThumbnail = items.Where(item => item.Thumbnail == null).Count();
-                        if (itemsWithoutThumbnail > 0)
-                        {
-                            StartProgress("正在加载缩略图", 1);
-                            await _thumbnailService.StartBackgroundDecodingAsync(items, null, token);
-                            EndProgress();
-                        }
-                        DebugService.WriteLine("启动后台缩略图解码任务");
+                        await _thumbnailService.StartBackgroundDecodingAsync(PhotoItems, token);
                     }
                     catch (Exception ex)
                     {
                         DebugService.WriteLine($"[后台解码] 出错: {ex.Message}");
-                        DebugService.WriteLine($"[后台解码] 堆栈跟踪: {ex.StackTrace}");
-                        EndProgress();
                     }
-                }, token);
+                });
+                DebugService.WriteLine("启动后台缩略图解码任务");
             }
 
             progress?.Report((100, 100, $"加载完成，共 {totalCount} 张照片"));
@@ -661,16 +609,18 @@ public class MainViewModel : INotifyPropertyChanged
     public async Task ExecuteDeletionAsync(DeleteOptionEnum option)
     {
         var itemsToDelete = MarkedForDeletionItems.ToList();
-        if (itemsToDelete.Count == 0)
+        int totalItems = itemsToDelete.Count;
+        
+        if (totalItems == 0)
             return;
 
-        StartProgress("正在删除", itemsToDelete.Count);
-        int deletedCount = 0;
+        StartProgress("正在删除");
 
         try
         {
-            foreach (var item in itemsToDelete)
+            for (int i = 0; i < totalItems; i++)
             {
+                var item = itemsToDelete[i];
                 try
                 {
                     // 删除文件
@@ -696,8 +646,9 @@ public class MainViewModel : INotifyPropertyChanged
                     DebugService.WriteLine($"删除文件失败: {ex.Message}");
                 }
 
-                deletedCount++;
-                UpdateProgress(deletedCount);
+                // 更新进度
+                var progress = (double)(i + 1) / totalItems * 100;
+                UpdateProgress(progress);
             }
 
             OnPropertyChanged(nameof(TotalCount));
