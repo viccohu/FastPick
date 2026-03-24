@@ -22,3 +22,4 @@ public static class DebugService
         Debug.WriteLine(message, category);
     }
 }
+    

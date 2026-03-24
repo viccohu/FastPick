@@ -183,13 +183,37 @@
             </StackPanel>
 
             <!-- 中间标题（可拖拽区域） -->
-            <TextBlock Grid.Column="1"
-                       x:Name="TitleBarText"
-                       Text=""
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       FontSize="16"
-                       Foreground="{StaticResource TextPrimaryBrush}" />
+            <Grid Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                
+                <!-- 标题文本 -->
+                <!-- <TextBlock x:Name="TitleBarText"
+                           Grid.Row="0"
+                           Text=""
+                           HorizontalAlignment="Center"
+                           FontSize="16"
+                           Foreground="{StaticResource TextPrimaryBrush}" />
+                 -->
+                <!-- 进度条方框 -->
+                <Border x:Name="ProgressBox"
+                        Grid.Row="1"
+                        Width="240"
+                        Height="30"
+                        Background="{StaticResource HoverBackgroundBrush}"
+                        CornerRadius="4"
+                        Visibility="{Binding IsProgressVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                        Padding="0">
+                    <!-- 行为名称 -->
+                    <TextBlock Text="{Binding ProgressText}"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="11"
+                               Foreground="{StaticResource TextSecondaryBrush}" />
+                </Border>
+            </Grid>
 
             <!-- 右侧窗口控制（使用系统标题栏按钮） -->
             <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="8,0" x:Name="WindowControlsPanel">
@@ -1129,6 +1153,8 @@
                 </ScrollViewer>
             </Grid>
         </Border>
+
+
 
         <!-- ==================== 底部工具栏 (Row 4) ==================== -->
         <Grid Grid.Row="4" 

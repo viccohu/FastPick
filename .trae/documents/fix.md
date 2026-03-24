@@ -143,3 +143,15 @@ public async Task ClearCacheAsync(Microsoft.UI.Dispatching.DispatcherQueue dispa
 ### 总结
 
 程序崩溃的主要诱因是 **SettingsPage 操作了错误的 Service 实例**，以及在**非 UI 线程尝试批量重置图片属性**。修正方法名的一致性并引入 `DispatcherQueue` 即可解决。
+
+<br />
+
+<br />
+
+┌──────────────────────────────────────────────────┐
+│ 正在导出（行为名称居中）                             │
+│ 进度条                                            │
+└──────────────────────────────────────────────────┘
+高度40px，上下居中
+方框背景：HoverBackgroundBrush色
+文字和进度条一个色

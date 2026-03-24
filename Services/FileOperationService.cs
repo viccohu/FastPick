@@ -16,6 +16,13 @@ public static class FileOperationService
     private const int FOF_ALLOWUNDO = 0x0040;
     private const int FOF_NOCONFIRMATION = 0x0010;
     private const int FOF_SILENT = 0x0004;
+    
+    // 卷类型常量
+    private const int DRIVE_REMOVABLE = 2; // 可移动驱动器（如U盘）
+    private const int DRIVE_FIXED = 3;     // 固定驱动器（如本地硬盘）
+    private const int DRIVE_REMOTE = 4;    // 网络驱动器
+    private const int DRIVE_CDROM = 5;     // CD-ROM驱动器
+    private const int DRIVE_RAMDISK = 6;    // RAM磁盘
 
     /// <summary>
     /// 导出选项
@@ -64,6 +71,34 @@ public static class FileOperationService
     /// <param name="filePath">要删除的文件路径</param>
     /// <param name="permanentlyDelete">是否永久删除（不放入回收站）</param>
     /// <returns>是否成功</returns>
+    /// <summary>
+    /// 检测文件所在介质是否支持回收站
+    /// </summary>
+    /// <param name="filePath">文件路径</param>
+    /// <returns>是否支持回收站</returns>
+    public static bool IsRecycleBinSupported(string filePath)
+    {
+        try
+        {
+            // 获取文件所在的驱动器根路径
+            string driveRoot = Path.GetPathRoot(filePath) ?? string.Empty;
+            if (string.IsNullOrEmpty(driveRoot))
+                return false;
+
+            // 获取驱动器类型
+            uint driveType = GetDriveType(driveRoot);
+
+            // 只有固定驱动器（本地硬盘）支持回收站
+            // 可移动驱动器（U盘）、网络驱动器、CD-ROM、RAM磁盘通常不支持
+            return driveType == DRIVE_FIXED;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"检测回收站支持失败: {ex.Message}");
+            return false;
+        }
+    }
+
     public static bool MoveToRecycleBin(string filePath, bool permanentlyDelete = false)
     {
         if (!File.Exists(filePath))
@@ -71,7 +106,16 @@ public static class FileOperationService
 
         try
         {
-            if (permanentlyDelete)
+            // 检查是否需要永久删除
+            bool shouldPermanentlyDelete = permanentlyDelete;
+            
+            // 如果用户选择移动到回收站，但介质不支持回收站，则自动切换到永久删除
+            if (!permanentlyDelete && !IsRecycleBinSupported(filePath))
+            {
+                shouldPermanentlyDelete = true;
+            }
+
+            if (shouldPermanentlyDelete)
             {
                 File.Delete(filePath);
                 return true;
@@ -331,6 +375,9 @@ public static class FileOperationService
     /// </summary>
     [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
     private static extern int SHFileOperation(ref SHFILEOPSTRUCT lpFileOp);
+    
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+    private static extern uint GetDriveType(string lpRootPathName);
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     private struct SHFILEOPSTRUCT

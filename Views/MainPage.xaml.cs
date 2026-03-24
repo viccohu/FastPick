@@ -99,6 +99,7 @@ namespace FastPick.Views
             
             // 初始化 ViewModel
             _viewModel = new MainViewModel();
+            _viewModel.InitializeDispatcherQueue(); // 初始化 MainViewModel 的 DispatcherQueue
             _viewModel.InitializeThumbnailServiceDispatcherQueue(); // 初始化缩略图服务的 DispatcherQueue
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
             
@@ -1512,7 +1513,18 @@ namespace FastPick.Views
 
         private async void LoadButton_Click(object sender, RoutedEventArgs e)
         {
-            if (_isLoadingPhotos) return;
+            if (_isLoadingPhotos)
+            {
+                DebugService.WriteLine("[LoadButton] 按钮已被锁定，重置状态");
+                _isLoadingPhotos = false;
+            }
+            
+            if (_viewModel.IsLoading)
+            {
+                DebugService.WriteLine("[LoadButton] ViewModel 正在加载中，跳过");
+                return;
+            }
+            
             _isLoadingPhotos = true;
 
             try
@@ -1520,7 +1532,13 @@ namespace FastPick.Views
                 _viewModel.Path1 = Path1TextBox.Text;
                 _viewModel.Path2 = Path2TextBox.Text;
                 
+                DebugService.WriteLine($"[LoadButton] 开始载入图片，Path1: {Path1TextBox.Text}, Path2: {Path2TextBox.Text}");
                 await _viewModel.LoadPhotosAsync(null);
+                DebugService.WriteLine("[LoadButton] 载入完成");
+            }
+            catch (Exception ex)
+            {
+                DebugService.WriteLine($"[LoadButton] 载入失败: {ex.Message}");
             }
             finally
             {
@@ -1711,23 +1729,28 @@ namespace FastPick.Views
                     MinRating = minRatingForRaw
                 };
 
-                _viewModel.IsLoading = true;
-                _viewModel.LoadingMessage = "正在导出图片...";
+                var photos = _viewModel.PhotoItems.ToList();
+                _viewModel.StartProgress("正在导出", photos.Count);
+
+                var progress = new Progress<Services.FileOperationService.ExportProgress>(p =>
+                {
+                    _viewModel.UpdateProgress(p.ProcessedFiles);
+                });
 
                 var (jpgCount, rawCount) = await Services.FileOperationService.ExportPhotosAsync(
-                    _viewModel.PhotoItems.ToList(),
+                    photos,
                     exportPath,
                     options,
-                    null,
+                    progress,
                     default
                 );
 
-                _viewModel.IsLoading = false;
+                _viewModel.EndProgress();
                 ShowToast($"导出完成：JPG {jpgCount} 张，RAW {rawCount} 张");
             }
             catch (Exception ex)
             {
-                _viewModel.IsLoading = false;
+                _viewModel.EndProgress();
                 ShowToast($"导出失败：{ex.Message}");
 
             }
@@ -1818,11 +1841,30 @@ namespace FastPick.Views
                 _ => ""
             };
 
+            bool recycleBinSupported = true;
+            string deleteMessage = "文件将移至回收站。";
+            string dialogTitle = "确认删除";
+
+            if (_viewModel.MarkedForDeletionItems.Count > 0)
+            {
+                var firstItem = _viewModel.MarkedForDeletionItems[0];
+                string? filePath = !string.IsNullOrEmpty(firstItem.JpgPath) ? firstItem.JpgPath : firstItem.RawPath;
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    recycleBinSupported = FastPick.Services.FileOperationService.IsRecycleBinSupported(filePath);
+                    if (!recycleBinSupported)
+                    {
+                        deleteMessage = "当前存储介质不支持回收站，文件将被永久删除。";
+                        dialogTitle = "确认永久删除";
+                    }
+                }
+            }
+
             var confirmDialog = new Microsoft.UI.Xaml.Controls.ContentDialog
             {
-                Title = "确认删除",
-                Content = $"确定要删除 {_viewModel.MarkedForDeletionCount} 张照片吗？\n\n删除选项: {optionText}\n\n文件将移至回收站。",
-                PrimaryButtonText = "删除",
+                Title = dialogTitle,
+                Content = $"确定要删除 {_viewModel.MarkedForDeletionCount} 张照片吗？\n\n删除选项: {optionText}\n\n{deleteMessage}",
+                PrimaryButtonText = recycleBinSupported ? "删除" : "永久删除",
                 CloseButtonText = "取消",
                 DefaultButton = Microsoft.UI.Xaml.Controls.ContentDialogButton.Close,
                 XamlRoot = this.XamlRoot
@@ -1832,9 +1874,22 @@ namespace FastPick.Views
 
             if (result == Microsoft.UI.Xaml.Controls.ContentDialogResult.Primary)
             {
-                var deletedCount = _viewModel.MarkedForDeletionCount;
-                await _viewModel.ExecuteDeletionAsync(deleteOption);
-                ShowToast($"已删除 {deletedCount} 张照片");
+                bool originalSetting = _settingsService.DeleteToRecycleBin;
+                try
+                {
+                    if (!recycleBinSupported)
+                    {
+                        _settingsService.DeleteToRecycleBin = false;
+                    }
+
+                    var deletedCount = _viewModel.MarkedForDeletionCount;
+                    await _viewModel.ExecuteDeletionAsync(deleteOption);
+                    ShowToast($"已删除 {deletedCount} 张照片");
+                }
+                finally
+                {
+                    _settingsService.DeleteToRecycleBin = originalSetting;
+                }
             }
         }
 

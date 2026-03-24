@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace FastPick.ViewModels;
@@ -17,6 +18,7 @@ public class MainViewModel : INotifyPropertyChanged
     private readonly ThumbnailService _thumbnailService;
     private readonly JpgMetadataService _jpgMetadataService;
     private SettingsService _settingsService => SettingsService.Instance;
+    private DispatcherQueue? _dispatcherQueue;
 
     // 增量加载配置
     private const int InitialBatchSize = 100;
@@ -124,6 +126,133 @@ public class MainViewModel : INotifyPropertyChanged
         }
     }
 
+    // 进度条是否可见
+    private bool _isProgressVisible;
+    public bool IsProgressVisible
+    {
+        get => _isProgressVisible;
+        set
+        {
+            if (_isProgressVisible != value)
+            {
+                _isProgressVisible = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    // 当前进度值
+    private int _progressValue;
+    public int ProgressValue
+    {
+        get => _progressValue;
+        set
+        {
+            if (_progressValue != value)
+            {
+                _progressValue = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    // 进度最大值
+    private int _progressMaximum = 100;
+    public int ProgressMaximum
+    {
+        get => _progressMaximum;
+        set
+        {
+            if (_progressMaximum != value)
+            {
+                _progressMaximum = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    // 进度说明文字
+    private string _progressText = string.Empty;
+    public string ProgressText
+    {
+        get => _progressText;
+        set
+        {
+            if (_progressText != value)
+            {
+                _progressText = value;
+                OnPropertyChanged();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 开始进度显示
+    /// </summary>
+    /// <param name="description">进度说明</param>
+    /// <param name="maximum">进度最大值</param>
+    public void StartProgress(string description, int maximum = 100)
+    {
+        if (_dispatcherQueue != null)
+        {
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                ProgressText = description;
+                ProgressMaximum = maximum;
+                ProgressValue = 0;
+                IsProgressVisible = true;
+            });
+        }
+        else
+        {
+            ProgressText = description;
+            ProgressMaximum = maximum;
+            ProgressValue = 0;
+            IsProgressVisible = true;
+        }
+    }
+
+    /// <summary>
+    /// 更新进度值
+    /// </summary>
+    /// <param name="value">当前进度值</param>
+    public void UpdateProgress(int value)
+    {
+        if (_dispatcherQueue != null)
+        {
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                ProgressValue = Math.Clamp(value, 0, ProgressMaximum);
+            });
+        }
+        else
+        {
+            ProgressValue = Math.Clamp(value, 0, ProgressMaximum);
+        }
+    }
+
+    /// <summary>
+    /// 结束进度显示
+    /// </summary>
+    public void EndProgress()
+    {
+        if (_dispatcherQueue != null)
+        {
+            _dispatcherQueue.TryEnqueue(() =>
+            {
+                IsProgressVisible = false;
+                ProgressValue = 0;
+                ProgressText = string.Empty;
+            });
+        }
+        else
+        {
+            IsProgressVisible = false;
+            ProgressValue = 0;
+            ProgressText = string.Empty;
+        }
+    }
+
     // 预删除数量
     public int MarkedForDeletionCount => MarkedForDeletionItems.Count;
 
@@ -186,6 +315,14 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
     /// <summary>
+    /// 初始化 MainViewModel 的 DispatcherQueue（必须在 UI 线程上调用）
+    /// </summary>
+    public void InitializeDispatcherQueue()
+    {
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+    }
+
+    /// <summary>
     /// 更新缩略图视区信息，用于后台解码优先级排序
     /// </summary>
     /// <param name="startIndex">视区开始索引</param>
@@ -211,16 +348,21 @@ public class MainViewModel : INotifyPropertyChanged
     public async Task LoadPhotosAsync(IProgress<(int current, int total, string message)>? progress = null, CancellationToken cancellationToken = default)
     {
         if (!_imageScanService.IsPathValid(Path1))
+        {
+            DebugService.WriteLine($"[LoadPhotos] 路径无效，Path1: {Path1}");
             return;
+        }
 
         IsLoading = true;
         LoadingMessage = "正在扫描图片...";
+        DebugService.WriteLine("[LoadPhotos] 开始加载图片");
 
         try
         {
             // 取消之前的增量加载任务
             _incrementalLoadCts?.Cancel();
             _incrementalLoadCts?.Dispose();
+            _incrementalLoadCts = null;
 
             // 清空现有数据
             PhotoItems.Clear();
@@ -238,6 +380,8 @@ public class MainViewModel : INotifyPropertyChanged
 
             if (quickItems.Count == 0)
             {
+                ApplyFilter();
+                OnPropertyChanged(nameof(TotalCount));
                 return;
             }
 
@@ -328,8 +472,27 @@ public class MainViewModel : INotifyPropertyChanged
             // 阶段 D：后台持续解码缩略图
             if (_settingsService.EnableBackgroundThumbnailDecoding)
             {
-                _ = _thumbnailService.StartBackgroundDecodingAsync(PhotoItems, token);
-                DebugService.WriteLine("启动后台缩略图解码任务");
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        var items = PhotoItems.ToList();
+                        var itemsWithoutThumbnail = items.Where(item => item.Thumbnail == null).Count();
+                        if (itemsWithoutThumbnail > 0)
+                        {
+                            StartProgress("正在加载缩略图", 1);
+                            await _thumbnailService.StartBackgroundDecodingAsync(items, null, token);
+                            EndProgress();
+                        }
+                        DebugService.WriteLine("启动后台缩略图解码任务");
+                    }
+                    catch (Exception ex)
+                    {
+                        DebugService.WriteLine($"[后台解码] 出错: {ex.Message}");
+                        DebugService.WriteLine($"[后台解码] 堆栈跟踪: {ex.StackTrace}");
+                        EndProgress();
+                    }
+                }, token);
             }
 
             progress?.Report((100, 100, $"加载完成，共 {totalCount} 张照片"));
@@ -498,40 +661,55 @@ public class MainViewModel : INotifyPropertyChanged
     public async Task ExecuteDeletionAsync(DeleteOptionEnum option)
     {
         var itemsToDelete = MarkedForDeletionItems.ToList();
+        if (itemsToDelete.Count == 0)
+            return;
 
-        foreach (var item in itemsToDelete)
+        StartProgress("正在删除", itemsToDelete.Count);
+        int deletedCount = 0;
+
+        try
         {
-            try
+            foreach (var item in itemsToDelete)
             {
-                // 删除文件
-                if (option == DeleteOptionEnum.Both || option == DeleteOptionEnum.JpgOnly)
+                try
                 {
-                    if (item.HasJpg)
-                        await DeleteFileToRecycleBinAsync(item.JpgPath);
+                    // 删除文件
+                    if (option == DeleteOptionEnum.Both || option == DeleteOptionEnum.JpgOnly)
+                    {
+                        if (item.HasJpg)
+                            await DeleteFileToRecycleBinAsync(item.JpgPath);
+                    }
+
+                    if (option == DeleteOptionEnum.Both || option == DeleteOptionEnum.RawOnly)
+                    {
+                        if (item.HasRaw && item.RawPath != null)
+                            await DeleteFileToRecycleBinAsync(item.RawPath);
+                    }
+
+                    // 从列表移除
+                    PhotoItems.Remove(item);
+                    MarkedForDeletionItems.Remove(item);
+                    SelectedItems.Remove(item);
+                }
+                catch (Exception ex)
+                {
+                    DebugService.WriteLine($"删除文件失败: {ex.Message}");
                 }
 
-                if (option == DeleteOptionEnum.Both || option == DeleteOptionEnum.RawOnly)
-                {
-                    if (item.HasRaw && item.RawPath != null)
-                        await DeleteFileToRecycleBinAsync(item.RawPath);
-                }
+                deletedCount++;
+                UpdateProgress(deletedCount);
+            }
 
-                // 从列表移除
-                PhotoItems.Remove(item);
-                MarkedForDeletionItems.Remove(item);
-                SelectedItems.Remove(item);
-            }
-            catch (Exception ex)
-            {
-                DebugService.WriteLine($"删除文件失败: {ex.Message}");
-            }
+            OnPropertyChanged(nameof(TotalCount));
+            OnPropertyChanged(nameof(MarkedForDeletionCount));
+            
+            // 刷新筛选列表
+            ApplyFilter();
         }
-
-        OnPropertyChanged(nameof(TotalCount));
-        OnPropertyChanged(nameof(MarkedForDeletionCount));
-        
-        // 刷新筛选列表
-        ApplyFilter();
+        finally
+        {
+            EndProgress();
+        }
     }
 
     /// <summary>
@@ -908,8 +1086,8 @@ public class MainViewModel : INotifyPropertyChanged
     private void ApplyFilter()
     {
         var filteredList = HasActiveFilter 
-            ? PhotoItems.Where(item => MatchesFilter(item)).ToList()
-            : PhotoItems.ToList();
+            ? PhotoItems.Where(item => MatchesFilter(item) && !string.IsNullOrEmpty(item.DisplayPath)).ToList()
+            : PhotoItems.Where(item => !string.IsNullOrEmpty(item.DisplayPath)).ToList();
         
         FilteredPhotoItems.Clear();
         foreach (var item in filteredList)

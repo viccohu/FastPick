@@ -80,6 +80,13 @@ public class ImageScanService
                 continue;
             }
             
+            // 确保至少有一个有效的文件路径
+            if (!photoItem.HasJpg && !photoItem.HasRaw)
+            {
+                Debug.WriteLine($"[跳过] 没有有效的文件路径: {fileName}");
+                continue;
+            }
+            
             photoItems.Add(photoItem);
             
             index++;

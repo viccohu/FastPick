@@ -4,6 +4,7 @@ using Windows.Storage;
 using Windows.Graphics.Imaging;
 using Windows.Storage.Streams;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -73,7 +74,7 @@ public class ThumbnailService
         
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
         {
-            // DebugService.WriteLine($"[GetCachedThumbnail] 文件不存在或路径为空: {filePath}");
+            DebugService.WriteLine($"[GetCachedThumbnail] 文件不存在或路径为空: {filePath}");
             return null;
         }
 
@@ -433,6 +434,7 @@ public class ThumbnailService
 
     private async Task AddToCacheAsync(string filePath, BitmapImage thumbnail, PhotoItem? photoItem = null, CancellationToken cancellationToken = default)
     {
+        // DebugService.WriteLine($"[AddToCache] 开始添加到缓存: {Path.GetFileName(filePath)}");
         await _cacheLock.WaitAsync(cancellationToken);
         try
         {
@@ -443,6 +445,7 @@ public class ThumbnailService
             {
                 var oldestKey = _lruList.Last!.Value;
                 _lruList.RemoveLast();
+                // DebugService.WriteLine($"[AddToCache] 缓存已满，移除最旧项: {Path.GetFileName(oldestKey)}");
                 
                 // 清理对应的 PhotoItem.Thumbnail（不设置为 null，避免影响缓存检查）
                 if (_photoItemMap.TryGetValue(oldestKey, out var oldPhotoItem))
@@ -464,11 +467,13 @@ public class ThumbnailService
 
             _thumbnailCache[filePath] = new WeakReference<BitmapImage>(thumbnail);
             _lruList.AddFirst(filePath);
+            // DebugService.WriteLine($"[AddToCache] 添加到内存缓存: {Path.GetFileName(filePath)}, 当前缓存大小: {_thumbnailCache.Count}/{_maxCacheSize}");
             
             // 记录 PhotoItem 引用
             if (photoItem != null)
             {
                 _photoItemMap[filePath] = photoItem;
+                // DebugService.WriteLine($"[AddToCache] 记录 PhotoItem 引用: {Path.GetFileName(filePath)}");
             }
         }
         finally
@@ -477,7 +482,9 @@ public class ThumbnailService
         }
 
         // 保存到本地缓存
+        // DebugService.WriteLine($"[AddToCache] 保存到本地缓存: {Path.GetFileName(filePath)}");
         await SaveToLocalCacheAsync(filePath, thumbnail, cancellationToken);
+        // DebugService.WriteLine($"[AddToCache] 缓存添加完成: {Path.GetFileName(filePath)}");
     }
 
     private void UpdateLruOrder(string filePath)
@@ -934,22 +941,29 @@ public class ThumbnailService
     /// </summary>
     public async Task PreloadThumbnailsAsync(IEnumerable<PhotoItem> photoItems, CancellationToken cancellationToken = default)
     {
+        // DebugService.WriteLine("[PreloadThumbnails] 开始预加载缩略图");
         try
         {
             // 限制预加载的数量
             var itemsToPreload = photoItems.Take(20).ToList();
             if (itemsToPreload.Count == 0)
+            {
+                // DebugService.WriteLine("[PreloadThumbnails] 没有需要预加载的项目");
                 return;
+            }
 
+            // DebugService.WriteLine($"[PreloadThumbnails] 开始预加载 {itemsToPreload.Count} 个缩略图");
             // 并行预加载，触发解码
             var tasks = itemsToPreload.Select(item => Task.Run(async () =>
             {
+                // DebugService.WriteLine($"[PreloadThumbnails] 预加载: {Path.GetFileName(item.DisplayPath)}");
                 // 触发完整的缩略图加载和解码
                 await GetThumbnailAsync(item, cancellationToken);
+                // DebugService.WriteLine($"[PreloadThumbnails] 预加载完成: {Path.GetFileName(item.DisplayPath)}");
             }, cancellationToken));
 
             await Task.WhenAll(tasks);
-            // DebugService.WriteLine($"预加载了 {itemsToPreload.Count} 个缩略图");
+            // DebugService.WriteLine($"[PreloadThumbnails] 预加载了 {itemsToPreload.Count} 个缩略图");
         }
         catch (Exception ex)
         {
@@ -960,22 +974,29 @@ public class ThumbnailService
     /// <summary>
     /// 后台持续解码缩略图
     /// </summary>
-    public async Task StartBackgroundDecodingAsync(IEnumerable<PhotoItem> allPhotoItems, CancellationToken cancellationToken = default)
+    public async Task StartBackgroundDecodingAsync(IEnumerable<PhotoItem> allPhotoItems, IProgress<int>? progress = null, CancellationToken cancellationToken = default)
     {
+        // DebugService.WriteLine("[StartBackgroundDecoding] 开始后台解码缩略图");
         try
         {
             var photoItems = allPhotoItems.ToList();
             if (photoItems.Count == 0)
+            {
+                // DebugService.WriteLine("[StartBackgroundDecoding] 没有照片需要解码");
                 return;
+            }
 
             // 筛选出还没有缩略图的照片
             var itemsWithoutThumbnail = photoItems.Where(item => item.Thumbnail == null).ToList();
             if (itemsWithoutThumbnail.Count == 0)
             {
-                // DebugService.WriteLine("所有缩略图已解码完成");
+                // DebugService.WriteLine("[StartBackgroundDecoding] 所有缩略图已解码完成");
                 return;
             }
 
+            // DebugService.WriteLine($"[StartBackgroundDecoding] 发现 {itemsWithoutThumbnail.Count} 个需要解码的缩略图");
+            int totalCount = itemsWithoutThumbnail.Count;
+            int processedCount = 0;
             // 根据视区信息对缩略图进行优先级排序
             var prioritizedItems = itemsWithoutThumbnail.OrderBy(item =>
             {
@@ -1001,6 +1022,7 @@ public class ThumbnailService
             // 按批次解码，每批10个，避免占用过多资源
             int batchSize = 10;
             int totalBatches = (int)Math.Ceiling((double)prioritizedItems.Count / batchSize);
+            // DebugService.WriteLine($"[StartBackgroundDecoding] 共 {totalBatches} 个批次，每批 {batchSize} 个缩略图");
 
             for (int i = 0; i < totalBatches; i++)
             {
@@ -1010,6 +1032,7 @@ public class ThumbnailService
                 if (batch.Count == 0)
                     break;
 
+                // DebugService.WriteLine($"[StartBackgroundDecoding] 开始处理批次 {i + 1}/{totalBatches}, 共 {batch.Count} 个缩略图");
                 // 顺序处理当前批次，避免并发冲突
                 foreach (var item in batch)
                 {
@@ -1020,7 +1043,17 @@ public class ThumbnailService
                         // 只有当缩略图为null时才加载，避免重复加载
                         if (item.Thumbnail == null)
                         {
+                            // DebugService.WriteLine($"[StartBackgroundDecoding] 解码: {Path.GetFileName(item.DisplayPath)}");
                             await GetThumbnailAsync(item, cancellationToken);
+                            // DebugService.WriteLine($"[StartBackgroundDecoding] 解码完成: {Path.GetFileName(item.DisplayPath)}");
+                            processedCount++;
+                            progress?.Report(processedCount);
+                        }
+                        else
+                        {
+                            // DebugService.WriteLine($"[StartBackgroundDecoding] 跳过已解码: {Path.GetFileName(item.DisplayPath)}");
+                            processedCount++;
+                            progress?.Report(processedCount);
                         }
                     }
                     catch (OperationCanceledException)
@@ -1029,25 +1062,26 @@ public class ThumbnailService
                     }
                     catch (Exception ex)
                     {
-                        // DebugService.WriteLine($"后台解码失败: {item.DisplayPath}, {ex.Message}");
+                        DebugService.WriteLine($"[后台解码] 出错: {item.DisplayPath}, {ex.Message}");
+                        DebugService.WriteLine($"[后台解码] 堆栈跟踪: {ex.StackTrace}");
                     }
                 }
 
-                // DebugService.WriteLine($"后台解码完成批次 {i + 1}/{totalBatches}");
+                // DebugService.WriteLine($"[StartBackgroundDecoding] 后台解码完成批次 {i + 1}/{totalBatches}");
 
                 // 每批次后短暂延迟，避免UI卡顿
                 await Task.Delay(150, cancellationToken);
             }
 
-            // DebugService.WriteLine($"后台解码完成，共处理 {prioritizedItems.Count} 个缩略图");
+            // DebugService.WriteLine($"[StartBackgroundDecoding] 后台解码完成，共处理 {prioritizedItems.Count} 个缩略图");
         }
         catch (OperationCanceledException)
         {
-            // DebugService.WriteLine("后台解码任务已取消");
+            // DebugService.WriteLine("[StartBackgroundDecoding] 后台解码任务已取消");
         }
         catch (Exception ex)
         {
-            // DebugService.WriteLine($"后台解码任务失败: {ex.Message}");
+            // DebugService.WriteLine($"[StartBackgroundDecoding] 后台解码任务失败: {ex.Message}");
         }
     }
 
@@ -1078,7 +1112,7 @@ public class ThumbnailService
         }
         catch (Exception ex)
         {
-            // DebugService.WriteLine($"清理本地缓存失败: {ex.Message}");
+            DebugService.WriteLine($"清理本地缓存失败: {ex.Message}");
         }
     }
 
@@ -1323,7 +1357,7 @@ public class ThumbnailService
                     try
                     {
                         File.Delete(cacheFilePath);
-                        // DebugService.WriteLine($"[DEBUG-缩略图] 文件: {Path.GetFileName(filePath)}, 缓存已过期，已删除");
+                        // // DebugService.WriteLine($"[DEBUG-缩略图] 文件: {Path.GetFileName(filePath)}, 缓存已过期，已删除");
                     }
                     catch (Exception ex)
                     {
@@ -1418,7 +1452,7 @@ public class ThumbnailService
             encoder.SetSoftwareBitmap(softwareBitmap);
             await encoder.FlushAsync().AsTask(cancellationToken);
             
-            // DebugService.WriteLine($"[DEBUG-缩略图] 文件: {Path.GetFileName(filePath)}, 保存到本地缓存: {cacheFilePath}");
+            // DebugService.WriteLine($"[SaveSoftwareBitmapToLocalCache] 文件: {Path.GetFileName(filePath)}, 保存到本地缓存: {cacheFilePath}");
         }
         catch (Exception ex)
         {
