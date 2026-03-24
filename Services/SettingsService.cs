@@ -28,7 +28,7 @@ public class SettingsService
         public string Path1 { get; set; } = string.Empty;
         public string Path2 { get; set; } = string.Empty;
         public string ExportPath { get; set; } = string.Empty;
-        public bool EnableRawHighResDecode { get; set; } = true;
+
         public bool AutoLoadLastPath { get; set; } = true;
         public string JpgFolderName { get; set; } = "JPG";
         public string RawFolderName { get; set; } = "RAW";
@@ -86,20 +86,6 @@ public class SettingsService
         set
         {
             _data.ExportPath = value ?? string.Empty;
-            Save();
-        }
-    }
-
-    public bool EnableRawHighResDecode
-    {
-        get
-        {
-            EnsureLoaded();
-            return _data.EnableRawHighResDecode;
-        }
-        set
-        {
-            _data.EnableRawHighResDecode = value;
             Save();
         }
     }

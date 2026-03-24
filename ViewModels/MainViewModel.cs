@@ -178,6 +178,14 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
     /// <summary>
+    /// 初始化缩略图服务的 DispatcherQueue（必须在 UI 线程上调用）
+    /// </summary>
+    public void InitializeThumbnailServiceDispatcherQueue()
+    {
+        _thumbnailService.InitializeDispatcherQueue();
+    }
+
+    /// <summary>
     /// 更新缩略图视区信息，用于后台解码优先级排序
     /// </summary>
     /// <param name="startIndex">视区开始索引</param>

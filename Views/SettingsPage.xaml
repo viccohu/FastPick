@@ -67,29 +67,7 @@
                                 CornerRadius="8"
                                 Padding="16,12">
                             <StackPanel Spacing="16">
-                                <!-- RAW高分辨率解码 -->
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0" Spacing="4">
-                                        <TextBlock Text="RAW 高分辨率解码"
-                                                   Foreground="{StaticResource TextPrimaryBrush}"
-                                                   FontSize="14"/>
-                                        <TextBlock Text="开启后，放大 RAW 文件时自动加载高分辨率预览"
-                                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                                   FontSize="12"
-                                                   TextWrapping="Wrap"/>
-                                    </StackPanel>
-                                    <ToggleSwitch x:Name="RawHighResDecodeToggle"
-                                                  Grid.Column="1"
-                                                  OnContent=""
-                                                  OffContent=""
-                                                  Toggled="RawHighResDecodeToggle_Toggled"/>
-                                </Grid>
 
-                                <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,4"/>
 
                                 <!-- J+R高清解码切换 -->
                                 <Grid>
@@ -111,32 +89,6 @@
                                                   OnContent=""
                                                   OffContent=""
                                                   Toggled="UseRawForHighResDecodeToggle_Toggled"/>
-                                </Grid>
-
-                                <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,4"/>
-
-                                <!-- 预览加载模式 -->
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="140"/>
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0" Spacing="4">
-                                        <TextBlock Text="预览加载模式"
-                                                   Foreground="{StaticResource TextPrimaryBrush}"
-                                                   FontSize="14"/>
-                                        <TextBlock Text="按需加载：仅放大时加载高清；分级预取：每张图都后台预加载高清"
-                                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                                   FontSize="12"
-                                                   TextWrapping="Wrap"/>
-                                    </StackPanel>
-                                    <ComboBox x:Name="PreviewLoadModeComboBox"
-                                              Grid.Column="1"
-                                              Style="{StaticResource DarkComboBoxStyle}"
-                                              SelectionChanged="PreviewLoadModeComboBox_SelectionChanged">
-                                        <ComboBoxItem Content="按需加载"/>
-                                        <ComboBoxItem Content="分级预取"/>
-                                    </ComboBox>
                                 </Grid>
 
                                 <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,4"/>

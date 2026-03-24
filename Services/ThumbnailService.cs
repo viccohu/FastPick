@@ -9,6 +9,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Runtime.InteropServices;
 using FastPick.Services;
+using Microsoft.UI.Dispatching;
 
 namespace FastPick.Services;
 
@@ -26,19 +27,28 @@ public class ThumbnailService
     private const string CacheFolderName = "ThumbnailCache";
     private bool _memoryMonitoringEnabled = false;
     private bool _cacheInitFailed = false;
+    private DispatcherQueue? _dispatcherQueue;
     
     // 视区信息
     private volatile int _viewportStartIndex = 0;
     private volatile int _viewportEndIndex = 0;
     
     #region 统计和监控
-    private int _cacheHits = 0;
-    private int _cacheMisses = 0;
-    private int _localCacheHits = 0;
-    private int _localCacheMisses = 0;
-    private long _totalLoadTime = 0;
-    private int _loadCount = 0;
+    // private int _cacheHits = 0;
+    // private int _cacheMisses = 0;
+    // private int _localCacheHits = 0;
+    // private int _localCacheMisses = 0;
+    // private long _totalLoadTime = 0;
+    // private int _loadCount = 0;
     #endregion
+
+    /// <summary>
+    /// 初始化 DispatcherQueue（必须在 UI 线程上调用）
+    /// </summary>
+    public void InitializeDispatcherQueue()
+    {
+        _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+    }
 
     /// <summary>
     /// 更新视区信息，用于后台解码优先级排序
@@ -62,14 +72,18 @@ public class ThumbnailService
         var filePath = photoItem.DisplayPath;
         
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+        {
+            // DebugService.WriteLine($"[GetCachedThumbnail] 文件不存在或路径为空: {filePath}");
             return null;
+        }
 
         // 首先检查内存缓存（无锁）
         if (_thumbnailCache.TryGetValue(filePath, out var weakRef))
         {
             if (weakRef.TryGetTarget(out var cachedImage))
             {
-                _cacheHits++;
+                // _cacheHits++;
+                // DebugService.WriteLine($"[GetCachedThumbnail] 内存缓存命中: {Path.GetFileName(filePath)}");
                 // 异步更新 LRU 顺序，避免阻塞主线程
                 _ = Task.Run(() => UpdateLruOrderAsync(filePath), cancellationToken);
                 
@@ -78,13 +92,19 @@ public class ThumbnailService
                 
                 return cachedImage;
             }
+            else
+            {
+                // DebugService.WriteLine($"[GetCachedThumbnail] 内存缓存引用已失效: {Path.GetFileName(filePath)}");
+            }
         }
 
         // 然后检查本地缓存
+        // DebugService.WriteLine($"[GetCachedThumbnail] 检查本地缓存: {Path.GetFileName(filePath)}");
         var localCacheImage = await GetFromLocalCacheAsync(filePath, cancellationToken);
         if (localCacheImage != null)
         {
-            _localCacheHits++;
+            // _localCacheHits++;
+            // DebugService.WriteLine($"[GetCachedThumbnail] 本地缓存命中: {Path.GetFileName(filePath)}");
             // 设置到 PhotoItem
             photoItem.Thumbnail = localCacheImage;
             
@@ -92,6 +112,7 @@ public class ThumbnailService
         }
 
         // 缓存未命中
+        // DebugService.WriteLine($"[GetCachedThumbnail] 缓存未命中: {Path.GetFileName(filePath)}");
         return null;
     }
 
@@ -110,21 +131,24 @@ public class ThumbnailService
         {
             if (weakRef.TryGetTarget(out cachedImage))
             {
-                _cacheHits++;
+                // _cacheHits++;
+                // DebugService.WriteLine($"[GetThumbnail] 内存缓存命中: {Path.GetFileName(filePath)}");
                 // 异步更新 LRU 顺序，避免阻塞主线程
                 _ = Task.Run(() => UpdateLruOrderAsync(filePath), cancellationToken);
                 stopwatch.Stop();
-                UpdateLoadStats(stopwatch.ElapsedMilliseconds);
+                // UpdateLoadStats(stopwatch.ElapsedMilliseconds);
                 return cachedImage;
             }
             else
             {
+                // DebugService.WriteLine($"[GetThumbnail] 内存缓存引用已失效: {Path.GetFileName(filePath)}");
                 // 引用已失效，异步清理
                 _ = Task.Run(() => RemoveInvalidReferenceAsync(filePath), cancellationToken);
             }
         }
 
-        _cacheMisses++;
+        // _cacheMisses++;
+        // DebugService.WriteLine($"[GetThumbnail] 内存缓存未命中: {Path.GetFileName(filePath)}");
 
         // 启动内存监控（如果尚未启动）
         if (!_memoryMonitoringEnabled)
@@ -133,18 +157,21 @@ public class ThumbnailService
         }
 
         // 尝试从本地缓存读取
+        // DebugService.WriteLine($"[GetThumbnail] 检查本地缓存: {Path.GetFileName(filePath)}");
         var localCacheImage = await GetFromLocalCacheAsync(filePath, cancellationToken);
         if (localCacheImage != null)
         {
-            _localCacheHits++;
+            // _localCacheHits++;
+            // DebugService.WriteLine($"[GetThumbnail] 本地缓存命中: {Path.GetFileName(filePath)}");
             // 异步添加到内存缓存，避免阻塞主线程
             _ = Task.Run(() => AddToCacheAsync(filePath, localCacheImage, photoItem, cancellationToken), cancellationToken);
             stopwatch.Stop();
-            UpdateLoadStats(stopwatch.ElapsedMilliseconds);
+            // UpdateLoadStats(stopwatch.ElapsedMilliseconds);
             return localCacheImage;
         }
 
-        _localCacheMisses++;
+        // _localCacheMisses++;
+        // DebugService.WriteLine($"[GetThumbnail] 本地缓存未命中，准备 WIC 解码: {Path.GetFileName(filePath)}");
 
         var tcs = new TaskCompletionSource<BitmapImage?>();
         if (_pendingLoads.TryAdd(filePath, tcs))
@@ -156,19 +183,20 @@ public class ThumbnailService
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     
+                    // DebugService.WriteLine($"[GetThumbnail] 开始 WIC 解码: {Path.GetFileName(filePath)}");
                     var wicThumbnail = await GenerateWicThumbnailAsync(filePath, cancellationToken);
                     if (wicThumbnail != null)
                     {
                         await AddToCacheAsync(filePath, wicThumbnail, photoItem, cancellationToken);
                         tcs.SetResult(wicThumbnail);
                         stopwatch.Stop();
-                        UpdateLoadStats(stopwatch.ElapsedMilliseconds);
+                        // UpdateLoadStats(stopwatch.ElapsedMilliseconds);
                         return wicThumbnail;
                     }
 
                     tcs.SetResult(null);
                     stopwatch.Stop();
-                    UpdateLoadStats(stopwatch.ElapsedMilliseconds);
+                    // UpdateLoadStats(stopwatch.ElapsedMilliseconds);
                     return null;
                 }
                 finally
@@ -183,7 +211,7 @@ public class ThumbnailService
             }
             catch (Exception ex)
             {
-                DebugService.WriteLine($"获取缩略图失败: {filePath}, {ex.Message}");
+                // DebugService.WriteLine($"获取缩略图失败: {filePath}, {ex.Message}");
                 tcs.SetResult(null);
                 return null;
             }
@@ -398,7 +426,7 @@ public class ThumbnailService
         }
         catch (Exception ex)
         {
-            DebugService.WriteLine($"WIC 生成缩略图失败: {filePath}, {ex.Message}");
+            // DebugService.WriteLine($"WIC 生成缩略图失败: {filePath}, {ex.Message}");
             return null;
         }
     }
@@ -596,18 +624,18 @@ public class ThumbnailService
                 }
                 catch (Exception ex)
                 {
-                    DebugService.WriteLine($"删除缓存文件失败: {file}, 错误: {ex.Message}");
+                    // DebugService.WriteLine($"删除缓存文件失败: {file}, 错误: {ex.Message}");
                 }
             }
 
             // 同时清理内存缓存
             await ClearCacheAsync();
             
-            DebugService.WriteLine($"已清除所有本地缓存，共 {files.Length} 个文件");
+            // DebugService.WriteLine($"已清除所有本地缓存，共 {files.Length} 个文件");
         }
         catch (Exception ex)
         {
-            DebugService.WriteLine($"清除本地缓存失败: {ex.Message}");
+            // DebugService.WriteLine($"清除本地缓存失败: {ex.Message}");
         }
     }
 
@@ -618,8 +646,8 @@ public class ThumbnailService
     /// </summary>
     private void UpdateLoadStats(long elapsedMilliseconds)
     {
-        _totalLoadTime += elapsedMilliseconds;
-        _loadCount++;
+        // _totalLoadTime += elapsedMilliseconds;
+        // _loadCount++;
     }
 
     /// <summary>
@@ -641,23 +669,23 @@ public class ThumbnailService
             }
 
             // 计算缓存命中率
-            int totalCacheAccesses = _cacheHits + _cacheMisses;
-            double memoryCacheHitRate = totalCacheAccesses > 0 ? (double)_cacheHits / totalCacheAccesses * 100 : 0;
+            // int totalCacheAccesses = _cacheHits + _cacheMisses;
+            // double memoryCacheHitRate = totalCacheAccesses > 0 ? (double)_cacheHits / totalCacheAccesses * 100 : 0;
 
-            int totalLocalCacheAccesses = _localCacheHits + _localCacheMisses;
-            double localCacheHitRate = totalLocalCacheAccesses > 0 ? (double)_localCacheHits / totalLocalCacheAccesses * 100 : 0;
+            // int totalLocalCacheAccesses = _localCacheHits + _localCacheMisses;
+            // double localCacheHitRate = totalLocalCacheAccesses > 0 ? (double)_localCacheHits / totalLocalCacheAccesses * 100 : 0;
 
             // 计算平均加载时间
-            long averageLoadTime = _loadCount > 0 ? _totalLoadTime / _loadCount : 0;
+            // long averageLoadTime = _loadCount > 0 ? _totalLoadTime / _loadCount : 0;
 
             return new CacheStats
             {
                 MemoryCacheCount = validCount,
                 MemoryCacheMaxSize = _maxCacheSize,
-                MemoryCacheHitRate = memoryCacheHitRate,
-                LocalCacheHitRate = localCacheHitRate,
-                AverageLoadTimeMs = averageLoadTime,
-                TotalLoadCount = _loadCount
+                MemoryCacheHitRate = 0,
+                LocalCacheHitRate = 0,
+                AverageLoadTimeMs = 0,
+                TotalLoadCount = 0
             };
         }
         finally
@@ -671,12 +699,12 @@ public class ThumbnailService
     /// </summary>
     public void ResetStats()
     {
-        _cacheHits = 0;
-        _cacheMisses = 0;
-        _localCacheHits = 0;
-        _localCacheMisses = 0;
-        _totalLoadTime = 0;
-        _loadCount = 0;
+        // _cacheHits = 0;
+        // _cacheMisses = 0;
+        // _localCacheHits = 0;
+        // _localCacheMisses = 0;
+        // _totalLoadTime = 0;
+        // _loadCount = 0;
     }
 
     /// <summary>
@@ -685,13 +713,13 @@ public class ThumbnailService
     public async Task PrintStatsAsync()
     {
         var stats = await GetDetailedCacheStatsAsync();
-        DebugService.WriteLine($"=== 缩略图缓存统计 ===");
-        DebugService.WriteLine($"内存缓存数量: {stats.MemoryCacheCount}/{stats.MemoryCacheMaxSize}");
-        DebugService.WriteLine($"内存缓存命中率: {stats.MemoryCacheHitRate:F2}%");
-        DebugService.WriteLine($"本地缓存命中率: {stats.LocalCacheHitRate:F2}%");
-        DebugService.WriteLine($"平均加载时间: {stats.AverageLoadTimeMs}ms");
-        DebugService.WriteLine($"总加载次数: {stats.TotalLoadCount}");
-        DebugService.WriteLine($"====================");
+        // DebugService.WriteLine($"=== 缩略图缓存统计 ===");
+        // DebugService.WriteLine($"内存缓存数量: {stats.MemoryCacheCount}/{stats.MemoryCacheMaxSize}");
+        // DebugService.WriteLine($"内存缓存命中率: {stats.MemoryCacheHitRate:F2}%");
+        // DebugService.WriteLine($"本地缓存命中率: {stats.LocalCacheHitRate:F2}%");
+        // DebugService.WriteLine($"平均加载时间: {stats.AverageLoadTimeMs}ms");
+        // DebugService.WriteLine($"总加载次数: {stats.TotalLoadCount}");
+        // DebugService.WriteLine($"====================");
     }
 
     #endregion
@@ -706,11 +734,11 @@ public class ThumbnailService
         try
         {
             _memoryMonitoringEnabled = true;
-            DebugService.WriteLine("内存监控已启动");
+            // DebugService.WriteLine("内存监控已启动");
         }
         catch (Exception ex)
         {
-            DebugService.WriteLine($"启动内存监控失败: {ex.Message}");
+            // DebugService.WriteLine($"启动内存监控失败: {ex.Message}");
         }
     }
 
@@ -736,25 +764,25 @@ public class ThumbnailService
             {
                 // 内存压力大，减小缓存大小
                 _maxCacheSize = 300;
-                DebugService.WriteLine($"内存压力大，缓存大小调整为: {_maxCacheSize}");
+                // DebugService.WriteLine($"内存压力大，缓存大小调整为: {_maxCacheSize}");
             }
             else if (memoryUsagePercent > 50 || memoryUsageMB > 300)
             {
                 // 内存压力中等，保持适中缓存大小
                 _maxCacheSize = 600;
-                DebugService.WriteLine($"内存压力中等，缓存大小调整为: {_maxCacheSize}");
+                // DebugService.WriteLine($"内存压力中等，缓存大小调整为: {_maxCacheSize}");
             }
             else if (memoryUsagePercent > 30)
             {
                 // 内存压力小，使用较大缓存大小
                 _maxCacheSize = 800;
-                DebugService.WriteLine($"内存压力小，缓存大小调整为: {_maxCacheSize}");
+                // DebugService.WriteLine($"内存压力小，缓存大小调整为: {_maxCacheSize}");
             }
             else
             {
                 // 内存充足，使用最大缓存大小
                 _maxCacheSize = 1000;
-                DebugService.WriteLine($"内存充足，缓存大小调整为: {_maxCacheSize}");
+                // DebugService.WriteLine($"内存充足，缓存大小调整为: {_maxCacheSize}");
             }
 
             // 清理失效的引用
@@ -762,7 +790,7 @@ public class ThumbnailService
         }
         catch (Exception ex)
         {
-            DebugService.WriteLine($"调整缓存大小失败: {ex.Message}");
+            // DebugService.WriteLine($"调整缓存大小失败: {ex.Message}");
         }
     }
     
@@ -818,12 +846,12 @@ public class ThumbnailService
 
             if (keysToRemove.Count > 0)
             {
-                DebugService.WriteLine($"清理了 {keysToRemove.Count} 个失效的弱引用");
+                // DebugService.WriteLine($"清理了 {keysToRemove.Count} 个失效的弱引用");
             }
         }
         catch (Exception ex)
         {
-            DebugService.WriteLine($"清理弱引用失败: {ex.Message}");
+            // DebugService.WriteLine($"清理弱引用失败: {ex.Message}");
         }
     }
 
@@ -870,7 +898,7 @@ public class ThumbnailService
             }
 
             _cachePath = fullPath;
-            DebugService.WriteLine($"缓存目录初始化成功: {fullPath}");
+            // DebugService.WriteLine($"缓存目录初始化成功: {fullPath}");
             
             // 初始化时清理过期缓存
             await CleanupLocalCacheAsync(cancellationToken);
@@ -878,7 +906,7 @@ public class ThumbnailService
         catch (Exception ex)
         {
             _cacheInitFailed = true;
-            DebugService.WriteLine($"彻底初始化失败: {ex.Message}");
+            // DebugService.WriteLine($"彻底初始化失败: {ex.Message}");
         }
         finally
         {
@@ -921,11 +949,11 @@ public class ThumbnailService
             }, cancellationToken));
 
             await Task.WhenAll(tasks);
-            DebugService.WriteLine($"预加载了 {itemsToPreload.Count} 个缩略图");
+            // DebugService.WriteLine($"预加载了 {itemsToPreload.Count} 个缩略图");
         }
         catch (Exception ex)
         {
-            DebugService.WriteLine($"预加载缩略图失败: {ex.Message}");
+            // DebugService.WriteLine($"预加载缩略图失败: {ex.Message}");
         }
     }
 
@@ -944,7 +972,7 @@ public class ThumbnailService
             var itemsWithoutThumbnail = photoItems.Where(item => item.Thumbnail == null).ToList();
             if (itemsWithoutThumbnail.Count == 0)
             {
-                DebugService.WriteLine("所有缩略图已解码完成");
+                // DebugService.WriteLine("所有缩略图已解码完成");
                 return;
             }
 
@@ -1001,25 +1029,25 @@ public class ThumbnailService
                     }
                     catch (Exception ex)
                     {
-                        DebugService.WriteLine($"后台解码失败: {item.DisplayPath}, {ex.Message}");
+                        // DebugService.WriteLine($"后台解码失败: {item.DisplayPath}, {ex.Message}");
                     }
                 }
 
-                DebugService.WriteLine($"后台解码完成批次 {i + 1}/{totalBatches}");
+                // DebugService.WriteLine($"后台解码完成批次 {i + 1}/{totalBatches}");
 
                 // 每批次后短暂延迟，避免UI卡顿
                 await Task.Delay(150, cancellationToken);
             }
 
-            DebugService.WriteLine($"后台解码完成，共处理 {prioritizedItems.Count} 个缩略图");
+            // DebugService.WriteLine($"后台解码完成，共处理 {prioritizedItems.Count} 个缩略图");
         }
         catch (OperationCanceledException)
         {
-            DebugService.WriteLine("后台解码任务已取消");
+            // DebugService.WriteLine("后台解码任务已取消");
         }
         catch (Exception ex)
         {
-            DebugService.WriteLine($"后台解码任务失败: {ex.Message}");
+            // DebugService.WriteLine($"后台解码任务失败: {ex.Message}");
         }
     }
 
@@ -1050,7 +1078,7 @@ public class ThumbnailService
         }
         catch (Exception ex)
         {
-            DebugService.WriteLine($"清理本地缓存失败: {ex.Message}");
+            // DebugService.WriteLine($"清理本地缓存失败: {ex.Message}");
         }
     }
 
@@ -1078,19 +1106,19 @@ public class ThumbnailService
                     }
                     catch (Exception ex)
                     {
-                        DebugService.WriteLine($"删除过期缓存文件失败: {ex.Message}");
+                        // DebugService.WriteLine($"删除过期缓存文件失败: {ex.Message}");
                     }
                 }
             }
             
             if (cleanedCount > 0)
             {
-                DebugService.WriteLine($"清理了 {cleanedCount} 个过期缓存文件");
+                // DebugService.WriteLine($"清理了 {cleanedCount} 个过期缓存文件");
             }
         }
         catch (Exception ex)
         {
-            DebugService.WriteLine($"清理过期缓存失败: {ex.Message}");
+            // DebugService.WriteLine($"清理过期缓存失败: {ex.Message}");
         }
         return cleanedCount;
     }
@@ -1126,18 +1154,18 @@ public class ThumbnailService
                 }
                 catch (Exception ex)
                 {
-                    DebugService.WriteLine($"删除缓存文件失败: {ex.Message}");
+                    // DebugService.WriteLine($"删除缓存文件失败: {ex.Message}");
                 }
             }
             
             if (deletedCount > 0)
             {
-                DebugService.WriteLine($"为限制缓存大小，删除了 {deletedCount} 个最旧的缓存文件");
+                // DebugService.WriteLine($"为限制缓存大小，删除了 {deletedCount} 个最旧的缓存文件");
             }
         }
         catch (Exception ex)
         {
-            DebugService.WriteLine($"清理最旧缓存失败: {ex.Message}");
+            // DebugService.WriteLine($"清理最旧缓存失败: {ex.Message}");
         }
     }
 
@@ -1162,7 +1190,7 @@ public class ThumbnailService
         }
         catch (Exception ex)
         {
-            DebugService.WriteLine($"获取目录大小失败: {ex.Message}");
+            // DebugService.WriteLine($"获取目录大小失败: {ex.Message}");
             return 0;
         }
     }
@@ -1190,7 +1218,7 @@ public class ThumbnailService
         }
         catch (Exception ex)
         {
-            DebugService.WriteLine($"生成缓存键失败: {ex.Message}");
+            // DebugService.WriteLine($"生成缓存键失败: {ex.Message}");
             return Path.GetFileName(filePath) + ".png";
         }
     }
@@ -1202,51 +1230,116 @@ public class ThumbnailService
     {
         // 如果缓存之前初始化失败，直接返回 null
         if (_cacheInitFailed)
+        {
+            // DebugService.WriteLine($"[GetFromLocalCache] 缓存初始化已失败，跳过: {Path.GetFileName(filePath)}");
             return null;
+        }
             
         try
         {
             await InitializeCacheFolderAsync(cancellationToken);
             if (_cachePath == null)
+            {
+                // DebugService.WriteLine($"[GetFromLocalCache] 缓存路径为 null: {Path.GetFileName(filePath)}");
                 return null;
+            }
             
             var cacheKey = GenerateCacheKey(filePath);
             var cacheFilePath = Path.Combine(_cachePath, cacheKey);
+            
+            // DebugService.WriteLine($"[GetFromLocalCache] 检查缓存文件: {Path.GetFileName(filePath)}, 缓存键: {cacheKey}");
 
             if (File.Exists(cacheFilePath))
             {
+                // DebugService.WriteLine($"[GetFromLocalCache] 缓存文件存在: {cacheFilePath}");
                 // 检查缓存是否有效（文件未修改）
                 if (IsCacheValid(filePath, cacheFilePath))
                 {
-                    using var fileStream = new FileStream(cacheFilePath, FileMode.Open, FileAccess.Read);
-                    using var randomAccessStream = fileStream.AsRandomAccessStream();
+                    // DebugService.WriteLine($"[GetFromLocalCache] 缓存有效，开始读取: {Path.GetFileName(filePath)}");
                     
-                    var bitmap = new BitmapImage();
-                    await bitmap.SetSourceAsync(randomAccessStream).AsTask(cancellationToken);
+                    // 在后台线程读取文件数据
+                    byte[] imageData;
+                    using (var fileStream = new FileStream(cacheFilePath, FileMode.Open, FileAccess.Read))
+                    {
+                        using var memoryStream = new MemoryStream();
+                        await fileStream.CopyToAsync(memoryStream, cancellationToken);
+                        imageData = memoryStream.ToArray();
+                    }
                     
-                    // 从本地缓存加载成功后，更新内存缓存和LRU顺序
-                    await AddToCacheAsync(filePath, bitmap, null, cancellationToken);
+                    // DebugService.WriteLine($"[GetFromLocalCache] 文件数据读取完成，大小: {imageData.Length} bytes");
                     
-                    return bitmap;
+                    // 在 UI 线程上创建 BitmapImage
+                    BitmapImage? bitmap = null;
+                    
+                    if (_dispatcherQueue != null)
+                    {
+                        var tcs = new TaskCompletionSource<BitmapImage?>();
+                        _dispatcherQueue.TryEnqueue(() =>
+                        {
+                            try
+                            {
+                                var bmp = new BitmapImage();
+                                using var stream = new MemoryStream(imageData).AsRandomAccessStream();
+                                bmp.SetSource(stream);
+                                tcs.SetResult(bmp);
+                            }
+                            catch (Exception ex)
+                            {
+                                // DebugService.WriteLine($"[GetFromLocalCache] UI线程创建BitmapImage失败: {ex.Message}");
+                                tcs.SetResult(null);
+                            }
+                        });
+                        bitmap = await tcs.Task;
+                    }
+                    else
+                    {
+                        // 如果没有 DispatcherQueue，尝试直接创建（可能在 UI 线程上）
+                        // DebugService.WriteLine($"[GetFromLocalCache] 没有 DispatcherQueue，直接创建 BitmapImage");
+                        try
+                        {
+                            bitmap = new BitmapImage();
+                            using var stream = new MemoryStream(imageData).AsRandomAccessStream();
+                            await bitmap.SetSourceAsync(stream);
+                        }
+                        catch (Exception ex)
+                        {
+                            // DebugService.WriteLine($"[GetFromLocalCache] 直接创建 BitmapImage 失败: {ex.GetType().Name} - {ex.Message}");
+                            return null;
+                        }
+                    }
+                    
+                    if (bitmap != null)
+                    {
+                        // DebugService.WriteLine($"[GetFromLocalCache] 读取成功: {Path.GetFileName(filePath)}");
+                        // 从本地缓存加载成功后，更新内存缓存和LRU顺序
+                        await AddToCacheAsync(filePath, bitmap, null, cancellationToken);
+                        return bitmap;
+                    }
                 }
                 else
                 {
+                    // DebugService.WriteLine($"[GetFromLocalCache] 缓存无效: {Path.GetFileName(filePath)}");
                     // 缓存无效，删除并返回 null
                     try
                     {
                         File.Delete(cacheFilePath);
-                        DebugService.WriteLine($"[DEBUG-缩略图] 文件: {Path.GetFileName(filePath)}, 缓存已过期，已删除");
+                        // DebugService.WriteLine($"[DEBUG-缩略图] 文件: {Path.GetFileName(filePath)}, 缓存已过期，已删除");
                     }
                     catch (Exception ex)
                     {
-                        DebugService.WriteLine($"删除过期缓存失败: {ex.Message}");
+                        // DebugService.WriteLine($"删除过期缓存失败: {ex.Message}");
                     }
                 }
+            }
+            else
+            {
+                // DebugService.WriteLine($"[GetFromLocalCache] 缓存文件不存在: {Path.GetFileName(filePath)}");
             }
         }
         catch (Exception ex)
         {
-            DebugService.WriteLine($"从本地缓存读取失败: {ex.Message}");
+            // DebugService.WriteLine($"从本地缓存读取失败: {ex.GetType().Name} - {ex.Message}");
+            // DebugService.WriteLine($"堆栈: {ex.StackTrace}");
         }
         return null;
     }
@@ -1279,7 +1372,7 @@ public class ThumbnailService
         }
         catch (Exception ex)
         {
-            DebugService.WriteLine($"检查缓存有效性失败: {ex.Message}");
+            // DebugService.WriteLine($"检查缓存有效性失败: {ex.Message}");
             return false;
         }
     }
@@ -1325,11 +1418,11 @@ public class ThumbnailService
             encoder.SetSoftwareBitmap(softwareBitmap);
             await encoder.FlushAsync().AsTask(cancellationToken);
             
-            DebugService.WriteLine($"[DEBUG-缩略图] 文件: {Path.GetFileName(filePath)}, 保存到本地缓存: {cacheFilePath}");
+            // DebugService.WriteLine($"[DEBUG-缩略图] 文件: {Path.GetFileName(filePath)}, 保存到本地缓存: {cacheFilePath}");
         }
         catch (Exception ex)
         {
-            DebugService.WriteLine($"保存 SoftwareBitmap 到本地缓存失败: {ex.Message}");
+            // DebugService.WriteLine($"保存 SoftwareBitmap 到本地缓存失败: {ex.Message}");
         }
     }
 

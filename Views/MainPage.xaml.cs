@@ -99,6 +99,7 @@ namespace FastPick.Views
             
             // 初始化 ViewModel
             _viewModel = new MainViewModel();
+            _viewModel.InitializeThumbnailServiceDispatcherQueue(); // 初始化缩略图服务的 DispatcherQueue
             _viewModel.PropertyChanged += ViewModel_PropertyChanged;
             
             // 监听 SelectedItems 集合变化
@@ -493,6 +494,8 @@ namespace FastPick.Views
             {
                 var photoItem = _viewModel.FilteredPhotoItems[args.Index];
                 
+                // DebugService.WriteLine($"[ElementPrepared] 索引: {args.Index}, 文件: {System.IO.Path.GetFileName(photoItem.DisplayPath)}, Thumbnail 是否为 null: {photoItem.Thumbnail == null}");
+                
                 // 设置数据上下文
                 thumbnailGrid.DataContext = photoItem;
                 
@@ -511,6 +514,7 @@ namespace FastPick.Views
                 var cachedThumbnail = await _viewModel.GetCachedThumbnailAsync(photoItem);
                 if (cachedThumbnail != null)
                 {
+                    // DebugService.WriteLine($"[ElementPrepared] 缓存命中，直接显示: {System.IO.Path.GetFileName(photoItem.DisplayPath)}");
                     var image = thumbnailGrid.FindName("ThumbnailImage") as Image;
                     if (image != null)
                     {
@@ -519,6 +523,7 @@ namespace FastPick.Views
                     return;
                 }
                 
+                // DebugService.WriteLine($"[ElementPrepared] 缓存未命中，加入待加载队列: {System.IO.Path.GetFileName(photoItem.DisplayPath)}");
                 // 启用防抖逻辑：滚动时不加载，停止滚动后才加载
                 _pendingThumbnailLoads[photoItem.DisplayPath] = (thumbnailGrid, photoItem);
                 _isThumbnailScrolling = true;
@@ -577,6 +582,7 @@ namespace FastPick.Views
                 // 先检查是否已有缓存
                 if (photoItem.Thumbnail is Microsoft.UI.Xaml.Media.Imaging.BitmapImage cachedBitmap)
                 {
+                    // DebugService.WriteLine($"[LoadThumbnail] PhotoItem.Thumbnail 已存在: {System.IO.Path.GetFileName(photoItem.DisplayPath)}");
                     // 再次检查是否已取消
                     if (!cancellationToken.IsCancellationRequested)
                     {
@@ -584,6 +590,8 @@ namespace FastPick.Views
                     }
                     return;
                 }
+                
+                // DebugService.WriteLine($"[LoadThumbnail] PhotoItem.Thumbnail 为 null，准备加载: {System.IO.Path.GetFileName(photoItem.DisplayPath)}");
                 
                 // 显示占位符
                 if (!cancellationToken.IsCancellationRequested)

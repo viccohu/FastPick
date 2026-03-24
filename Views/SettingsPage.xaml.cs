@@ -16,6 +16,7 @@ namespace FastPick.Views
         public SettingsPage()
         {
             this.InitializeComponent();
+            _thumbnailService.InitializeDispatcherQueue(); // 初始化 DispatcherQueue
         }
 
         protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -42,15 +43,13 @@ namespace FastPick.Views
         private void LoadSettings()
         {
             _isLoading = true;
-            RawHighResDecodeToggle.IsOn = _settingsService.EnableRawHighResDecode;
+
             UseRawForHighResDecodeToggle.IsOn = _settingsService.UseRawForHighResDecode;
             AutoLoadLastPathToggle.IsOn = _settingsService.AutoLoadLastPath;
             BackgroundThumbnailDecodingToggle.IsOn = _settingsService.EnableBackgroundThumbnailDecoding;
             JpgFolderNameTextBox.Text = _settingsService.JpgFolderName;
             RawFolderNameTextBox.Text = _settingsService.RawFolderName;
             DeleteToRecycleBinToggle.IsOn = _settingsService.DeleteToRecycleBin;
-            
-            PreviewLoadModeComboBox.SelectedIndex = _settingsService.PreviewLoadMode == Services.PreviewLoadMode.Hierarchical ? 1 : 0;
             
             _isLoading = false;
         }
@@ -61,12 +60,6 @@ namespace FastPick.Views
             {
                 this.Frame.GoBack();
             }
-        }
-
-        private void RawHighResDecodeToggle_Toggled(object sender, RoutedEventArgs e)
-        {
-            if (!_isLoading)
-                _settingsService.EnableRawHighResDecode = RawHighResDecodeToggle.IsOn;
         }
 
         private void AutoLoadLastPathToggle_Toggled(object sender, RoutedEventArgs e)
@@ -97,16 +90,6 @@ namespace FastPick.Views
         {
             if (!_isLoading)
                 _settingsService.UseRawForHighResDecode = UseRawForHighResDecodeToggle.IsOn;
-        }
-
-        private void PreviewLoadModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (!_isLoading && PreviewLoadModeComboBox.SelectedIndex >= 0)
-            {
-                _settingsService.PreviewLoadMode = PreviewLoadModeComboBox.SelectedIndex == 1 
-                    ? Services.PreviewLoadMode.Hierarchical 
-                    : Services.PreviewLoadMode.OnDemand;
-            }
         }
 
         private void BackgroundThumbnailDecodingToggle_Toggled(object sender, RoutedEventArgs e)
