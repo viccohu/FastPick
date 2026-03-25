@@ -399,6 +399,9 @@ namespace FastPick.Views
             int startIndex = (int)(visibleStart / 150); // 假设每个缩略图宽度为150
             int endIndex = (int)(visibleEnd / 150) + 1; // 加1确保覆盖完整视区
             
+            // DEBUG: 输出视区范围
+            DebugService.WriteLine($"[DEBUG-视区] 防抖触发 - 视区范围: [{startIndex}, {endIndex}], 待加载数量: {_pendingThumbnailLoads.Count}");
+            
             // 更新视区信息到缩略图服务，用于后台解码优先级排序
             _viewModel.UpdateThumbnailViewportInfo(startIndex, endIndex);
 
@@ -446,9 +449,15 @@ namespace FastPick.Views
             // 按优先级分组并并行加载
             var priorityGroups = prioritizedLoads.GroupBy(x => x.priority).OrderBy(g => g.Key).ToList();
             
+            // DEBUG: 输出优先级分组信息
+            DebugService.WriteLine($"[DEBUG-视区] 优先级分组: {string.Join(", ", priorityGroups.Select(g => $"P{g.Key}({g.Count()})"))}");
+            
             foreach (var group in priorityGroups)
             {
                 var items = group.ToList();
+                
+                // DEBUG: 输出当前优先级加载信息
+                DebugService.WriteLine($"[DEBUG-视区] 开始加载优先级 {group.Key}，数量: {items.Count}");
                 
                 // 为不同优先级设置不同的并行度
                 int maxDegreeOfParallelism;
@@ -464,6 +473,9 @@ namespace FastPick.Views
                         maxDegreeOfParallelism = 1;
                         break;
                 }
+                
+                // DEBUG: 输出并行度
+                DebugService.WriteLine($"[DEBUG-视区] 优先级 {group.Key} 并行度: {maxDegreeOfParallelism}");
                 
                 // 并行加载当前优先级的缩略图
                 var tasks = new List<Task>();
@@ -484,7 +496,13 @@ namespace FastPick.Views
                 {
                     await Task.WhenAll(tasks);
                 }
+                
+                // DEBUG: 输出当前优先级加载完成
+                DebugService.WriteLine($"[DEBUG-视区] 优先级 {group.Key} 加载完成");
             }
+            
+            // DEBUG: 输出所有加载完成
+            DebugService.WriteLine($"[DEBUG-视区] 所有优先级加载完成，剩余待加载: {_pendingThumbnailLoads.Count}");
         }
 
         /// <summary>
@@ -496,7 +514,8 @@ namespace FastPick.Views
             {
                 var photoItem = _viewModel.FilteredPhotoItems[args.Index];
                 
-                // DebugService.WriteLine($"[ElementPrepared] 索引: {args.Index}, 文件: {System.IO.Path.GetFileName(photoItem.DisplayPath)}, Thumbnail 是否为 null: {photoItem.Thumbnail == null}");
+                // DEBUG: 输出元素准备信息
+                DebugService.WriteLine($"[DEBUG-ElementPrepared] 索引: {args.Index}, 文件: {System.IO.Path.GetFileName(photoItem.DisplayPath)}, Thumbnail: {(photoItem.Thumbnail == null ? "null" : "已存在")}, 滚动中: {_isThumbnailScrolling}");
                 
                 // 设置数据上下文
                 thumbnailGrid.DataContext = photoItem;
@@ -516,7 +535,8 @@ namespace FastPick.Views
                 var cachedThumbnail = await _viewModel.GetCachedThumbnailAsync(photoItem);
                 if (cachedThumbnail != null)
                 {
-                    // DebugService.WriteLine($"[ElementPrepared] 缓存命中，直接显示: {System.IO.Path.GetFileName(photoItem.DisplayPath)}");
+                    // DEBUG: 缓存命中
+                    DebugService.WriteLine($"[DEBUG-ElementPrepared] 缓存命中，直接显示: {System.IO.Path.GetFileName(photoItem.DisplayPath)}");
                     var image = thumbnailGrid.FindName("ThumbnailImage") as Image;
                     if (image != null)
                     {
@@ -525,7 +545,9 @@ namespace FastPick.Views
                     return;
                 }
                 
-                // DebugService.WriteLine($"[ElementPrepared] 缓存未命中，加入待加载队列: {System.IO.Path.GetFileName(photoItem.DisplayPath)}");
+                // DEBUG: 缓存未命中，加入待加载队列
+                DebugService.WriteLine($"[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: {System.IO.Path.GetFileName(photoItem.DisplayPath)}, 当前队列大小: {_pendingThumbnailLoads.Count}");
+                
                 // 启用防抖逻辑：滚动时不加载，停止滚动后才加载
                 _pendingThumbnailLoads[photoItem.DisplayPath] = (thumbnailGrid, photoItem);
                 _isThumbnailScrolling = true;
@@ -575,6 +597,9 @@ namespace FastPick.Views
         {
             try
             {
+                // DEBUG: 开始加载
+                DebugService.WriteLine($"[DEBUG-LoadThumbnail] 开始加载: {System.IO.Path.GetFileName(photoItem.DisplayPath)}, 取消令牌: {cancellationToken.IsCancellationRequested}");
+                
                 // 检查是否已取消
                 cancellationToken.ThrowIfCancellationRequested();
                 
@@ -618,6 +643,9 @@ namespace FastPick.Views
                 // 使用外部传入的取消令牌加载缩略图
                 var thumbnail = await _viewModel.GetThumbnailAsync(photoItem, cancellationToken);
                 
+                // DEBUG: 加载完成
+                DebugService.WriteLine($"[DEBUG-LoadThumbnail] 加载完成: {System.IO.Path.GetFileName(photoItem.DisplayPath)}, thumbnail: {(thumbnail == null ? "null" : "成功")}, 取消令牌: {cancellationToken.IsCancellationRequested}");
+                
                 // 关键：在 UI 赋值前再次检查是否已取消（防止僵尸回调）
                 if (thumbnail is Microsoft.UI.Xaml.Media.Imaging.BitmapImage bitmap && !cancellationToken.IsCancellationRequested)
                 {
@@ -627,16 +655,23 @@ namespace FastPick.Views
                     // 直接设置到 Image 控件，并恢复不透明度
                     image.Source = bitmap;
                     image.Opacity = 1.0;
+                    
+                    // DEBUG: 设置成功
+                    DebugService.WriteLine($"[DEBUG-LoadThumbnail] 设置成功: {System.IO.Path.GetFileName(photoItem.DisplayPath)}");
                 }
                 else if (!cancellationToken.IsCancellationRequested)
                 {
                     // 加载失败，恢复不透明度
                     image.Opacity = 1.0;
+                    
+                    // DEBUG: 加载失败
+                    DebugService.WriteLine($"[DEBUG-LoadThumbnail] 加载失败或为 null: {System.IO.Path.GetFileName(photoItem.DisplayPath)}");
                 }
             }
             catch (OperationCanceledException)
             {
                 // 加载被取消，忽略
+                DebugService.WriteLine($"[DEBUG-LoadThumbnail] 加载被取消: {System.IO.Path.GetFileName(photoItem.DisplayPath)}");
             }
             catch (Exception ex)
             {
@@ -658,6 +693,12 @@ namespace FastPick.Views
         {
             if (args.Element is Grid thumbnailGrid)
             {
+                // DEBUG: 输出清理信息
+                if (thumbnailGrid.DataContext is PhotoItem clearingItem)
+                {
+                    DebugService.WriteLine($"[DEBUG-ElementClearing] 文件: {System.IO.Path.GetFileName(clearingItem.DisplayPath)}, 待加载队列大小: {_pendingThumbnailLoads.Count}");
+                }
+                
                 // 立即取消该单元格的所有后台加载任务（关键：防止卡死）
                 if (thumbnailGrid.Tag is CancellationTokenSource cts)
                 {
@@ -669,7 +710,8 @@ namespace FastPick.Views
                 // 从待加载队列中移除（使用文件路径作为键）
                 if (thumbnailGrid.DataContext is PhotoItem item)
                 {
-                    _pendingThumbnailLoads.Remove(item.DisplayPath);
+                    var removed = _pendingThumbnailLoads.Remove(item.DisplayPath);
+                    DebugService.WriteLine($"[DEBUG-ElementClearing] 从待加载队列移除: {System.IO.Path.GetFileName(item.DisplayPath)}, 移除结果: {removed}");
                 }
                 
                 // 只清空 Image 控件的 Source，保留 PhotoItem.Thumbnail 缓存

@@ -1,0 +1,1706 @@
+[LoadButton] 开始载入图片，Path1: D:\test, Path2:
+[LoadPhotos] 开始加载图片
+[LoadButton] 载入完成
+[DEBUG-ElementPrepared] 索引: 0, 文件: DSC_0057.JPG, Thumbnail: null, 滚动中: False
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0057.JPG, 当前队列大小: 0
+[DEBUG-ElementClearing] 文件: DSC_0057.JPG, 待加载队列大小: 1
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0057.JPG, 移除结果: True
+[DEBUG-ElementPrepared] 索引: 0, 文件: DSC_0057.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0057.JPG, 当前队列大小: 0
+[DEBUG-ElementPrepared] 索引: 1, 文件: DSC_0057 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0057 - 副本.JPG, 当前队列大小: 1
+[DEBUG-ElementPrepared] 索引: 2, 文件: DSC_0058.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0058.JPG, 当前队列大小: 2
+[DEBUG-ElementPrepared] 索引: 3, 文件: DSC_0058 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0058 - 副本.JPG, 当前队列大小: 3
+[DEBUG-ElementPrepared] 索引: 4, 文件: DSC_0059.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0059.JPG, 当前队列大小: 4
+[DEBUG-ElementPrepared] 索引: 5, 文件: DSC_0059 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0059 - 副本.JPG, 当前队列大小: 5
+[DEBUG-ElementPrepared] 索引: 6, 文件: DSC_0060.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0060.JPG, 当前队列大小: 6
+[DEBUG-ElementPrepared] 索引: 7, 文件: DSC_0060 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0060 - 副本.JPG, 当前队列大小: 7
+[DEBUG-ElementPrepared] 索引: 8, 文件: DSC_0061.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0061.JPG, 当前队列大小: 8
+[DEBUG-ElementPrepared] 索引: 9, 文件: DSC_0061 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0061 - 副本.JPG, 当前队列大小: 9
+[DEBUG-ElementPrepared] 索引: 10, 文件: DSC_0062.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0062.JPG, 当前队列大小: 10
+[DEBUG-ElementPrepared] 索引: 11, 文件: DSC_0062 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0062 - 副本.JPG, 当前队列大小: 11
+[DEBUG-ElementPrepared] 索引: 12, 文件: DSC_0063.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0063.JPG, 当前队列大小: 12
+[DEBUG-ElementPrepared] 索引: 13, 文件: DSC_0063 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0063 - 副本.JPG, 当前队列大小: 13
+[DEBUG-ElementPrepared] 索引: 14, 文件: DSC_0064.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0064.JPG, 当前队列大小: 14
+[DEBUG-ElementPrepared] 索引: 15, 文件: DSC_0064 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0064 - 副本.JPG, 当前队列大小: 15
+[DEBUG-视区] 防抖触发 - 视区范围: [0, 7], 待加载数量: 16
+[DEBUG-视区] 优先级分组: P0(7), P1(9)
+[DEBUG-视区] 开始加载优先级 0，数量: 7
+[DEBUG-视区] 优先级 0 并行度: 16
+[DEBUG-LoadThumbnail] 开始加载: DSC_0058 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0058 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0058 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0058.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0058.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0058.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0059.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0059.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0059.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0057 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0057 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0057 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0059 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0059 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0059 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0057.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0057.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0057.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0060.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0060.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0060.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0058.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0059 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0058 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0059.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0060.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0057.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0057 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0059 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0058.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0058 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0057 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0060.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0057.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0059.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0059 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0059 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0059 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0058.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0058.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0058.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0057 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0057 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0057 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0060.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0060.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0060.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0058 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0058 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0058 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0057.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0057.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0057.JPG
+Error: BindingExpression path error: 'CurrentPreviewItem' property not found on 'FastPick.Models.PhotoItem'. BindingExpression: Path='CurrentPreviewItem.Rating' DataItem='FastPick.Models.PhotoItem'; target element is 'FastPick.Controls.RatingControl' (Name='BottomRatingControl'); target property is 'Rating' (type 'Int32')
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0059.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0059.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0059.JPG
+[DEBUG-视区] 优先级 0 加载完成
+[DEBUG-视区] 开始加载优先级 1，数量: 9
+[DEBUG-视区] 优先级 1 并行度: 8
+[DEBUG-LoadThumbnail] 开始加载: DSC_0060 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0060 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0060 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0061.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0061.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0061.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0061 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0061 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0061 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0062.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0062.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0062.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0062 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0062 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0062 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0063.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0063.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0063.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0063 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0063 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0063 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0064.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0064.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0064.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0060 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0062.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0061 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0062 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0063.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0061.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0063 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0064.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0063.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0063 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0064.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0062.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0061.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0061 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0060 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0062 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0064.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0064.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0064.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0064 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0064 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0064 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0062.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0062.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0062.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0064 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0062 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0062 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0062 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0063 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0063 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0063 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0064 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0063.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0063.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0063.JPG
+[DEBUG-ElementPrepared] 索引: 16, 文件: DSC_0065.JPG, Thumbnail: null, 滚动中: True
+[GetThumbnail] 开始 WIC 解码: DSC_0065 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0065 - 副本.JPG
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0065.JPG, 当前队列大小: 0
+[GetThumbnail] 开始 WIC 解码: DSC_0065.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0065.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0065 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-ElementPrepared] 索引: 17, 文件: DSC_0065 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0065 - 副本.JPG, 当前队列大小: 1
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0065.JPG, 尺寸: 6016x4016
+[DEBUG-ElementPrepared] 索引: 18, 文件: DSC_0066.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0066.JPG, 当前队列大小: 2
+[DEBUG-ElementPrepared] 索引: 19, 文件: DSC_0066 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0066 - 副本.JPG, 当前队列大小: 3
+[DEBUG-ElementPrepared] 索引: 20, 文件: DSC_0067.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0067.JPG, 当前队列大小: 4
+[DEBUG-ElementPrepared] 索引: 21, 文件: DSC_0067 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0067 - 副本.JPG, 当前队列大小: 5
+[DEBUG-ElementPrepared] 索引: 22, 文件: DSC_0068.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0068.JPG, 当前队列大小: 6
+[DEBUG-ElementPrepared] 索引: 23, 文件: DSC_0068 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0068 - 副本.JPG, 当前队列大小: 7
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0061.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0061.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0065 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0065.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 设置成功: DSC_0061.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0061 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0061 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0061 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0065.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0065 - 副本.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0060 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0060 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0060 - 副本.JPG
+[DEBUG-ElementClearing] 文件: DSC_0057.JPG, 待加载队列大小: 8
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0057.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0057 - 副本.JPG, 待加载队列大小: 8
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0057 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0058.JPG, 待加载队列大小: 8
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0058.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0058 - 副本.JPG, 待加载队列大小: 8
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0058 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0059.JPG, 待加载队列大小: 8
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0059.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0059 - 副本.JPG, 待加载队列大小: 8
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0059 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0060.JPG, 待加载队列大小: 8
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0060.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0060 - 副本.JPG, 待加载队列大小: 8
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0060 - 副本.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 24, 文件: DSC_0069.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0069.JPG, 当前队列大小: 8
+[DEBUG-ElementPrepared] 索引: 25, 文件: DSC_0069 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0069 - 副本.JPG, 当前队列大小: 9
+[DEBUG-ElementPrepared] 索引: 26, 文件: DSC_0070.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0070.JPG, 当前队列大小: 10
+[DEBUG-ElementPrepared] 索引: 27, 文件: DSC_0070 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0070 - 副本.JPG, 当前队列大小: 11
+[DEBUG-ElementPrepared] 索引: 28, 文件: DSC_0071.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0071.JPG, 当前队列大小: 12
+[DEBUG-ElementPrepared] 索引: 29, 文件: DSC_0071 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0071 - 副本.JPG, 当前队列大小: 13
+[DEBUG-ElementPrepared] 索引: 30, 文件: DSC_0072.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0072.JPG, 当前队列大小: 14
+[DEBUG-ElementPrepared] 索引: 31, 文件: DSC_0072 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0072 - 副本.JPG, 当前队列大小: 15
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0064 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0064 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0064 - 副本.JPG
+[DEBUG-视区] 优先级 1 加载完成
+[DEBUG-视区] 所有优先级加载完成，剩余待加载: 16
+[DEBUG-视区] 防抖触发 - 视区范围: [15, 22], 待加载数量: 16
+[DEBUG-视区] 优先级分组: P0(6), P1(10)
+[DEBUG-视区] 开始加载优先级 0，数量: 6
+[DEBUG-视区] 优先级 0 并行度: 16
+[DEBUG-LoadThumbnail] 开始加载: DSC_0066.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0066.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0066.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0065 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0065 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0065 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0066 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0066 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0066 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0065.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0065.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0065.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0067.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0067.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0067.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0067 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0067 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0067 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0065 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0066 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0065.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0066.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0067.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0067 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0065.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0065 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0066.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0066 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0067.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0067 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0065 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0065 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0065 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0067.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0067.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0067.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0065.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0065.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0065.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0066.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0066.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0066.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0067 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0067 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0067 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0066 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0066 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0066 - 副本.JPG
+[DEBUG-视区] 优先级 0 加载完成
+[DEBUG-视区] 开始加载优先级 1，数量: 10
+[DEBUG-视区] 优先级 1 并行度: 8
+[DEBUG-LoadThumbnail] 开始加载: DSC_0068.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0068.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0068.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0068 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0068 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0068 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0069.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0069.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0069.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0069 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0069 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0069 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0070.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0070.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0070.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0070 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0070 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0070 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0071.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0071.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0071.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0071 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0071 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0071 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0068.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0068 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0071.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0069.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0069 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0070 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0070.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0071 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0070.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0068 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0068.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0071 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0070 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0069 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0069.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0071.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0068 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0068 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0068 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0072.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0072.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0072.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0068.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0068.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0068.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0072 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0072 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0072 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0072.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0072 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0069 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0069 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0069 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0069.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0069.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0069.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0071 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0071 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0071 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0070 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0070 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0070 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0072.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0070.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0070.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0070.JPG
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0072 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0071.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0071.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0071.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0072.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0072.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0072.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0072 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0072 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0072 - 副本.JPG
+[DEBUG-视区] 优先级 1 加载完成
+[DEBUG-视区] 所有优先级加载完成，剩余待加载: 0
+[DEBUG-ElementPrepared] 索引: 32, 文件: DSC_0073.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0073.JPG, 当前队列大小: 0
+[DEBUG-ElementClearing] 文件: DSC_0061.JPG, 待加载队列大小: 1
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0061.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 33, 文件: DSC_0073 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0073 - 副本.JPG, 当前队列大小: 1
+[DEBUG-ElementClearing] 文件: DSC_0061 - 副本.JPG, 待加载队列大小: 2
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0061 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0062.JPG, 待加载队列大小: 2
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0062.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 34, 文件: DSC_0074.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0074.JPG, 当前队列大小: 2
+[DEBUG-ElementClearing] 文件: DSC_0062 - 副本.JPG, 待加载队列大小: 3
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0062 - 副本.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 35, 文件: DSC_0074 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0074 - 副本.JPG, 当前队列大小: 3
+[DEBUG-ElementPrepared] 索引: 36, 文件: DSC_0075.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0075.JPG, 当前队列大小: 4
+[DEBUG-ElementClearing] 文件: DSC_0063.JPG, 待加载队列大小: 5
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0063.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 37, 文件: DSC_0075 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0075 - 副本.JPG, 当前队列大小: 5
+[DEBUG-ElementClearing] 文件: DSC_0063 - 副本.JPG, 待加载队列大小: 6
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0063 - 副本.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 38, 文件: DSC_0076.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0076.JPG, 当前队列大小: 6
+[GetThumbnail] 开始 WIC 解码: DSC_0073.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0073.JPG
+[DEBUG-ElementClearing] 文件: DSC_0064.JPG, 待加载队列大小: 7
+[GetThumbnail] 开始 WIC 解码: DSC_0074.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0074.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0073 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0073 - 副本.JPG
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0064.JPG, 移除结果: False
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0073.JPG, 尺寸: 6016x4016
+[DEBUG-ElementClearing] 文件: DSC_0064 - 副本.JPG, 待加载队列大小: 7
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0074.JPG, 尺寸: 6016x4016
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0064 - 副本.JPG, 移除结果: False
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0073 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-ElementPrepared] 索引: 39, 文件: DSC_0076 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0076 - 副本.JPG, 当前队列大小: 7
+[DEBUG-ElementClearing] 文件: DSC_0065.JPG, 待加载队列大小: 8
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0065.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0065 - 副本.JPG, 待加载队列大小: 8
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0065 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0066.JPG, 待加载队列大小: 8
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0066.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0066 - 副本.JPG, 待加载队列大小: 8
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0066 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0067.JPG, 待加载队列大小: 8
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0067.JPG, 移除结果: False
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0073.JPG, 尺寸: 256x170
+[DEBUG-ElementClearing] 文件: DSC_0067 - 副本.JPG, 待加载队列大小: 8
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0067 - 副本.JPG, 移除结果: False
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0073.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-ElementPrepared] 索引: 40, 文件: DSC_0077.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0077.JPG, 当前队列大小: 8
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0073 - 副本.JPG, 尺寸: 256x170
+[DEBUG-ElementPrepared] 索引: 41, 文件: DSC_0077 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0074.JPG, 尺寸: 256x170
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0077 - 副本.JPG, 当前队列大小: 9
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0074.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0073 - 副本.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-ElementPrepared] 索引: 42, 文件: DSC_0078.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0078.JPG, 当前队列大小: 10
+[DEBUG-ElementPrepared] 索引: 43, 文件: DSC_0078 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0078 - 副本.JPG, 当前队列大小: 11
+[DEBUG-ElementPrepared] 索引: 44, 文件: DSC_0079.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0079.JPG, 当前队列大小: 12
+[DEBUG-ElementPrepared] 索引: 45, 文件: DSC_0079 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0079 - 副本.JPG, 当前队列大小: 13
+[DEBUG-ElementPrepared] 索引: 46, 文件: DSC_0080.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0080.JPG, 当前队列大小: 14
+[DEBUG-ElementClearing] 文件: DSC_0068.JPG, 待加载队列大小: 15
+[GetThumbnail] 开始 WIC 解码: DSC_0075.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0075.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0077 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0076.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0076.JPG
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0068.JPG, 移除结果: False
+[GetThumbnail] 开始 WIC 解码: DSC_0075 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0075 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0074 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0074 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0075.JPG, 尺寸: 6016x4016
+[GetThumbnail] 开始 WIC 解码: DSC_0074.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0074.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0076.JPG, 尺寸: 6016x4016
+[GetThumbnail] 开始 WIC 解码: DSC_0076 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0076 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0074 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0075 - 副本.JPG, 尺寸: 6016x4016
+[GetThumbnail] 开始 WIC 解码: DSC_0073.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0073.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0074.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0076 - 副本.JPG, 尺寸: 6016x4016
+[GetThumbnail] 开始 WIC 解码: DSC_0077.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0077.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0073 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0077 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0073.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0073 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 47, 文件: DSC_0080 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0077.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0077 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0075 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0075.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0074 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0076.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0073 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0074.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0076 - 副本.JPG, 尺寸: 256x170
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0080 - 副本.JPG, 当前队列大小: 15
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0073.JPG, 尺寸: 256x170
+[DEBUG-ElementClearing] 文件: DSC_0068 - 副本.JPG, 待加载队列大小: 16
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0075 - 副本.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0075.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0074 - 副本.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0077 - 副本.JPG, 尺寸: 256x170
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0068 - 副本.JPG, 移除结果: False
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0074.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0076.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0076 - 副本.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0073.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-ElementClearing] 文件: DSC_0069.JPG, 待加载队列大小: 16
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0077.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0077 - 副本.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0073 - 副本.JPG, 尺寸: 256x170
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0069.JPG, 移除结果: False
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0077.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-ElementClearing] 文件: DSC_0069 - 副本.JPG, 待加载队列大小: 16
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0069 - 副本.JPG, 移除结果: False
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0073 - 副本.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-ElementClearing] 文件: DSC_0070.JPG, 待加载队列大小: 16
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0070.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0070 - 副本.JPG, 待加载队列大小: 16
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0070 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0071.JPG, 待加载队列大小: 16
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0071.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0071 - 副本.JPG, 待加载队列大小: 16
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0071 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0072.JPG, 待加载队列大小: 16
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0072.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0072 - 副本.JPG, 待加载队列大小: 16
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0072 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0073.JPG, 待加载队列大小: 16
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0073.JPG, 移除结果: True
+[DEBUG-ElementClearing] 文件: DSC_0073 - 副本.JPG, 待加载队列大小: 15
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0073 - 副本.JPG, 移除结果: True
+[DEBUG-ElementClearing] 文件: DSC_0074.JPG, 待加载队列大小: 14
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0074.JPG, 移除结果: True
+[DEBUG-ElementClearing] 文件: DSC_0074 - 副本.JPG, 待加载队列大小: 13
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0074 - 副本.JPG, 移除结果: True
+[DEBUG-ElementClearing] 文件: DSC_0075.JPG, 待加载队列大小: 12
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0075.JPG, 移除结果: True
+[DEBUG-ElementPrepared] 索引: 48, 文件: DSC_0081.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0081.JPG, 当前队列大小: 11
+[DEBUG-ElementPrepared] 索引: 49, 文件: DSC_0081 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0081 - 副本.JPG, 当前队列大小: 12
+[DEBUG-ElementPrepared] 索引: 50, 文件: DSC_0082.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0082.JPG, 当前队列大小: 13
+[DEBUG-ElementPrepared] 索引: 51, 文件: DSC_0082 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0082 - 副本.JPG, 当前队列大小: 14
+[DEBUG-ElementPrepared] 索引: 52, 文件: DSC_0083.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0083.JPG, 当前队列大小: 15
+[DEBUG-ElementPrepared] 索引: 53, 文件: DSC_0083 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0083 - 副本.JPG, 当前队列大小: 16
+[DEBUG-ElementPrepared] 索引: 54, 文件: DSC_0084.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0084.JPG, 当前队列大小: 17
+[DEBUG-ElementPrepared] 索引: 55, 文件: DSC_0084 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0084 - 副本.JPG, 当前队列大小: 18
+[DEBUG-ElementPrepared] 索引: 56, 文件: DSC_0085.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0085.JPG, 当前队列大小: 19
+[DEBUG-ElementPrepared] 索引: 57, 文件: DSC_0085 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0085 - 副本.JPG, 当前队列大小: 20
+[DEBUG-ElementPrepared] 索引: 58, 文件: DSC_0086.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0086.JPG, 当前队列大小: 21
+[DEBUG-ElementPrepared] 索引: 59, 文件: DSC_0086 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0086 - 副本.JPG, 当前队列大小: 22
+[DEBUG-ElementPrepared] 索引: 60, 文件: DSC_0087.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0087.JPG, 当前队列大小: 23
+[DEBUG-ElementPrepared] 索引: 61, 文件: DSC_0087 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0087 - 副本.JPG, 当前队列大小: 24
+[DEBUG-视区] 防抖触发 - 视区范围: [42, 50], 待加载数量: 25
+[DEBUG-视区] 优先级分组: P0(8), P1(14), P2(3)
+[DEBUG-视区] 开始加载优先级 0，数量: 8
+[DEBUG-视区] 优先级 0 并行度: 16
+[DEBUG-LoadThumbnail] 开始加载: DSC_0079 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0079 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0079 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0080.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0080.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0080.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0079.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0079.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0079.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0080 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0080 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0080 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0078 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0078 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0078 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0081.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0081.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0081.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0078.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0078.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0078.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0081 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0081 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0081 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0079 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0081.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0080.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0078 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0080 - 副本.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0079.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0078.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0081 - 副本.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0081.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0080.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0081 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0080 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0079 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0078.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0079.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0078 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0081.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0081.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0081.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0080 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0080 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0080 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0080.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0080.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0080.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0081 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0081 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0081 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0079 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0079 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0079 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0078.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0078.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0078.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0078 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0078 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0078 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0079.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0079.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0079.JPG
+[DEBUG-视区] 优先级 0 加载完成
+[DEBUG-视区] 开始加载优先级 1，数量: 14
+[DEBUG-视区] 优先级 1 并行度: 8
+[DEBUG-LoadThumbnail] 开始加载: DSC_0077 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0077 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0077 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0082.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0082.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0082.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0077.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0077.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0077.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0082 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0082 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0082 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0076 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0076 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0076 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0083.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0083.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0083.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0076.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0076.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0076.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0083 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0083 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0083 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0077 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0076 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0077.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0082 - 副本.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0083.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0082.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0076.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0083 - 副本.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0083.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0083 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0082.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0082 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0077 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0077.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0076 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0076.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0083.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0083.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0083.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0075 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0075 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0075 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0082 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0082 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0082 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0084.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0084.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0084.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0075 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0084.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0076 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0076 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0076 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0084 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0084 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0084 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0084.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0075 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0083 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0083 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0083 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0085.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0085.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0085.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0084 - 副本.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0082.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0082.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0082.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0085 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0085 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0085 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0085.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0084 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0085 - 副本.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0077.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0077.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0077.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0086.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0086.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0086.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0077 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0077 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0077 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0086.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0085.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0085 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0076.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0076.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0076.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0075 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0075 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0075 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0086.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0084.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0084.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0084.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0085.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0085.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0085.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0084 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0084 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0084 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0085 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0085 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0085 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0086.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0086.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0086.JPG
+[DEBUG-视区] 优先级 1 加载完成
+[DEBUG-视区] 开始加载优先级 2，数量: 3
+[DEBUG-视区] 优先级 2 并行度: 1
+[DEBUG-LoadThumbnail] 开始加载: DSC_0086 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0086 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0086 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0086 - 副本.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0086 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0086 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0086 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0086 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0087.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0087.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0087.JPG
+[DEBUG-ElementClearing] 文件: DSC_0075 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0075 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0076.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0076.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0076 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0076 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0077.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0077.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0077 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0077 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0078.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0078.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0078 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0078 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0079.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0079.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0079 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0079 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0080.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0080.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0080 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0080 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0081.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0081.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0081 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0081 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0082.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0082.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0082 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0082 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0083.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0083.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0083 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0083 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0084.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0084.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0084 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0084 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0085.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0085.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0085 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0085 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0086.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0086.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0086 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0086 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0087.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0087.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0087 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0087 - 副本.JPG, 移除结果: False
+启动后台缩略图解码任务
+[GetThumbnail] 开始 WIC 解码: DSC_0073.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0073.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0087.JPG, 尺寸: 4512x3008
+[DEBUG-ElementPrepared] 索引: 0, 文件: DSC_0057.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0057.JPG
+[DEBUG-ElementClearing] 文件: DSC_0057.JPG, 待加载队列大小: 0
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0073.JPG, 尺寸: 6016x4016
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0057.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 38, 文件: DSC_0076.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0076.JPG
+[DEBUG-ElementPrepared] 索引: 39, 文件: DSC_0076 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0076 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 40, 文件: DSC_0077.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0077.JPG
+[DEBUG-ElementPrepared] 索引: 41, 文件: DSC_0077 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0077 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 42, 文件: DSC_0078.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0078.JPG
+[DEBUG-ElementPrepared] 索引: 43, 文件: DSC_0078 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0078 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 44, 文件: DSC_0079.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0079.JPG
+[DEBUG-ElementPrepared] 索引: 45, 文件: DSC_0079 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0079 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 46, 文件: DSC_0080.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0080.JPG
+[DEBUG-ElementPrepared] 索引: 47, 文件: DSC_0080 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0080 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 48, 文件: DSC_0081.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0081.JPG
+[DEBUG-ElementPrepared] 索引: 49, 文件: DSC_0081 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0081 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 50, 文件: DSC_0082.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0082.JPG
+[DEBUG-ElementPrepared] 索引: 51, 文件: DSC_0082 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0082 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 52, 文件: DSC_0083.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0083.JPG
+[DEBUG-ElementPrepared] 索引: 53, 文件: DSC_0083 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0073.JPG, 尺寸: 256x170
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0083 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0073.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-ElementPrepared] 索引: 54, 文件: DSC_0084.JPG, Thumbnail: 已存在, 滚动中: False
+[GetThumbnail] 开始 WIC 解码: DSC_0073 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0073 - 副本.JPG
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0084.JPG
+[DEBUG-ElementPrepared] 索引: 55, 文件: DSC_0084 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0084 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0073 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-ElementPrepared] 索引: 56, 文件: DSC_0085.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0085.JPG
+[DEBUG-ElementPrepared] 索引: 57, 文件: DSC_0085 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0085 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 58, 文件: DSC_0086.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0086.JPG
+[DEBUG-ElementPrepared] 索引: 59, 文件: DSC_0086 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0086 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 60, 文件: DSC_0087.JPG, Thumbnail: null, 滚动中: False
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0087.JPG, 当前队列大小: 0
+[DEBUG-ElementPrepared] 索引: 61, 文件: DSC_0087 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0087 - 副本.JPG, 当前队列大小: 1
+[DEBUG-ElementPrepared] 索引: 37, 文件: DSC_0075 - 副本.JPG, Thumbnail: 已存在, 滚动中: True
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0075 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0087.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0087.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0087.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0087.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0087 - 副本.JPG, 取消令牌: False
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0073 - 副本.JPG, 尺寸: 256x170
+[GetThumbnail] 开始 WIC 解码: DSC_0087 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0087 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0073 - 副本.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0074.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0074.JPG
+[DEBUG-视区] 防抖触发 - 视区范围: [42, 50], 待加载数量: 2
+[DEBUG-视区] 优先级分组: P2(2)
+[DEBUG-视区] 开始加载优先级 2，数量: 2
+[DEBUG-视区] 优先级 2 并行度: 1
+[DEBUG-LoadThumbnail] 开始加载: DSC_0087.JPG, 取消令牌: False
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0074.JPG, 尺寸: 6016x4016
+[DEBUG-LoadThumbnail] 开始加载: DSC_0087 - 副本.JPG, 取消令牌: False
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0087 - 副本.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0087 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0087 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0087 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0087 - 副本.JPG
+[DEBUG-视区] 优先级 2 加载完成
+[DEBUG-视区] 所有优先级加载完成，剩余待加载: 0
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0074.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0087 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0087 - 副本.JPG
+[DEBUG-视区] 优先级 2 加载完成
+[DEBUG-视区] 所有优先级加载完成，剩余待加载: 0
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0074.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0074 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0074 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0074 - 副本.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0074 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0074 - 副本.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0075.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0075.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0075.JPG, 尺寸: 6016x4016
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0075.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0075.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0088.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0088.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0088.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0088.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0088.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0088 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0088 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0088 - 副本.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0088 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0088 - 副本.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0089.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0089.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0089.JPG, 尺寸: 4512x3008
+[DEBUG-ElementClearing] 文件: DSC_0075 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0075 - 副本.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 62, 文件: DSC_0088.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0088.JPG, 当前队列大小: 0
+[DEBUG-ElementClearing] 文件: DSC_0076.JPG, 待加载队列大小: 1
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0076.JPG, 移除结果: False
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0089.JPG, 尺寸: 256x170
+[DEBUG-ElementClearing] 文件: DSC_0076 - 副本.JPG, 待加载队列大小: 1
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0076 - 副本.JPG, 移除结果: False
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0089.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-ElementPrepared] 索引: 63, 文件: DSC_0088 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0088 - 副本.JPG, 当前队列大小: 1
+[DEBUG-ElementClearing] 文件: DSC_0077.JPG, 待加载队列大小: 2
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0077.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0077 - 副本.JPG, 待加载队列大小: 2
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0077 - 副本.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 64, 文件: DSC_0089.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0089.JPG, 当前队列大小: 2
+[DEBUG-ElementPrepared] 索引: 65, 文件: DSC_0089 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0089 - 副本.JPG, 当前队列大小: 3
+[DEBUG-ElementPrepared] 索引: 66, 文件: DSC_0090.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0090.JPG, 当前队列大小: 4
+[DEBUG-ElementClearing] 文件: DSC_0078.JPG, 待加载队列大小: 5
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0078.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0078 - 副本.JPG, 待加载队列大小: 5
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0078 - 副本.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 67, 文件: DSC_0091.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0091.JPG, 当前队列大小: 5
+[DEBUG-ElementPrepared] 索引: 68, 文件: DSC_0092.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0092.JPG, 当前队列大小: 6
+[DEBUG-ElementClearing] 文件: DSC_0079.JPG, 待加载队列大小: 7
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0079.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 69, 文件: DSC_0093.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0093.JPG, 当前队列大小: 7
+[DEBUG-ElementClearing] 文件: DSC_0079 - 副本.JPG, 待加载队列大小: 8
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0079 - 副本.JPG, 移除结果: False
+[GetThumbnail] 开始 WIC 解码: DSC_0089 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0089 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 70, 文件: DSC_0094.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0094.JPG, 当前队列大小: 8
+[DEBUG-ElementClearing] 文件: DSC_0080.JPG, 待加载队列大小: 9
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0080.JPG, 移除结果: False
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0089 - 副本.JPG, 尺寸: 4512x3008
+[DEBUG-ElementClearing] 文件: DSC_0080 - 副本.JPG, 待加载队列大小: 9
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0080 - 副本.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 71, 文件: DSC_0095.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0095.JPG, 当前队列大小: 9
+[DEBUG-ElementPrepared] 索引: 72, 文件: DSC_0096.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0096.JPG, 当前队列大小: 10
+[DEBUG-ElementClearing] 文件: DSC_0081.JPG, 待加载队列大小: 11
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0081.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 73, 文件: DSC_0097.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0097.JPG, 当前队列大小: 11
+[DEBUG-ElementClearing] 文件: DSC_0081 - 副本.JPG, 待加载队列大小: 12
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0089 - 副本.JPG, 尺寸: 256x170
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0081 - 副本.JPG, 移除结果: False
+[GetThumbnail] 开始 WIC 解码: DSC_0088 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0088 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0088.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0089.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0089.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0088.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0090.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0090.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0088 - 副本.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0089 - 副本.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0089.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0088.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0090.JPG, 尺寸: 4512x3008
+[DEBUG-ElementPrepared] 索引: 74, 文件: DSC_0098.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0098.JPG, 当前队列大小: 12
+[DEBUG-ElementClearing] 文件: DSC_0082.JPG, 待加载队列大小: 13
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0082.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0082 - 副本.JPG, 待加载队列大小: 13
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0082 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0083.JPG, 待加载队列大小: 13
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0083.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0083 - 副本.JPG, 待加载队列大小: 13
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0083 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0084.JPG, 待加载队列大小: 13
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0084.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0084 - 副本.JPG, 待加载队列大小: 13
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0084 - 副本.JPG, 移除结果: False
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0088 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0088.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0089.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0090.JPG, 尺寸: 256x170
+[DEBUG-ElementClearing] 文件: DSC_0085.JPG, 待加载队列大小: 13
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0085.JPG, 移除结果: False
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0088 - 副本.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0090.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0088.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0089.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-ElementClearing] 文件: DSC_0085 - 副本.JPG, 待加载队列大小: 13
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0085 - 副本.JPG, 移除结果: False
+[GetThumbnail] 开始 WIC 解码: DSC_0091.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0091.JPG
+[DEBUG-ElementClearing] 文件: DSC_0086.JPG, 待加载队列大小: 13
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0086.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 75, 文件: DSC_0099.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0099.JPG, 当前队列大小: 13
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0091.JPG, 尺寸: 4512x3008
+[DEBUG-ElementPrepared] 索引: 76, 文件: DSC_0100.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0100.JPG, 当前队列大小: 14
+[DEBUG-ElementPrepared] 索引: 77, 文件: DSC_0101.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0101.JPG, 当前队列大小: 15
+[DEBUG-ElementPrepared] 索引: 78, 文件: DSC_0102.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0102.JPG, 当前队列大小: 16
+[DEBUG-ElementPrepared] 索引: 79, 文件: DSC_0103.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0103.JPG, 当前队列大小: 17
+[DEBUG-ElementPrepared] 索引: 80, 文件: DSC_0104.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0104.JPG, 当前队列大小: 18
+[DEBUG-ElementPrepared] 索引: 81, 文件: DSC_0105.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0105.JPG, 当前队列大小: 19
+[DEBUG-ElementPrepared] 索引: 82, 文件: DSC_0106.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0106.JPG, 当前队列大小: 20
+[DEBUG-ElementPrepared] 索引: 83, 文件: DSC_0107.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0091.JPG, 尺寸: 256x170
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0107.JPG, 当前队列大小: 21
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0091.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0092.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0092.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0092.JPG, 尺寸: 4512x3008
+[DEBUG-ElementClearing] 文件: DSC_0086 - 副本.JPG, 待加载队列大小: 22
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0086 - 副本.JPG, 移除结果: False
+[GetThumbnail] 开始 WIC 解码: DSC_0095.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0089 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0091.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0088 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0098.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0099.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0099.JPG
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0092.JPG, 尺寸: 256x170
+[GetThumbnail] 开始 WIC 解码: DSC_0097.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0096.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0097.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0096.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0099.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0089 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0095.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0094.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0094.JPG
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0092.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0097.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0096.JPG, 尺寸: 4512x3008
+[DEBUG-ElementPrepared] 索引: 84, 文件: DSC_0108.JPG, Thumbnail: null, 滚动中: True
+[GetThumbnail] 开始 WIC 解码: DSC_0093.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0093.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0095.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0099.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0089 - 副本.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0094.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0091.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0093.JPG, 尺寸: 4512x3008
+[GetThumbnail] 开始 WIC 解码: DSC_0090.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0090.JPG
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0096.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0095.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0097.JPG, 尺寸: 256x170
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0108.JPG, 当前队列大小: 22
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0099.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0094.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0093.JPG, 尺寸: 256x170
+[DEBUG-ElementClearing] 文件: DSC_0087.JPG, 待加载队列大小: 23
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0089 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0096.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0087.JPG, 移除结果: False
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0091.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0097.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0095.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0090.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0098.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0089.JPG
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0089 - 副本.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0089.JPG
+[DEBUG-ElementClearing] 文件: DSC_0087 - 副本.JPG, 待加载队列大小: 23
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0094.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0087 - 副本.JPG, 移除结果: False
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0093.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0091.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0098.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0088 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0088.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0088.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0094.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0094.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0089.JPG, 尺寸: 4512x3008
+[DEBUG-ElementClearing] 文件: DSC_0088.JPG, 待加载队列大小: 23
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0090.JPG, 尺寸: 256x170
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0088.JPG, 移除结果: True
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0091.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0098.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0088.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0088 - 副本.JPG, 尺寸: 4512x3008
+[DEBUG-ElementClearing] 文件: DSC_0088 - 副本.JPG, 待加载队列大小: 22
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0089.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0090.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0094.JPG, 尺寸: 4512x3008
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0088 - 副本.JPG, 移除结果: True
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0098.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0089.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0088.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0088 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0088 - 副本.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0088.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0094.JPG, 尺寸: 256x170
+[DEBUG-ElementPrepared] 索引: 85, 文件: DSC_0109.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0094.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0095.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0095.JPG
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0109.JPG, 当前队列大小: 21
+[DEBUG-ElementPrepared] 索引: 86, 文件: DSC_0110.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0110.JPG, 当前队列大小: 22
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0095.JPG, 尺寸: 4512x3008
+[DEBUG-ElementPrepared] 索引: 87, 文件: DSC_0111.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0111.JPG, 当前队列大小: 23
+[DEBUG-ElementPrepared] 索引: 88, 文件: DSC_0112.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0112.JPG, 当前队列大小: 24
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0095.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0095.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0096.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0096.JPG
+[DEBUG-视区] 防抖触发 - 视区范围: [67, 75], 待加载数量: 25
+[DEBUG-视区] 优先级分组: P0(8), P1(12), P2(5)
+[DEBUG-视区] 开始加载优先级 0，数量: 8
+[DEBUG-视区] 优先级 0 并行度: 16
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0096.JPG, 尺寸: 4512x3008
+[DEBUG-LoadThumbnail] 开始加载: DSC_0094.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0094.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0094.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0095.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0095.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0095.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0093.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0093.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0093.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0096.JPG, 取消令牌: False
+[DEBUG-LoadThumbnail] 开始加载: DSC_0092.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0092.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0092.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0097.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0097.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0097.JPG
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0096.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0096.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0097.JPG, 尺寸: 4512x3008
+[DEBUG-LoadThumbnail] 开始加载: DSC_0091.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0091.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0091.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0098.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0098.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0098.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0096.JPG, thumbnail: null, 取消令牌: False
+[DEBUG-LoadThumbnail] 加载失败或为 null: DSC_0096.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0094.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0092.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0093.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0095.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0091.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0098.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0097.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0097.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0097.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0097.JPG
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0094.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0092.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0093.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0091.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0095.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0098.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0092.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0092.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0092.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0091.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0091.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0091.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0094.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0094.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0094.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0098.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0098.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0098.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0093.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0093.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0093.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0095.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0095.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0095.JPG
+[DEBUG-视区] 优先级 0 加载完成
+[DEBUG-视区] 开始加载优先级 1，数量: 12
+[DEBUG-视区] 优先级 1 并行度: 8
+[DEBUG-LoadThumbnail] 开始加载: DSC_0090.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0099.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0099.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0090.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0090.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0099.JPG, 取消令牌: False
+[DEBUG-LoadThumbnail] 开始加载: DSC_0089 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0089 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0089 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0099.JPG, 尺寸: 4512x3008
+[DEBUG-LoadThumbnail] 开始加载: DSC_0100.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0100.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0100.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0089.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0089.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0089.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0101.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0101.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0101.JPG
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0099.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0099.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-LoadThumbnail] 开始加载: DSC_0102.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0102.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0102.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0103.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0103.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0103.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0101.JPG, 尺寸: 4512x3008
+[DEBUG-LoadThumbnail] 加载完成: DSC_0099.JPG, thumbnail: null, 取消令牌: False
+[DEBUG-LoadThumbnail] 加载失败或为 null: DSC_0099.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0104.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0104.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0104.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0089 - 副本.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0090.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0100.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0089.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0102.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0103.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0104.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0101.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0101.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0101.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0101.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0105.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0105.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0105.JPG
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0102.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0089 - 副本.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0103.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0104.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0090.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0089.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0100.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0105.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0090.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0090.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0090.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0106.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0106.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0106.JPG
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0105.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0106.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0089.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0089.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0089.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0107.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0107.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0107.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0100.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0100.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0100.JPG
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0106.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0104.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0104.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0104.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0103.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0103.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0103.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0107.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0102.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0102.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0102.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0089 - 副本.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0089 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0089 - 副本.JPG
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0107.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0105.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0105.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0105.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0106.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0106.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0106.JPG
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0107.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0107.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0107.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0108.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0108.JPG
+[DEBUG-视区] 优先级 1 加载完成
+[DEBUG-视区] 开始加载优先级 2，数量: 5
+[DEBUG-视区] 优先级 2 并行度: 1
+[DEBUG-LoadThumbnail] 开始加载: DSC_0108.JPG, 取消令牌: False
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0108.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0108.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0108.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-LoadThumbnail] 加载完成: DSC_0108.JPG, thumbnail: null, 取消令牌: False
+[DEBUG-LoadThumbnail] 加载失败或为 null: DSC_0108.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0109.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0109.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0109.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0109.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0109.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0109.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0109.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0109.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0110.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0110.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0110.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0110.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0110.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: DSC_0110.JPG, 尺寸: 256x170
+[DEBUG-LoadThumbnail] 加载完成: DSC_0110.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0110.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0111.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0111.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0111.JPG, 取消令牌: False
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0111.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0111.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0111.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-LoadThumbnail] 加载完成: DSC_0111.JPG, thumbnail: null, 取消令牌: False
+[DEBUG-LoadThumbnail] 加载失败或为 null: DSC_0111.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0112.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0112.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0112.JPG, 取消令牌: False
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0112.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0112.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0112.JPG, 错误: , HResult: 0x8001010E
+[DEBUG-LoadThumbnail] 加载完成: DSC_0112.JPG, thumbnail: null, 取消令牌: False
+[DEBUG-LoadThumbnail] 加载失败或为 null: DSC_0112.JPG
+[DEBUG-视区] 优先级 2 加载完成
+[DEBUG-视区] 所有优先级加载完成，剩余待加载: 0
+[GetThumbnail] 开始 WIC 解码: DSC_0113.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0113.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0113.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0113.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0113.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0114.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0114.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0114.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0114.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0114.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0115.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0115.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0115.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0115.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0115.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0116.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0116.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0116.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0116.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0116.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0117.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0117.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0117.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0117.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0117.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0118.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0118.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0118.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0118.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0118.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0119.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0119.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0119.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0119.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0119.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0120.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0120.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0120.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0120.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0120.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0121.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0121.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0121.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0121.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0121.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0122.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0122.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0122.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0122.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0122.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0123.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0123.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0123.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0123.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0123.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0124.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0124.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0124.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0124.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0124.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0125.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0125.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0125.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0125.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0125.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0126.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0126.JPG
+[图片尺寸] 原图: 4512x3008, 预览: 0x0, 显示: 499x333, DPI: 1.25
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0126.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0126.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0126.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0127.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0127.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0127.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0127.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0127.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0128.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0128.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0128.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0128.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0128.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0129.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0129.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0129.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0129.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0129.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0130.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0130.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0130.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0130.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0130.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0131.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0131.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0131.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0131.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0131.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0132.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0132.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0132.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0132.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0132.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0133.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0133.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0133.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0133.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0133.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0134.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0134.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0134.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0134.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0134.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0135.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0135.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0135.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0135.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0135.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0136.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0136.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0136.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0136.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0136.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0137.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0137.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0137.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0137.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0137.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0138.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0138.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0138.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0138.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0138.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0139.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0139.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0139.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0139.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0139.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0140.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0140.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0140.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0140.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0140.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0141.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0141.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0141.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0141.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0141.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0142.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0142.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0142.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0142.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0142.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0143.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0143.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0143.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0143.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0143.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0144.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0144.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0144.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0144.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0144.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0145.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0145.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0145.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0145.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0145.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0146.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0146.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0146.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0146.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0146.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0147.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0147.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0147.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0147.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0147.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0148.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0148.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0148.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0148.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0148.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0149.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0149.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0149.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0149.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0149.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0150.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0150.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0150.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0150.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0150.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0151.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0151.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0151.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0151.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0151.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0152.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0152.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0152.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0152.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0152.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0153.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0153.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0153.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0153.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0153.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0154.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0154.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0154.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0154.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0154.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0155.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0155.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0155.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0155.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0155.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0156.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0156.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0156.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0156.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0156.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0157.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0157.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0157.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0157.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0157.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0158.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0158.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0158.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0158.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0158.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0159.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0159.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0159.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0159.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0159.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0160.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0160.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0160.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0160.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0160.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0161.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0161.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0161.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0161.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0161.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0162.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0162.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0162.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0162.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0162.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0163.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0163.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0163.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0163.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0163.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0164.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0164.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0164.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0164.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0164.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0165.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0165.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0165.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0165.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0165.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0166.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0166.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0166.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0166.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0166.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0167.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0167.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0167.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0167.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0167.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0168.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0168.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0168.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0168.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0168.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0169.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0169.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0169.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0169.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0169.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0170.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0170.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0170.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0170.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0170.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0171.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0171.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0171.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0171.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0171.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0172.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0172.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0172.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0172.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0172.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0173.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0173.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0173.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0173.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0173.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0174.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0174.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0174.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0174.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0174.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0175.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0175.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0175.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0175.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0175.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0176.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0176.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0176.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0176.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0176.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0177.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0177.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0177.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0177.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0177.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0178.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0178.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0178.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0178.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0178.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0179.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0179.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0179.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0179.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0179.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0180.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0180.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0180.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0180.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0180.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0181.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0181.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0181.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0181.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0181.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0182.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0182.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0182.JPG, 尺寸: 4512x3008
+[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: DSC_0182.JPG, 尺寸: 256x170
+[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: DSC_0182.JPG, 错误: , HResult: 0x8001010E
+[GetThumbnail] 开始 WIC 解码: DSC_0183.JPG
+[DEBUG-GenerateWicThumbnail] 开始生成: DSC_0183.JPG
+[DEBUG-GenerateWicThumbnail] 解码器创建成功: DSC_0183.JPG, 尺寸: 4512x3008

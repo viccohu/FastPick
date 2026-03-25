@@ -1,0 +1,481 @@
+[LoadButton] 开始载入图片，Path1: D:\test, Path2:
+[LoadPhotos] 开始加载图片
+[图片尺寸] 原图: 6016x4016, 预览: 0x0, 显示: 499x333, DPI: 1.25
+[DEBUG-ElementClearing] 文件: DSC_0057.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0057.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0057 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0057 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0058.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0058.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0058 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0058 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0059.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0059.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0059 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0059 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0060.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0060.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0060 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0060 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0061.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0061.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0061 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0061 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0062.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0062.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0062 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0062 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0063.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0063.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0063 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0063 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0064.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0064.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0064 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0064 - 副本.JPG, 移除结果: False
+[LoadButton] 载入完成
+[DEBUG-ElementPrepared] 索引: 0, 文件: DSC_0057.JPG, Thumbnail: null, 滚动中: False
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0057.JPG, 当前队列大小: 0
+[DEBUG-ElementClearing] 文件: DSC_0057.JPG, 待加载队列大小: 1
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0057.JPG, 移除结果: True
+[DEBUG-ElementPrepared] 索引: 0, 文件: DSC_0057.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0057.JPG, 当前队列大小: 0
+[DEBUG-ElementPrepared] 索引: 1, 文件: DSC_0057 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0057 - 副本.JPG, 当前队列大小: 1
+[DEBUG-ElementPrepared] 索引: 2, 文件: DSC_0058.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0058.JPG, 当前队列大小: 2
+[DEBUG-ElementPrepared] 索引: 3, 文件: DSC_0058 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0058 - 副本.JPG, 当前队列大小: 3
+[DEBUG-ElementPrepared] 索引: 4, 文件: DSC_0059.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0059.JPG, 当前队列大小: 4
+[DEBUG-ElementPrepared] 索引: 5, 文件: DSC_0059 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0059 - 副本.JPG, 当前队列大小: 5
+[DEBUG-ElementPrepared] 索引: 6, 文件: DSC_0060.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0060.JPG, 当前队列大小: 6
+[DEBUG-ElementPrepared] 索引: 7, 文件: DSC_0060 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0060 - 副本.JPG, 当前队列大小: 7
+[DEBUG-ElementPrepared] 索引: 8, 文件: DSC_0061.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0061.JPG, 当前队列大小: 8
+[DEBUG-ElementPrepared] 索引: 9, 文件: DSC_0061 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0061 - 副本.JPG, 当前队列大小: 9
+[DEBUG-ElementPrepared] 索引: 10, 文件: DSC_0062.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0062.JPG, 当前队列大小: 10
+[DEBUG-ElementPrepared] 索引: 11, 文件: DSC_0062 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0062 - 副本.JPG, 当前队列大小: 11
+[DEBUG-ElementPrepared] 索引: 12, 文件: DSC_0063.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0063.JPG, 当前队列大小: 12
+[DEBUG-ElementPrepared] 索引: 13, 文件: DSC_0063 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0063 - 副本.JPG, 当前队列大小: 13
+[DEBUG-ElementPrepared] 索引: 14, 文件: DSC_0064.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0064.JPG, 当前队列大小: 14
+[DEBUG-ElementPrepared] 索引: 15, 文件: DSC_0064 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0064 - 副本.JPG, 当前队列大小: 15
+[DEBUG-视区] 防抖触发 - 视区范围: [0, 7], 待加载数量: 16
+[DEBUG-视区] 优先级分组: P0(7), P1(9)
+[DEBUG-视区] 开始加载优先级 0，数量: 7
+[DEBUG-视区] 优先级 0 并行度: 16
+[DEBUG-LoadThumbnail] 开始加载: DSC_0058 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0058 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0058.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0058.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0059.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0059.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0057 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0057 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0059 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0059 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0057.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0057.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0060.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0060.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0057 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0057 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0059 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0059 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0058 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0058 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0057.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0057.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0059.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0059.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0060.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0060.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0058.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0058.JPG
+[DEBUG-视区] 优先级 0 加载完成
+[DEBUG-视区] 开始加载优先级 1，数量: 9
+[DEBUG-视区] 优先级 1 并行度: 8
+[DEBUG-LoadThumbnail] 开始加载: DSC_0060 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0060 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0061.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0061.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0061 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0061 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0062.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0062.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0062 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0062 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0063.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0063.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0063 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0063 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0064.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0064.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0062.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0062.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0064 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0064 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0063.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0063.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0061.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0061.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0063 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0063 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0064.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0064.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0061 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0061 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0060 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0060 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0062 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0062 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0064 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0064 - 副本.JPG
+[DEBUG-视区] 优先级 1 加载完成
+[DEBUG-视区] 所有优先级加载完成，剩余待加载: 0
+[DEBUG-ElementClearing] 文件: DSC_0057.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0057.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0057 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0057 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0058.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0058.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0058 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0058 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0059.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0059.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0059 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0059 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0060.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0060.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0060 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0060 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0061.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0061.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0061 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0061 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0062.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0062.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0062 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0062 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0063.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0063.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0063 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0063 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0064.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0064.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0064 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0064 - 副本.JPG, 移除结果: False
+启动后台缩略图解码任务
+[DEBUG-ElementPrepared] 索引: 0, 文件: DSC_0057.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0057.JPG
+[DEBUG-ElementClearing] 文件: DSC_0057.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0057.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 0, 文件: DSC_0057.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0057.JPG
+[DEBUG-ElementPrepared] 索引: 1, 文件: DSC_0057 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0057 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 2, 文件: DSC_0058.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0058.JPG
+[DEBUG-ElementPrepared] 索引: 3, 文件: DSC_0058 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0058 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 4, 文件: DSC_0059.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0059.JPG
+[DEBUG-ElementPrepared] 索引: 5, 文件: DSC_0059 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0059 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 6, 文件: DSC_0060.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0060.JPG
+[DEBUG-ElementPrepared] 索引: 7, 文件: DSC_0060 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0060 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 8, 文件: DSC_0061.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0061.JPG
+[DEBUG-ElementPrepared] 索引: 9, 文件: DSC_0061 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0061 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 10, 文件: DSC_0062.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0062.JPG
+[DEBUG-ElementPrepared] 索引: 11, 文件: DSC_0062 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0062 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 12, 文件: DSC_0063.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0063.JPG
+[DEBUG-ElementPrepared] 索引: 13, 文件: DSC_0063 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0063 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 14, 文件: DSC_0064.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0064.JPG
+[DEBUG-ElementPrepared] 索引: 15, 文件: DSC_0064 - 副本.JPG, Thumbnail: 已存在, 滚动中: False
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0064 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 16, 文件: DSC_0065.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0065.JPG
+[DEBUG-ElementPrepared] 索引: 17, 文件: DSC_0065 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0065 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 18, 文件: DSC_0066.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0066.JPG
+[DEBUG-ElementPrepared] 索引: 19, 文件: DSC_0066 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0066 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 20, 文件: DSC_0067.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0067.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0068 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 21, 文件: DSC_0067 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0067 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 22, 文件: DSC_0068.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存命中，直接显示: DSC_0068.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0069.JPG
+[DEBUG-视区] 防抖触发 - 视区范围: [6, 13], 待加载数量: 0
+[DEBUG-视区] 优先级分组:
+[DEBUG-视区] 所有优先级加载完成，剩余待加载: 0
+[GetThumbnail] 开始 WIC 解码: DSC_0069 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 23, 文件: DSC_0068 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0068 - 副本.JPG, 当前队列大小: 0
+[DEBUG-ElementPrepared] 索引: 24, 文件: DSC_0069.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0069.JPG, 当前队列大小: 1
+[DEBUG-ElementClearing] 文件: DSC_0057.JPG, 待加载队列大小: 2
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0057.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 25, 文件: DSC_0069 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0069 - 副本.JPG, 当前队列大小: 2
+[DEBUG-ElementClearing] 文件: DSC_0057 - 副本.JPG, 待加载队列大小: 3
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0057 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0058.JPG, 待加载队列大小: 3
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0058.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 26, 文件: DSC_0070.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0070.JPG, 当前队列大小: 3
+[DEBUG-ElementPrepared] 索引: 27, 文件: DSC_0070 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0070 - 副本.JPG, 当前队列大小: 4
+[DEBUG-ElementClearing] 文件: DSC_0058 - 副本.JPG, 待加载队列大小: 5
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0058 - 副本.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 28, 文件: DSC_0071.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0071.JPG, 当前队列大小: 5
+[DEBUG-ElementClearing] 文件: DSC_0059.JPG, 待加载队列大小: 6
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0059.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 29, 文件: DSC_0071 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0071 - 副本.JPG, 当前队列大小: 6
+[GetThumbnail] 开始 WIC 解码: DSC_0069.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0068 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0070.JPG
+[DEBUG-视区] 防抖触发 - 视区范围: [13, 20], 待加载数量: 7
+[DEBUG-视区] 优先级分组: P1(7)
+[DEBUG-视区] 开始加载优先级 1，数量: 7
+[DEBUG-视区] 优先级 1 并行度: 8
+[DEBUG-LoadThumbnail] 开始加载: DSC_0068 - 副本.JPG, 取消令牌: False
+[DEBUG-LoadThumbnail] 开始加载: DSC_0069.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0069.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0069 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0069 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0070 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0070.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0070.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0070 - 副本.JPG, 取消令牌: False
+[DEBUG-LoadThumbnail] 开始加载: DSC_0071.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0071.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0071 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0071 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0068 - 副本.JPG, thumbnail: null, 取消令牌: False
+[DEBUG-LoadThumbnail] 加载失败或为 null: DSC_0068 - 副本.JPG
+[DEBUG-ElementClearing] 文件: DSC_0059 - 副本.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0059 - 副本.JPG, 移除结果: False
+[GetThumbnail] 开始 WIC 解码: DSC_0068 - 副本.JPG
+[DEBUG-ElementClearing] 文件: DSC_0060.JPG, 待加载队列大小: 0
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0060.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 30, 文件: DSC_0072.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0072.JPG, 当前队列大小: 0
+[DEBUG-ElementPrepared] 索引: 31, 文件: DSC_0072 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0072 - 副本.JPG, 当前队列大小: 1
+[DEBUG-ElementClearing] 文件: DSC_0060 - 副本.JPG, 待加载队列大小: 2
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0060 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0061.JPG, 待加载队列大小: 2
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0061.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0061 - 副本.JPG, 待加载队列大小: 2
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0061 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0062.JPG, 待加载队列大小: 2
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0062.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 32, 文件: DSC_0073.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0073.JPG, 当前队列大小: 2
+[DEBUG-ElementPrepared] 索引: 33, 文件: DSC_0073 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0073 - 副本.JPG, 当前队列大小: 3
+[DEBUG-ElementPrepared] 索引: 34, 文件: DSC_0074.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0074.JPG, 当前队列大小: 4
+[DEBUG-ElementPrepared] 索引: 35, 文件: DSC_0074 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0074 - 副本.JPG, 当前队列大小: 5
+[DEBUG-ElementClearing] 文件: DSC_0062 - 副本.JPG, 待加载队列大小: 6
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0062 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0063.JPG, 待加载队列大小: 6
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0063.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 36, 文件: DSC_0075.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0075.JPG, 当前队列大小: 6
+[DEBUG-ElementPrepared] 索引: 37, 文件: DSC_0075 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0075 - 副本.JPG, 当前队列大小: 7
+[DEBUG-LoadThumbnail] 加载完成: DSC_0070 - 副本.JPG, thumbnail: null, 取消令牌: False
+[DEBUG-LoadThumbnail] 加载失败或为 null: DSC_0070 - 副本.JPG
+[DEBUG-ElementClearing] 文件: DSC_0063 - 副本.JPG, 待加载队列大小: 8
+[GetThumbnail] 开始 WIC 解码: DSC_0073.JPG
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0063 - 副本.JPG, 移除结果: False
+[GetThumbnail] 开始 WIC 解码: DSC_0072 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0072.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0070 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0068 - 副本.JPG
+[DEBUG-ElementPrepared] 索引: 38, 文件: DSC_0076.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0076.JPG, 当前队列大小: 8
+[DEBUG-ElementClearing] 文件: DSC_0064.JPG, 待加载队列大小: 9
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0064.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0064 - 副本.JPG, 待加载队列大小: 9
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0064 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0065.JPG, 待加载队列大小: 9
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0065.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0065 - 副本.JPG, 待加载队列大小: 9
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0065 - 副本.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0066.JPG, 待加载队列大小: 9
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0066.JPG, 移除结果: False
+[DEBUG-ElementClearing] 文件: DSC_0066 - 副本.JPG, 待加载队列大小: 9
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0066 - 副本.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 39, 文件: DSC_0076 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0076 - 副本.JPG, 当前队列大小: 9
+[DEBUG-ElementPrepared] 索引: 40, 文件: DSC_0077.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0077.JPG, 当前队列大小: 10
+[DEBUG-ElementPrepared] 索引: 41, 文件: DSC_0077 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0077 - 副本.JPG, 当前队列大小: 11
+[DEBUG-ElementPrepared] 索引: 42, 文件: DSC_0078.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0078.JPG, 当前队列大小: 12
+[DEBUG-ElementPrepared] 索引: 43, 文件: DSC_0078 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0078 - 副本.JPG, 当前队列大小: 13
+[DEBUG-ElementPrepared] 索引: 44, 文件: DSC_0079.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0079.JPG, 当前队列大小: 14
+[DEBUG-ElementClearing] 文件: DSC_0067.JPG, 待加载队列大小: 15
+[DEBUG-ElementClearing] 从待加载队列移除: DSC_0067.JPG, 移除结果: False
+[DEBUG-ElementPrepared] 索引: 45, 文件: DSC_0079 - 副本.JPG, Thumbnail: null, 滚动中: True
+[DEBUG-ElementPrepared] 缓存未命中，加入待加载队列: DSC_0079 - 副本.JPG, 当前队列大小: 15
+[DEBUG-LoadThumbnail] 加载完成: DSC_0070.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0070.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0069 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0069 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0071 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0071 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0069.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0069.JPG
+[DEBUG-视区] 防抖触发 - 视区范围: [27, 34], 待加载数量: 16
+[DEBUG-视区] 优先级分组: P0(4), P1(10), P2(2)
+[DEBUG-视区] 开始加载优先级 0，数量: 4
+[DEBUG-视区] 优先级 0 并行度: 16
+[DEBUG-LoadThumbnail] 开始加载: DSC_0072.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0072.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0072 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0072 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0073.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0073.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0073 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0073 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0071.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0071.JPG
+[DEBUG-视区] 优先级 1 加载完成
+[DEBUG-视区] 所有优先级加载完成，剩余待加载: 0
+[DEBUG-LoadThumbnail] 加载完成: DSC_0073.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0073.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0072.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0072.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0072 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0072 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0073 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0073 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0074.JPG
+[DEBUG-视区] 优先级 0 加载完成
+[DEBUG-视区] 开始加载优先级 1，数量: 10
+[DEBUG-视区] 优先级 1 并行度: 8
+[DEBUG-LoadThumbnail] 开始加载: DSC_0074.JPG, 取消令牌: False
+[DEBUG-LoadThumbnail] 开始加载: DSC_0074 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0074 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0075.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0075.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0075 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0075 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0076.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0076.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0076 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0076 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0077.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0077.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0077 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0077 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0074.JPG, thumbnail: null, 取消令牌: False
+[DEBUG-LoadThumbnail] 加载失败或为 null: DSC_0074.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0078.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0078.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0074 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0074 - 副本.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0078 - 副本.JPG, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0078 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0075.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0075.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0075 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0075 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0076 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0076 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0077.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0077.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0076.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0076.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0078.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0078.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0077 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[DEBUG-LoadThumbnail] 设置成功: DSC_0077 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载完成: DSC_0078 - 副本.JPG, thumbnail: 成功, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0079.JPG
+[DEBUG-LoadThumbnail] 设置成功: DSC_0078 - 副本.JPG
+[DEBUG-视区] 优先级 1 加载完成
+[DEBUG-视区] 开始加载优先级 2，数量: 2
+[DEBUG-视区] 优先级 2 并行度: 1
+[DEBUG-LoadThumbnail] 开始加载: DSC_0079.JPG, 取消令牌: False
+[DEBUG-LoadThumbnail] 加载完成: DSC_0079.JPG, thumbnail: null, 取消令牌: False
+[GetThumbnail] 开始 WIC 解码: DSC_0079 - 副本.JPG
+[DEBUG-LoadThumbnail] 加载失败或为 null: DSC_0079.JPG
+[DEBUG-LoadThumbnail] 开始加载: DSC_0079 - 副本.JPG, 取消令牌: False
+[DEBUG-LoadThumbnail] 加载完成: DSC_0079 - 副本.JPG, thumbnail: null, 取消令牌: False
+[DEBUG-LoadThumbnail] 加载失败或为 null: DSC_0079 - 副本.JPG
+[DEBUG-视区] 优先级 2 加载完成
+[DEBUG-视区] 所有优先级加载完成，剩余待加载: 0
+[GetThumbnail] 开始 WIC 解码: DSC_0080.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0080 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0081.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0081 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0082.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0082 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0083.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0083 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0084.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0084 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0085.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0085 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0086.JPG
+[图片尺寸] 原图: 6016x4016, 预览: 0x0, 显示: 499x333, DPI: 1.25
+[GetThumbnail] 开始 WIC 解码: DSC_0086 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0087.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0087 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0088.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0088 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0089.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0089 - 副本.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0090.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0091.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0092.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0093.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0094.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0095.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0096.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0097.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0098.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0099.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0100.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0101.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0102.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0103.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0104.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0105.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0106.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0107.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0108.JPG
+[GetThumbnail] 开始 WIC 解码: DSC_0109.JPG

@@ -15,19 +15,54 @@ namespace FastPick.Services;
 
 public class ThumbnailService
 {
+    private enum LoadState
+    {
+        NotStarted,
+        Loading,
+        Succeeded,
+        Failed
+    }
+
+    private class LoadContext
+    {
+        public LoadState State { get; set; } = LoadState.NotStarted;
+        public BitmapImage? Result { get; set; }
+        public Exception? Error { get; set; }
+        public SemaphoreSlim Lock { get; } = new(1, 1);
+        public List<TaskCompletionSource<BitmapImage?>> Waiters { get; } = new();
+    }
+
     private readonly LinkedList<string> _lruList = new();
-    private readonly Dictionary<string, WeakReference<BitmapImage>> _thumbnailCache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, CacheEntry> _thumbnailCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, PhotoItem> _photoItemMap = new(StringComparer.OrdinalIgnoreCase);
     private readonly SemaphoreSlim _cacheLock = new(1, 1);
     private readonly SemaphoreSlim _throttler = new(Environment.ProcessorCount, Environment.ProcessorCount);
-    private readonly ConcurrentDictionary<string, TaskCompletionSource<BitmapImage?>> _pendingLoads = new(StringComparer.OrdinalIgnoreCase);
-    private int _maxCacheSize = 1000;
+    private readonly ConcurrentDictionary<string, LoadContext> _loadContexts = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileWriteLocks = new();
+    private readonly ConcurrentDictionary<string, Task> _pendingSaves = new();
+    private const int MaxCacheSizeBytes = 100 * 1024 * 1024; // 100MB
+    private int _currentCacheSizeBytes = 0;
     private const int ThumbnailWidth = 256;
     private string? _cachePath;
     private const string CacheFolderName = "ThumbnailCache";
     private bool _memoryMonitoringEnabled = false;
     private bool _cacheInitFailed = false;
     private DispatcherQueue? _dispatcherQueue;
+    private static readonly TimeSpan LoadTimeout = TimeSpan.FromSeconds(30);
+    
+    private class CacheEntry
+    {
+        public BitmapImage Image { get; }
+        public int SizeBytes { get; }
+        public LinkedListNode<string> LruNode { get; set; }
+        
+        public CacheEntry(BitmapImage image, int sizeBytes, LinkedListNode<string> lruNode)
+        {
+            Image = image;
+            SizeBytes = sizeBytes;
+            LruNode = lruNode;
+        }
+    }
     
     // 视区信息
     private volatile int _viewportStartIndex = 0;
@@ -64,55 +99,36 @@ public class ThumbnailService
     /// <summary>
     /// 获取缓存的缩略图（优先从内存缓存和本地缓存加载）
     /// </summary>
-    /// <param name="photoItem">照片项</param>
-    /// <param name="cancellationToken">取消令牌</param>
-    /// <returns>缓存的缩略图，如果不存在则返回 null</returns>
     public async Task<BitmapImage?> GetCachedThumbnailAsync(PhotoItem photoItem, CancellationToken cancellationToken = default)
     {
         var filePath = photoItem.DisplayPath;
         
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
         {
-            DebugService.WriteLine($"[GetCachedThumbnail] 文件不存在或路径为空: {filePath}");
             return null;
         }
 
-        // 首先检查内存缓存（无锁）
-        if (_thumbnailCache.TryGetValue(filePath, out var weakRef))
+        // 检查内存缓存（强引用，不会失效）
+        if (_thumbnailCache.TryGetValue(filePath, out var cacheEntry))
         {
-            if (weakRef.TryGetTarget(out var cachedImage))
-            {
-                // _cacheHits++;
-                // DebugService.WriteLine($"[GetCachedThumbnail] 内存缓存命中: {Path.GetFileName(filePath)}");
-                // 异步更新 LRU 顺序，避免阻塞主线程
-                _ = Task.Run(() => UpdateLruOrderAsync(filePath), cancellationToken);
-                
-                // 设置到 PhotoItem
-                photoItem.Thumbnail = cachedImage;
-                
-                return cachedImage;
-            }
-            else
-            {
-                // DebugService.WriteLine($"[GetCachedThumbnail] 内存缓存引用已失效: {Path.GetFileName(filePath)}");
-            }
+            // 更新 LRU 顺序
+            _lruList.Remove(cacheEntry.LruNode);
+            _lruList.AddFirst(cacheEntry.LruNode);
+            
+            // 设置到 PhotoItem
+            photoItem.Thumbnail = cacheEntry.Image;
+            
+            return cacheEntry.Image;
         }
 
-        // 然后检查本地缓存
-        // DebugService.WriteLine($"[GetCachedThumbnail] 检查本地缓存: {Path.GetFileName(filePath)}");
+        // 检查本地缓存
         var localCacheImage = await GetFromLocalCacheAsync(filePath, cancellationToken);
         if (localCacheImage != null)
         {
-            // _localCacheHits++;
-            // DebugService.WriteLine($"[GetCachedThumbnail] 本地缓存命中: {Path.GetFileName(filePath)}");
-            // 设置到 PhotoItem
             photoItem.Thumbnail = localCacheImage;
-            
             return localCacheImage;
         }
 
-        // 缓存未命中
-        // DebugService.WriteLine($"[GetCachedThumbnail] 缓存未命中: {Path.GetFileName(filePath)}");
         return null;
     }
 
@@ -123,122 +139,154 @@ public class ThumbnailService
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
             return null;
 
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-        // 快速检查内存缓存（无锁）
-        BitmapImage? cachedImage = null;
-        if (_thumbnailCache.TryGetValue(filePath, out var weakRef))
+        if (_thumbnailCache.TryGetValue(filePath, out var cacheEntry))
         {
-            if (weakRef.TryGetTarget(out cachedImage))
-            {
-                // _cacheHits++;
-                // DebugService.WriteLine($"[GetThumbnail] 内存缓存命中: {Path.GetFileName(filePath)}");
-                // 异步更新 LRU 顺序，避免阻塞主线程
-                _ = Task.Run(() => UpdateLruOrderAsync(filePath), cancellationToken);
-                stopwatch.Stop();
-                // UpdateLoadStats(stopwatch.ElapsedMilliseconds);
-                return cachedImage;
-            }
-            else
-            {
-                // DebugService.WriteLine($"[GetThumbnail] 内存缓存引用已失效: {Path.GetFileName(filePath)}");
-                // 引用已失效，异步清理
-                _ = Task.Run(() => RemoveInvalidReferenceAsync(filePath), cancellationToken);
-            }
+            _lruList.Remove(cacheEntry.LruNode);
+            _lruList.AddFirst(cacheEntry.LruNode);
+            return cacheEntry.Image;
         }
 
-        // _cacheMisses++;
-        // DebugService.WriteLine($"[GetThumbnail] 内存缓存未命中: {Path.GetFileName(filePath)}");
-
-        // 启动内存监控（如果尚未启动）
         if (!_memoryMonitoringEnabled)
         {
             StartMemoryMonitoring();
         }
 
-        // 尝试从本地缓存读取
-        // DebugService.WriteLine($"[GetThumbnail] 检查本地缓存: {Path.GetFileName(filePath)}");
         var localCacheImage = await GetFromLocalCacheAsync(filePath, cancellationToken);
         if (localCacheImage != null)
         {
-            // _localCacheHits++;
-            // DebugService.WriteLine($"[GetThumbnail] 本地缓存命中: {Path.GetFileName(filePath)}");
-            // 异步添加到内存缓存，避免阻塞主线程
-            _ = Task.Run(() => AddToCacheAsync(filePath, localCacheImage, photoItem, cancellationToken), cancellationToken);
-            stopwatch.Stop();
-            // UpdateLoadStats(stopwatch.ElapsedMilliseconds);
+            _ = Task.Run(() => AddToCacheAsync(filePath, localCacheImage, photoItem, CancellationToken.None), CancellationToken.None);
             return localCacheImage;
         }
 
-        // _localCacheMisses++;
-        // DebugService.WriteLine($"[GetThumbnail] 本地缓存未命中，准备 WIC 解码: {Path.GetFileName(filePath)}");
-
-        var tcs = new TaskCompletionSource<BitmapImage?>();
-        if (_pendingLoads.TryAdd(filePath, tcs))
+        var context = _loadContexts.GetOrAdd(filePath, _ => new LoadContext());
+        
+        await context.Lock.WaitAsync(cancellationToken);
+        try
         {
+            switch (context.State)
+            {
+                case LoadState.Succeeded:
+                    return context.Result;
+                    
+                case LoadState.Failed:
+                    context.State = LoadState.NotStarted;
+                    goto case LoadState.NotStarted;
+                    
+                case LoadState.Loading:
+                    {
+                        var tcs = new TaskCompletionSource<BitmapImage?>();
+                        context.Waiters.Add(tcs);
+                        context.Lock.Release();
+                        
+                        try
+                        {
+                            using var timeoutCts = new CancellationTokenSource(LoadTimeout);
+                            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+                            
+                            return await tcs.Task.WaitAsync(linkedCts.Token);
+                        }
+                        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+                        {
+                            return null;
+                        }
+                        finally
+                        {
+                            await context.Lock.WaitAsync(CancellationToken.None);
+                            context.Waiters.Remove(tcs);
+                        }
+                    }
+                    
+                case LoadState.NotStarted:
+                    context.State = LoadState.Loading;
+                    break;
+            }
+        }
+        finally
+        {
+            context.Lock.Release();
+        }
+
+        BitmapImage? result = null;
+        Exception? error = null;
+        
+        try
+        {
+            await _throttler.WaitAsync(cancellationToken);
             try
             {
-                await _throttler.WaitAsync(cancellationToken);
-                try
+                DebugService.WriteLine($"[GetThumbnail] 开始 WIC 解码: {Path.GetFileName(filePath)}");
+                result = await GenerateWicThumbnailAsync(filePath, cancellationToken);
+                
+                if (result != null)
                 {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    
-                    // DebugService.WriteLine($"[GetThumbnail] 开始 WIC 解码: {Path.GetFileName(filePath)}");
-                    var wicThumbnail = await GenerateWicThumbnailAsync(filePath, cancellationToken);
-                    if (wicThumbnail != null)
-                    {
-                        await AddToCacheAsync(filePath, wicThumbnail, photoItem, cancellationToken);
-                        tcs.SetResult(wicThumbnail);
-                        stopwatch.Stop();
-                        // UpdateLoadStats(stopwatch.ElapsedMilliseconds);
-                        return wicThumbnail;
-                    }
-
-                    tcs.SetResult(null);
-                    stopwatch.Stop();
-                    // UpdateLoadStats(stopwatch.ElapsedMilliseconds);
-                    return null;
+                    await AddToCacheAsync(filePath, result, photoItem, CancellationToken.None);
+                    photoItem.Thumbnail = result;
                 }
-                finally
-                {
-                    _throttler.Release();
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                tcs.SetCanceled();
-                throw;
-            }
-            catch (Exception ex)
-            {
-                // DebugService.WriteLine($"获取缩略图失败: {filePath}, {ex.Message}");
-                tcs.SetResult(null);
-                return null;
             }
             finally
             {
-                _pendingLoads.TryRemove(filePath, out _);
+                _throttler.Release();
             }
         }
-        else
+        catch (Exception ex)
         {
-            if (_pendingLoads.TryGetValue(filePath, out var existingTcs))
-            {
-                return await existingTcs.Task;
-            }
-            return null;
+            error = ex;
         }
+
+        await context.Lock.WaitAsync(CancellationToken.None);
+        try
+        {
+            if (error == null)
+            {
+                context.Result = result;
+                context.State = result != null ? LoadState.Succeeded : LoadState.Failed;
+                
+                foreach (var waiter in context.Waiters)
+                {
+                    waiter.SetResult(result);
+                }
+            }
+            else
+            {
+                context.Error = error;
+                context.State = LoadState.Failed;
+                
+                foreach (var waiter in context.Waiters)
+                {
+                    if (error is OperationCanceledException)
+                    {
+                        waiter.SetCanceled();
+                    }
+                    else
+                    {
+                        waiter.SetResult(null);
+                    }
+                }
+            }
+            context.Waiters.Clear();
+        }
+        finally
+        {
+            context.Lock.Release();
+            _loadContexts.TryRemove(filePath, out _);
+        }
+        
+        return result;
     }
 
     private async Task<BitmapImage?> GenerateWicThumbnailAsync(string filePath, CancellationToken cancellationToken)
     {
         try
         {
+            DebugService.WriteLine($"[DEBUG-GenerateWicThumbnail] 开始生成: {Path.GetFileName(filePath)}");
+            
             var storageFile = await StorageFile.GetFileFromPathAsync(filePath).AsTask(cancellationToken);
             using var stream = await storageFile.OpenAsync(FileAccessMode.Read).AsTask(cancellationToken);
             var decoder = await BitmapDecoder.CreateAsync(stream).AsTask(cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
+            
+            DebugService.WriteLine($"[DEBUG-GenerateWicThumbnail] 解码器创建成功: {Path.GetFileName(filePath)}, 尺寸: {decoder.PixelWidth}x{decoder.PixelHeight}");
 
             BitmapDecoder decoderToUse = decoder;
             string strategyUsed = "原图";
@@ -402,22 +450,66 @@ public class ThumbnailService
                 ColorManagementMode.DoNotColorManage).AsTask(cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
+            
+            DebugService.WriteLine($"[DEBUG-GenerateWicThumbnail] SoftwareBitmap 创建成功: {Path.GetFileName(filePath)}, 尺寸: {softwareBitmap.PixelWidth}x{softwareBitmap.PixelHeight}");
 
-            using var outputStream = new InMemoryRandomAccessStream();
-            var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, outputStream).AsTask(cancellationToken);
-            encoder.SetSoftwareBitmap(softwareBitmap);
-            await encoder.FlushAsync().AsTask(cancellationToken);
+            BitmapImage? bitmap = null;
+            
+            if (_dispatcherQueue == null)
+            {
+                DebugService.WriteLine($"[DEBUG-GenerateWicThumbnail] DispatcherQueue 未初始化，无法创建 BitmapImage: {Path.GetFileName(filePath)}");
+                softwareBitmap.Dispose();
+                return null;
+            }
+            
+            var bitmapCreatedEvent = new TaskCompletionSource<BitmapImage?>();
+            
+            _dispatcherQueue.TryEnqueue(async () =>
+            {
+                try
+                {
+                    using var outputStream = new InMemoryRandomAccessStream();
+                    var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, outputStream);
+                    encoder.SetSoftwareBitmap(softwareBitmap);
+                    await encoder.FlushAsync();
 
-            outputStream.Seek(0);
-            var bitmap = new BitmapImage();
-            await bitmap.SetSourceAsync(outputStream).AsTask(cancellationToken);
-            // DebugService.WriteLine($"[DEBUG-缩略图] 文件: {Path.GetFileName(filePath)}, 策略: {strategyUsed}, 输出尺寸: {bitmap.PixelWidth}x{bitmap.PixelHeight}");
-            // DebugService.WriteLine($"[DEBUG-缩略图] 文件: {Path.GetFileName(filePath)}, 方向处理完成: 原始{originalWidth}x{originalHeight} → 方向值{orientation} → 调整后{adjustedWidth}x{adjustedHeight} → 输出{bitmap.PixelWidth}x{bitmap.PixelHeight}");
+                    outputStream.Seek(0);
+                    bitmap = new BitmapImage();
+                    await bitmap.SetSourceAsync(outputStream);
+                    
+                    DebugService.WriteLine($"[DEBUG-GenerateWicThumbnail] BitmapImage 创建成功: {Path.GetFileName(filePath)}, 尺寸: {bitmap.PixelWidth}x{bitmap.PixelHeight}");
+                    bitmapCreatedEvent.SetResult(bitmap);
+                }
+                catch (Exception ex)
+                {
+                    DebugService.WriteLine($"[DEBUG-GenerateWicThumbnail] 创建 BitmapImage 失败: {Path.GetFileName(filePath)}, 错误: {ex.Message}, HResult: 0x{ex.HResult:X8}");
+                    bitmapCreatedEvent.SetResult(null);
+                }
+            });
+            
+            bitmap = await bitmapCreatedEvent.Task;
+            
+            if (bitmap == null)
+            {
+                softwareBitmap.Dispose();
+                return null;
+            }
 
-            // 保存到本地缓存
-            await SaveSoftwareBitmapToLocalCacheAsync(filePath, softwareBitmap, cancellationToken);
+            // 保存到本地缓存（异步，不阻塞返回）
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await SaveSoftwareBitmapToLocalCacheAsync(filePath, softwareBitmap, CancellationToken.None);
+                    softwareBitmap.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    DebugService.WriteLine($"[DEBUG-SaveCache] 保存缓存失败: {Path.GetFileName(filePath)}, 错误: {ex.Message}");
+                    softwareBitmap.Dispose();
+                }
+            });
 
-            softwareBitmap.Dispose();
             return bitmap;
         }
         catch (OperationCanceledException)
@@ -426,53 +518,46 @@ public class ThumbnailService
         }
         catch (Exception ex)
         {
-            // DebugService.WriteLine($"WIC 生成缩略图失败: {filePath}, {ex.Message}");
+            DebugService.WriteLine($"[DEBUG-GenerateWicThumbnail] WIC 生成缩略图失败: {Path.GetFileName(filePath)}, 错误: {ex.Message}, 类型: {ex.GetType().Name}");
             return null;
         }
     }
 
     private async Task AddToCacheAsync(string filePath, BitmapImage thumbnail, PhotoItem? photoItem = null, CancellationToken cancellationToken = default)
     {
-        // DebugService.WriteLine($"[AddToCache] 开始添加到缓存: {Path.GetFileName(filePath)}");
         await _cacheLock.WaitAsync(cancellationToken);
         try
         {
-            // 检查内存使用情况，动态调整缓存大小
             AdjustCacheSizeBasedOnMemoryUsage();
 
-            while (_thumbnailCache.Count >= _maxCacheSize && _lruList.Count > 0)
+            // 估算缩略图大小（256x256 * 4 bytes per pixel）
+            var estimatedSize = ThumbnailWidth * ThumbnailWidth * 4;
+
+            // 按内存大小限制清理缓存
+            while (_currentCacheSizeBytes + estimatedSize > MaxCacheSizeBytes && _lruList.Count > 0)
             {
                 var oldestKey = _lruList.Last!.Value;
                 _lruList.RemoveLast();
-                // DebugService.WriteLine($"[AddToCache] 缓存已满，移除最旧项: {Path.GetFileName(oldestKey)}");
                 
-                // 清理对应的 PhotoItem.Thumbnail（不设置为 null，避免影响缓存检查）
                 if (_photoItemMap.TryGetValue(oldestKey, out var oldPhotoItem))
                 {
-                    // 不设置 oldPhotoItem.Thumbnail = null，因为缩略图可能还在内存缓存中
-                    // 只是从 _photoItemMap 中移除，让缓存检查方法能够正常工作
                     _photoItemMap.Remove(oldestKey);
                 }
                 
-                if (_thumbnailCache.TryGetValue(oldestKey, out var oldWeakRef))
+                if (_thumbnailCache.TryGetValue(oldestKey, out var oldEntry))
                 {
-                    if (oldWeakRef.TryGetTarget(out var oldImage))
-                    {
-                        oldImage.UriSource = null;
-                    }
+                    _currentCacheSizeBytes -= oldEntry.SizeBytes;
+                    _thumbnailCache.Remove(oldestKey);
                 }
-                _thumbnailCache.Remove(oldestKey);
             }
 
-            _thumbnailCache[filePath] = new WeakReference<BitmapImage>(thumbnail);
-            _lruList.AddFirst(filePath);
-            // DebugService.WriteLine($"[AddToCache] 添加到内存缓存: {Path.GetFileName(filePath)}, 当前缓存大小: {_thumbnailCache.Count}/{_maxCacheSize}");
+            var lruNode = _lruList.AddFirst(filePath);
+            _thumbnailCache[filePath] = new CacheEntry(thumbnail, estimatedSize, lruNode);
+            _currentCacheSizeBytes += estimatedSize;
             
-            // 记录 PhotoItem 引用
             if (photoItem != null)
             {
                 _photoItemMap[filePath] = photoItem;
-                // DebugService.WriteLine($"[AddToCache] 记录 PhotoItem 引用: {Path.GetFileName(filePath)}");
             }
         }
         finally
@@ -480,28 +565,18 @@ public class ThumbnailService
             _cacheLock.Release();
         }
 
-        // 保存到本地缓存
-        // DebugService.WriteLine($"[AddToCache] 保存到本地缓存: {Path.GetFileName(filePath)}");
         await SaveToLocalCacheAsync(filePath, thumbnail, cancellationToken);
-        // DebugService.WriteLine($"[AddToCache] 缓存添加完成: {Path.GetFileName(filePath)}");
     }
 
     private void UpdateLruOrder(string filePath)
     {
-        _lruList.Remove(filePath);
-        _lruList.AddFirst(filePath);
-        
-        // 如果文件在 _photoItemMap 中，确保其引用仍然有效
-        if (_photoItemMap.TryGetValue(filePath, out var photoItem) && photoItem.Thumbnail != null)
+        if (_thumbnailCache.TryGetValue(filePath, out var cacheEntry))
         {
-            // 不需要做任何操作，因为 photoItem.Thumbnail 已经存在
-            // 这确保了即使从缓存清理了，只要弱引用还存在，photoItem.Thumbnail 仍然有效
+            _lruList.Remove(cacheEntry.LruNode);
+            _lruList.AddFirst(cacheEntry.LruNode);
         }
     }
 
-    /// <summary>
-    /// 异步更新 LRU 顺序
-    /// </summary>
     private async Task UpdateLruOrderAsync(string filePath)
     {
         await _cacheLock.WaitAsync();
@@ -515,21 +590,16 @@ public class ThumbnailService
         }
     }
 
-    /// <summary>
-    /// 异步移除失效的引用
-    /// </summary>
     private async Task RemoveInvalidReferenceAsync(string filePath)
     {
         await _cacheLock.WaitAsync();
         try
         {
-            if (_thumbnailCache.TryGetValue(filePath, out var weakRef))
+            if (_thumbnailCache.TryGetValue(filePath, out var entry))
             {
-                if (!weakRef.TryGetTarget(out _))
-                {
-                    _thumbnailCache.Remove(filePath);
-                    _lruList.Remove(filePath);
-                }
+                _thumbnailCache.Remove(filePath);
+                _lruList.Remove(entry.LruNode);
+                _currentCacheSizeBytes -= entry.SizeBytes;
             }
         }
         finally
@@ -543,22 +613,15 @@ public class ThumbnailService
         await _cacheLock.WaitAsync();
         try
         {
-            // 清理所有 PhotoItem.Thumbnail
             foreach (var photoItem in _photoItemMap.Values)
             {
                 photoItem.Thumbnail = null;
             }
             
-            foreach (var weakRef in _thumbnailCache.Values)
-            {
-                if (weakRef.TryGetTarget(out var image))
-                {
-                    image.UriSource = null;
-                }
-            }
             _thumbnailCache.Clear();
             _photoItemMap.Clear();
             _lruList.Clear();
+            _currentCacheSizeBytes = 0;
         }
         finally
         {
@@ -571,16 +634,7 @@ public class ThumbnailService
         await _cacheLock.WaitAsync();
         try
         {
-            // 统计有效引用的数量
-            int validCount = 0;
-            foreach (var weakRef in _thumbnailCache.Values)
-            {
-                if (weakRef.TryGetTarget(out _))
-                {
-                    validCount++;
-                }
-            }
-            return (validCount, _maxCacheSize);
+            return (_thumbnailCache.Count, MaxCacheSizeBytes / (ThumbnailWidth * ThumbnailWidth * 4));
         }
         finally
         {
@@ -656,38 +710,15 @@ public class ThumbnailService
         // _loadCount++;
     }
 
-    /// <summary>
-    /// 获取详细缓存统计信息
-    /// </summary>
     public async Task<CacheStats> GetDetailedCacheStatsAsync()
     {
         await _cacheLock.WaitAsync();
         try
         {
-            // 统计有效引用的数量
-            int validCount = 0;
-            foreach (var weakRef in _thumbnailCache.Values)
-            {
-                if (weakRef.TryGetTarget(out _))
-                {
-                    validCount++;
-                }
-            }
-
-            // 计算缓存命中率
-            // int totalCacheAccesses = _cacheHits + _cacheMisses;
-            // double memoryCacheHitRate = totalCacheAccesses > 0 ? (double)_cacheHits / totalCacheAccesses * 100 : 0;
-
-            // int totalLocalCacheAccesses = _localCacheHits + _localCacheMisses;
-            // double localCacheHitRate = totalLocalCacheAccesses > 0 ? (double)_localCacheHits / totalLocalCacheAccesses * 100 : 0;
-
-            // 计算平均加载时间
-            // long averageLoadTime = _loadCount > 0 ? _totalLoadTime / _loadCount : 0;
-
             return new CacheStats
             {
-                MemoryCacheCount = validCount,
-                MemoryCacheMaxSize = _maxCacheSize,
+                MemoryCacheCount = _thumbnailCache.Count,
+                MemoryCacheMaxSize = MaxCacheSizeBytes / (ThumbnailWidth * ThumbnailWidth * 4),
                 MemoryCacheHitRate = 0,
                 LocalCacheHitRate = 0,
                 AverageLoadTimeMs = 0,
@@ -755,110 +786,69 @@ public class ThumbnailService
     {
         try
         {
-            // 获取当前内存使用情况
             var memoryUsage = GC.GetTotalMemory(false);
             var memoryUsageMB = memoryUsage / (1024 * 1024);
-
-            // 获取设备总内存（近似值）
             var totalMemoryMB = GetTotalMemoryMB();
-            
-            // 计算内存使用百分比
             var memoryUsagePercent = totalMemoryMB > 0 ? (double)memoryUsageMB / totalMemoryMB * 100 : 0;
 
-            // 根据内存使用情况和设备性能动态调整缓存大小
-            if (memoryUsagePercent > 70 || memoryUsageMB > 500)
+            // 如果内存压力大，主动清理部分缓存
+            if (memoryUsagePercent > 80 || memoryUsageMB > 600)
             {
-                // 内存压力大，减小缓存大小
-                _maxCacheSize = 300;
-                // DebugService.WriteLine($"内存压力大，缓存大小调整为: {_maxCacheSize}");
+                // 清理 50% 缓存
+                var targetSize = MaxCacheSizeBytes / 2;
+                while (_currentCacheSizeBytes > targetSize && _lruList.Count > 0)
+                {
+                    var oldestKey = _lruList.Last!.Value;
+                    _lruList.RemoveLast();
+                    
+                    if (_thumbnailCache.TryGetValue(oldestKey, out var oldEntry))
+                    {
+                        _currentCacheSizeBytes -= oldEntry.SizeBytes;
+                        _thumbnailCache.Remove(oldestKey);
+                    }
+                }
             }
-            else if (memoryUsagePercent > 50 || memoryUsageMB > 300)
+            else if (memoryUsagePercent > 70 || memoryUsageMB > 500)
             {
-                // 内存压力中等，保持适中缓存大小
-                _maxCacheSize = 600;
-                // DebugService.WriteLine($"内存压力中等，缓存大小调整为: {_maxCacheSize}");
+                // 清理 25% 缓存
+                var targetSize = (int)(MaxCacheSizeBytes * 0.75);
+                while (_currentCacheSizeBytes > targetSize && _lruList.Count > 0)
+                {
+                    var oldestKey = _lruList.Last!.Value;
+                    _lruList.RemoveLast();
+                    
+                    if (_thumbnailCache.TryGetValue(oldestKey, out var oldEntry))
+                    {
+                        _currentCacheSizeBytes -= oldEntry.SizeBytes;
+                        _thumbnailCache.Remove(oldestKey);
+                    }
+                }
             }
-            else if (memoryUsagePercent > 30)
-            {
-                // 内存压力小，使用较大缓存大小
-                _maxCacheSize = 800;
-                // DebugService.WriteLine($"内存压力小，缓存大小调整为: {_maxCacheSize}");
-            }
-            else
-            {
-                // 内存充足，使用最大缓存大小
-                _maxCacheSize = 1000;
-                // DebugService.WriteLine($"内存充足，缓存大小调整为: {_maxCacheSize}");
-            }
-
-            // 清理失效的引用
-            CleanupWeakReferences();
         }
-        catch (Exception ex)
+        catch
         {
-            // DebugService.WriteLine($"调整缓存大小失败: {ex.Message}");
         }
     }
     
-    /// <summary>
-    /// 获取设备总内存（近似值）
-    /// </summary>
-    /// <returns>总内存大小（MB）</returns>
     private int GetTotalMemoryMB()
     {
         try
         {
-            // 使用 Environment.WorkingSet 作为近似值
-            // 注意：这不是设备的实际总内存，但可以作为参考
             var workingSetMB = (int)(Environment.WorkingSet / (1024 * 1024));
-            // 假设工作集占总内存的一定比例，估算总内存
-            return workingSetMB * 4; // 粗略估算，实际值可能不同
+            return workingSetMB * 4;
         }
         catch
         {
-            // 如果获取失败，返回默认值
-            return 8192; // 假设8GB内存
+            return 8192;
         }
     }
 
-    /// <summary>
-    /// 清理失效的弱引用
-    /// </summary>
-    private void CleanupWeakReferences()
+    private void ClearCache()
     {
-        try
-        {
-            var keysToRemove = new List<string>();
-            foreach (var kvp in _thumbnailCache)
-            {
-                if (!kvp.Value.TryGetTarget(out _))
-                {
-                    keysToRemove.Add(kvp.Key);
-                }
-            }
-
-            foreach (var key in keysToRemove)
-            {
-                _thumbnailCache.Remove(key);
-                _lruList.Remove(key);
-                
-                // 清理对应的 PhotoItem.Thumbnail
-                if (_photoItemMap.TryGetValue(key, out var photoItem))
-                {
-                    photoItem.Thumbnail = null;
-                    _photoItemMap.Remove(key);
-                }
-            }
-
-            if (keysToRemove.Count > 0)
-            {
-                // DebugService.WriteLine($"清理了 {keysToRemove.Count} 个失效的弱引用");
-            }
-        }
-        catch (Exception ex)
-        {
-            // DebugService.WriteLine($"清理弱引用失败: {ex.Message}");
-        }
+        _thumbnailCache.Clear();
+        _lruList.Clear();
+        _photoItemMap.Clear();
+        _currentCacheSizeBytes = 0;
     }
 
     #endregion
@@ -1222,30 +1212,27 @@ public class ThumbnailService
     }
 
     /// <summary>
-    /// 生成缓存键
+    /// 生成缓存键（使用简单哈希替代 MD5）
     /// </summary>
     private string GenerateCacheKey(string filePath)
     {
         try
         {
             var fileInfo = new FileInfo(filePath);
-            var lastWriteTime = fileInfo.LastWriteTimeUtc.ToString("yyyyMMddHHmmssfff");
-            var combined = $"{filePath}_{lastWriteTime}_{ThumbnailWidth}";
+            var lastWriteTime = fileInfo.LastWriteTimeUtc.Ticks;
             
-            using var md5 = MD5.Create();
-            var bytes = Encoding.UTF8.GetBytes(combined);
-            var hash = md5.ComputeHash(bytes);
-            var cacheKey = BitConverter.ToString(hash).Replace("-", "").ToLower();
+            var hashInput = $"{filePath.ToLowerInvariant()}_{lastWriteTime}_{ThumbnailWidth}";
+            var hashCode = hashInput.GetHashCode();
+            var cacheKey = Math.Abs(hashCode).ToString("x8");
             
-            // 创建目录结构，避免文件名过长
             var dir1 = cacheKey.Substring(0, 2);
             var dir2 = cacheKey.Substring(2, 2);
             return Path.Combine(dir1, dir2, $"{cacheKey}.png");
         }
         catch (Exception ex)
         {
-            // DebugService.WriteLine($"生成缓存键失败: {ex.Message}");
-            return Path.GetFileName(filePath) + ".png";
+            DebugService.WriteLine($"[GenerateCacheKey] 生成缓存键失败: {ex.Message}");
+            return Guid.NewGuid().ToString("N").Substring(0, 8) + ".png";
         }
     }
 
@@ -1416,39 +1403,73 @@ public class ThumbnailService
     /// </summary>
     private async Task SaveSoftwareBitmapToLocalCacheAsync(string filePath, SoftwareBitmap softwareBitmap, CancellationToken cancellationToken = default)
     {
-        // 如果缓存之前初始化失败，直接返回
         if (_cacheInitFailed)
             return;
-            
+
+        var cacheKey = GenerateCacheKey(filePath);
+        var cacheFilePath = Path.Combine(_cachePath ?? "", cacheKey);
+        
+        if (_pendingSaves.TryGetValue(cacheFilePath, out var existingSave))
+        {
+            try
+            {
+                await existingSave;
+            }
+            catch
+            {
+            }
+            return;
+        }
+
+        var fileLock = _fileWriteLocks.GetOrAdd(cacheFilePath, _ => new SemaphoreSlim(1, 1));
+        
+        var saveTask = Task.Run(async () =>
+        {
+            await fileLock.WaitAsync(cancellationToken);
+            try
+            {
+                if (File.Exists(cacheFilePath))
+                {
+                    return;
+                }
+                
+                await InitializeCacheFolderAsync(cancellationToken);
+                if (_cachePath == null)
+                    return;
+
+                var directory = Path.GetDirectoryName(cacheFilePath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                using var fileStream = new FileStream(cacheFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+                using var randomAccessStream = fileStream.AsRandomAccessStream();
+                
+                var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, randomAccessStream).AsTask(cancellationToken);
+                encoder.SetSoftwareBitmap(softwareBitmap);
+                await encoder.FlushAsync().AsTask(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                DebugService.WriteLine($"[SaveCache] 保存缓存失败: {Path.GetFileName(filePath)}, 错误: {ex.Message}");
+            }
+            finally
+            {
+                fileLock.Release();
+                _fileWriteLocks.TryRemove(cacheFilePath, out _);
+            }
+        }, cancellationToken);
+        
+        _pendingSaves[cacheFilePath] = saveTask;
+        
         try
         {
-            await InitializeCacheFolderAsync(cancellationToken);
-            if (_cachePath == null)
-                return;
-
-            var cacheKey = GenerateCacheKey(filePath);
-            var cacheFilePath = Path.Combine(_cachePath, cacheKey);
-
-            // 创建目录结构
-            var directory = Path.GetDirectoryName(cacheFilePath);
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory!);
-            }
-
-            // 将 SoftwareBitmap 编码为 PNG 格式
-            using var fileStream = new FileStream(cacheFilePath, FileMode.Create, FileAccess.Write);
-            using var randomAccessStream = fileStream.AsRandomAccessStream();
-            
-            var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, randomAccessStream).AsTask(cancellationToken);
-            encoder.SetSoftwareBitmap(softwareBitmap);
-            await encoder.FlushAsync().AsTask(cancellationToken);
-            
-            // DebugService.WriteLine($"[SaveSoftwareBitmapToLocalCache] 文件: {Path.GetFileName(filePath)}, 保存到本地缓存: {cacheFilePath}");
+            await saveTask;
         }
-        catch (Exception ex)
+        finally
         {
-            // DebugService.WriteLine($"保存 SoftwareBitmap 到本地缓存失败: {ex.Message}");
+            _pendingSaves.TryRemove(cacheFilePath, out _);
         }
     }
 
