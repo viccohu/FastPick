@@ -90,6 +90,12 @@ namespace FastPick.Views
         private PreviewService _previewService => PreviewService.Instance;
         private CancellationTokenSource? _previewLoadCts;
         private Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
+        
+        // L3 延迟加载相关
+        private CancellationTokenSource? _l3LoadCts;
+        private DispatcherTimer? _l3LoadDebounceTimer;
+        private bool _isL3Loaded = false;
+        private const double L3LoadThresholdPercent = 100.0; // 超过 100% 时加载 L3
 
         // 设置服务
         private Services.SettingsService _settingsService => Services.SettingsService.Instance;
@@ -154,6 +160,11 @@ namespace FastPick.Views
             _thumbnailScrollDebounceTimer = new DispatcherTimer();
             _thumbnailScrollDebounceTimer.Interval = TimeSpan.FromMilliseconds(100);
             _thumbnailScrollDebounceTimer.Tick += ThumbnailScrollDebounceTimer_Tick;
+            
+            // 初始化 L3 加载防抖定时器
+            _l3LoadDebounceTimer = new DispatcherTimer();
+            _l3LoadDebounceTimer.Interval = TimeSpan.FromMilliseconds(300);
+            _l3LoadDebounceTimer.Tick += L3LoadDebounceTimer_Tick;
 
             // 在 Page.Loaded 事件中加载保存的路径（确保所有控件都已初始化）
             this.Loaded += MainPage_Loaded;
@@ -178,6 +189,8 @@ namespace FastPick.Views
             _previewLoadCts?.Cancel();
             _previewLoadCts?.Dispose();
             _previewLoadCts = null;
+            
+            ResetL3State();
             
             _previewService.CancelAllPredecodeTasks();
             _ = _previewService.ClearCacheAsync();
@@ -800,6 +813,11 @@ namespace FastPick.Views
         private async void UpdatePreview()
         {
             ResetZoom();
+            
+            ResetL3State();
+            
+            // 清理 L3 缓存，释放内存
+            _ = _previewService.ClearL3CacheAsync();
             
             // 取消之前的加载任务
             _previewLoadCts?.Cancel();
@@ -2440,7 +2458,47 @@ namespace FastPick.Views
                 
                 ApplyZoomTransform();
                 UpdateZoomIndicator();
+                
+                CheckAndTriggerL3Load(item);
+                
                 e.Handled = true;
+            }
+        }
+        
+        /// <summary>
+        /// 检查并触发 L3 加载
+        /// </summary>
+        private void CheckAndTriggerL3Load(PhotoItem? item)
+        {
+            if (item == null) return;
+            
+            // 检查当前缩放百分比
+            var currentPercentage = CalculateCurrentZoomPercentage(item);
+            
+            // 如果缩放回到适应窗口或 100% 以下，并且已加载 L3，则切换回 L2
+            if (currentPercentage <= L3LoadThresholdPercent && _isL3Loaded)
+            {
+                DebugService.WriteLine($"[L3-Load] 缩放回到 {currentPercentage:F0}%，切换回 L2");
+                _isL3Loaded = false;
+                
+                // 尝试使用 PhotoItem 中的 L2
+                if (item.PreviewCache.QuickPreview != null)
+                {
+                    _frontImage.Source = item.PreviewCache.QuickPreview;
+                }
+                
+                // 取消正在进行的 L3 加载
+                _l3LoadDebounceTimer?.Stop();
+                _l3LoadCts?.Cancel();
+                _l3LoadCts?.Dispose();
+                _l3LoadCts = null;
+            }
+            // 如果缩放超过阈值，并且还没有加载 L3，则触发 L3 加载
+            else if (currentPercentage > L3LoadThresholdPercent && !_isL3Loaded)
+            {
+                DebugService.WriteLine($"[L3-Load] 缩放超过阈值 {currentPercentage:F0}%，触发 L3 加载");
+                _l3LoadDebounceTimer?.Stop();
+                _l3LoadDebounceTimer?.Start();
             }
         }
 
@@ -2765,6 +2823,100 @@ namespace FastPick.Views
             
             ApplyZoomTransformWithAnimation();
             UpdateZoomIndicator();
+        }
+        
+        /// <summary>
+        /// 重置 L3 加载状态
+        /// </summary>
+        private void ResetL3State()
+        {
+            _l3LoadDebounceTimer?.Stop();
+            _l3LoadCts?.Cancel();
+            _l3LoadCts?.Dispose();
+            _l3LoadCts = null;
+            _isL3Loaded = false;
+        }
+        
+        /// <summary>
+        /// L3 加载防抖定时器回调
+        /// </summary>
+        private async void L3LoadDebounceTimer_Tick(object? sender, object e)
+        {
+            _l3LoadDebounceTimer?.Stop();
+            
+            var item = _viewModel.CurrentPreviewItem;
+            if (item == null) return;
+            
+            // 检查是否已加载 L3 或正在加载
+            if (_isL3Loaded || _l3LoadCts != null) return;
+            
+            // 检查当前缩放比例是否超过阈值
+            var currentPercentage = CalculateCurrentZoomPercentage(item);
+            if (currentPercentage <= L3LoadThresholdPercent) return;
+            
+            DebugService.WriteLine($"[L3-Load] 开始加载 L3，当前缩放: {currentPercentage:F0}%");
+            
+            _l3LoadCts = new CancellationTokenSource();
+            var ct = _l3LoadCts.Token;
+            
+            try
+            {
+                await _previewService.LoadFullResolutionAsync(item, (img) =>
+                {
+                    if (img != null && !ct.IsCancellationRequested)
+                    {
+                        _dispatcherQueue?.TryEnqueue(() =>
+                        {
+                            _frontImage.Source = img;
+                            _isL3Loaded = true;
+                            DebugService.WriteLine($"[L3-Load] L3 加载完成并显示");
+                        });
+                    }
+                }, ct);
+            }
+            catch (OperationCanceledException)
+            {
+                DebugService.WriteLine($"[L3-Load] L3 加载已取消");
+            }
+            catch (Exception ex)
+            {
+                DebugService.WriteLine($"[L3-Load] L3 加载异常: {ex.Message}");
+            }
+            finally
+            {
+                if (_l3LoadCts != null)
+                {
+                    _l3LoadCts.Dispose();
+                    _l3LoadCts = null;
+                }
+            }
+        }
+        
+        /// <summary>
+        /// 计算当前缩放百分比（相对于原图）
+        /// </summary>
+        private double CalculateCurrentZoomPercentage(PhotoItem item)
+        {
+            if (item == null || item.Width <= 0 || item.Height <= 0)
+                return 100.0;
+            
+            try
+            {
+                var fitScale = CalculateFitToScreenScale(item);
+                var dpiScale = GetDpiScale();
+                
+                if (fitScale > 0 && !double.IsNaN(fitScale) && !double.IsInfinity(fitScale))
+                {
+                    var originalPercentage = (_zoomScale * fitScale * dpiScale) * 100;
+                    if (!double.IsNaN(originalPercentage) && !double.IsInfinity(originalPercentage))
+                    {
+                        return originalPercentage;
+                    }
+                }
+            }
+            catch { }
+            
+            return 100.0;
         }
 
         private void SetZoom(double scale)

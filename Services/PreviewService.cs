@@ -115,13 +115,13 @@ public class PreviewService : IDisposable
             }
             else
             {
-                // 正常浏览：三级渐进加载
-                DebugService.WriteLine($"[PreviewService] 正常浏览模式 - 开始三级渐进加载");
+                // 正常浏览：只加载到 L2
+                DebugService.WriteLine($"[PreviewService] 正常浏览模式 - 开始加载到 L2");
                 
-                result = await LoadProgressiveAsync(item, PreviewQualityLevel.FullResolution, onProgressUpdate, ct);
+                result = await LoadProgressiveAsync(item, PreviewQualityLevel.QuickPreview, onProgressUpdate, ct);
                 
                 stopwatch.Stop();
-                DebugService.WriteLine($"[PreviewService] ✓ 三级加载完成, 最终尺寸: {(result != null ? $"{result.PixelWidth}x{result.PixelHeight}" : "null")}, 总耗时: {stopwatch.ElapsedMilliseconds}ms");
+                DebugService.WriteLine($"[PreviewService] ✓ 加载到 L2 完成, 最终尺寸: {(result != null ? $"{result.PixelWidth}x{result.PixelHeight}" : "null")}, 总耗时: {stopwatch.ElapsedMilliseconds}ms");
             }
             
             DebugService.WriteLine($"[PreviewService] ========== 预览加载结束: {fileName} ==========");
@@ -138,6 +138,42 @@ public class PreviewService : IDisposable
         {
             stopwatch.Stop();
             DebugService.WriteLine($"[PreviewService] ✗ 加载异常: {fileName}, 错误: {ex.Message}, 耗时: {stopwatch.ElapsedMilliseconds}ms");
+            return null;
+        }
+    }
+    
+    /// <summary>
+    /// 单独加载 L3（全分辨率）
+    /// </summary>
+    public async Task<BitmapImage?> LoadFullResolutionAsync(
+        PhotoItem item,
+        Action<BitmapImage?>? onProgressUpdate = null,
+        CancellationToken cancellationToken = default)
+    {
+        var fileName = Path.GetFileName(item.DisplayPath);
+        DebugService.WriteLine($"[PreviewService] ========== 开始加载 L3: {fileName} ==========");
+        
+        try
+        {
+            var l3 = await _progressiveLoadManager.LoadLevelAsync(
+                item, PreviewQualityLevel.FullResolution, cancellationToken);
+            
+            if (l3 != null)
+            {
+                onProgressUpdate?.Invoke(l3);
+            }
+            
+            DebugService.WriteLine($"[PreviewService] ========== L3 加载结束: {fileName} ==========");
+            return l3;
+        }
+        catch (OperationCanceledException)
+        {
+            DebugService.WriteLine($"[PreviewService] ⚠ L3 加载已取消: {fileName}");
+            return null;
+        }
+        catch (Exception ex)
+        {
+            DebugService.WriteLine($"[PreviewService] ✗ L3 加载异常: {fileName}, 错误: {ex.Message}");
             return null;
         }
     }
@@ -270,6 +306,15 @@ public class PreviewService : IDisposable
     {
         DebugService.WriteLine($"[PreviewService] 清理所有缓存");
         await _cacheManager.ClearCacheAsync();
+    }
+    
+    /// <summary>
+    /// 清理 L3 缓存（释放内存）
+    /// </summary>
+    public async Task ClearL3CacheAsync()
+    {
+        DebugService.WriteLine($"[PreviewService] 清理 L3 缓存");
+        await _cacheManager.ClearL3CacheAsync();
     }
     
     /// <summary>

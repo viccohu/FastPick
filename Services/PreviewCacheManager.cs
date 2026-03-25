@@ -16,11 +16,11 @@ public class PreviewCacheManager
     private readonly LinkedList<string> _l3LruList = new();
     private readonly SemaphoreSlim _cacheLock = new(1, 1);
     
-    // 内存上限配置
-    private const long MaxL2CacheSizeBytes = 200 * 1024 * 1024;  // 200MB
-    private const long MaxL3CacheSizeBytes = 500 * 1024 * 1024;  // 500MB
-    private const int MaxL2CacheCount = 50;
-    private const int MaxL3CacheCount = 20;
+    // 内存上限配置 - 优化：主要缓存 L2，L3 只缓存少量
+    private const long MaxL2CacheSizeBytes = 300 * 1024 * 1024;  // 300MB（增加 L2 缓存）
+    private const long MaxL3CacheSizeBytes = 100 * 1024 * 1024;  // 100MB（大幅减少 L3 缓存）
+    private const int MaxL2CacheCount = 80;  // 增加 L2 缓存数量
+    private const int MaxL3CacheCount = 5;   // 大幅减少 L3 缓存数量
     
     private long _currentL2Size = 0;
     private long _currentL3Size = 0;
@@ -231,6 +231,34 @@ public class PreviewCacheManager
         try
         {
             return (_l2Cache.Count, _l3Cache.Count, _currentL2Size, _currentL3Size);
+        }
+        finally
+        {
+            _cacheLock.Release();
+        }
+    }
+    
+    /// <summary>
+    /// 清理 L3 缓存（释放内存）
+    /// </summary>
+    public async Task ClearL3CacheAsync()
+    {
+        await _cacheLock.WaitAsync();
+        try
+        {
+            DebugService.WriteLine($"[PreviewCacheManager] 清理 L3 缓存，数量: {_l3Cache.Count}, 大小: {_currentL3Size / 1024 / 1024}MB");
+            
+            foreach (var kvp in _l3Cache)
+            {
+                if (_photoItemMap.TryGetValue(kvp.Key, out var photoItem))
+                {
+                    photoItem.PreviewCache.FullResolution = null;
+                }
+            }
+            
+            _l3Cache.Clear();
+            _l3LruList.Clear();
+            _currentL3Size = 0;
         }
         finally
         {
