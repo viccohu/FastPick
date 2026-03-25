@@ -96,9 +96,6 @@ public class ThumbnailService
         _viewportEndIndex = endIndex;
     }
 
-    /// <summary>
-    /// 获取缓存的缩略图（优先从内存缓存和本地缓存加载）
-    /// </summary>
     public async Task<BitmapImage?> GetCachedThumbnailAsync(PhotoItem photoItem, CancellationToken cancellationToken = default)
     {
         var filePath = photoItem.DisplayPath;
@@ -108,20 +105,24 @@ public class ThumbnailService
             return null;
         }
 
-        // 检查内存缓存（强引用，不会失效）
-        if (_thumbnailCache.TryGetValue(filePath, out var cacheEntry))
+        await _cacheLock.WaitAsync(cancellationToken);
+        try
         {
-            // 更新 LRU 顺序
-            _lruList.Remove(cacheEntry.LruNode);
-            _lruList.AddFirst(cacheEntry.LruNode);
-            
-            // 设置到 PhotoItem
-            photoItem.Thumbnail = cacheEntry.Image;
-            
-            return cacheEntry.Image;
+            if (_thumbnailCache.TryGetValue(filePath, out var cacheEntry))
+            {
+                _lruList.Remove(cacheEntry.LruNode);
+                _lruList.AddFirst(cacheEntry.LruNode);
+                
+                photoItem.Thumbnail = cacheEntry.Image;
+                
+                return cacheEntry.Image;
+            }
+        }
+        finally
+        {
+            _cacheLock.Release();
         }
 
-        // 检查本地缓存
         var localCacheImage = await GetFromLocalCacheAsync(filePath, cancellationToken);
         if (localCacheImage != null)
         {
@@ -139,11 +140,19 @@ public class ThumbnailService
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
             return null;
 
-        if (_thumbnailCache.TryGetValue(filePath, out var cacheEntry))
+        await _cacheLock.WaitAsync(cancellationToken);
+        try
         {
-            _lruList.Remove(cacheEntry.LruNode);
-            _lruList.AddFirst(cacheEntry.LruNode);
-            return cacheEntry.Image;
+            if (_thumbnailCache.TryGetValue(filePath, out var cacheEntry))
+            {
+                _lruList.Remove(cacheEntry.LruNode);
+                _lruList.AddFirst(cacheEntry.LruNode);
+                return cacheEntry.Image;
+            }
+        }
+        finally
+        {
+            _cacheLock.Release();
         }
 
         if (!_memoryMonitoringEnabled)
