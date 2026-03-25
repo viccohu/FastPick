@@ -136,6 +136,7 @@ public class ThumbnailService
     public async Task<BitmapImage?> GetThumbnailAsync(PhotoItem photoItem, CancellationToken cancellationToken = default)
     {
         var filePath = photoItem.DisplayPath;
+        DebugService.WriteLine($"[ThumbnailService] GetThumbnailAsync 开始: {Path.GetFileName(filePath)}, DispatcherQueue: {_dispatcherQueue != null}");
         
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
             return null;
@@ -550,6 +551,7 @@ public class ThumbnailService
                 
                 if (_photoItemMap.TryGetValue(oldestKey, out var oldPhotoItem))
                 {
+                    oldPhotoItem.Thumbnail = null;
                     _photoItemMap.Remove(oldestKey);
                 }
                 
@@ -810,6 +812,12 @@ public class ThumbnailService
                     var oldestKey = _lruList.Last!.Value;
                     _lruList.RemoveLast();
                     
+                    if (_photoItemMap.TryGetValue(oldestKey, out var oldPhotoItem))
+                    {
+                        oldPhotoItem.Thumbnail = null;
+                        _photoItemMap.Remove(oldestKey);
+                    }
+                    
                     if (_thumbnailCache.TryGetValue(oldestKey, out var oldEntry))
                     {
                         _currentCacheSizeBytes -= oldEntry.SizeBytes;
@@ -825,6 +833,12 @@ public class ThumbnailService
                 {
                     var oldestKey = _lruList.Last!.Value;
                     _lruList.RemoveLast();
+                    
+                    if (_photoItemMap.TryGetValue(oldestKey, out var oldPhotoItem))
+                    {
+                        oldPhotoItem.Thumbnail = null;
+                        _photoItemMap.Remove(oldestKey);
+                    }
                     
                     if (_thumbnailCache.TryGetValue(oldestKey, out var oldEntry))
                     {

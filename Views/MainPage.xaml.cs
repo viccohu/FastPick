@@ -85,6 +85,11 @@ namespace FastPick.Views
         // 双缓冲预览
         private Image _frontImage;  // 当前显示的 Image
         private Image _backImage;   // 后台加载的 Image
+        
+        // 预览服务
+        private PreviewService _previewService => PreviewService.Instance;
+        private CancellationTokenSource? _previewLoadCts;
+        private Microsoft.UI.Dispatching.DispatcherQueue? _dispatcherQueue;
 
         // 设置服务
         private Services.SettingsService _settingsService => Services.SettingsService.Instance;
@@ -159,12 +164,24 @@ namespace FastPick.Views
         {
             LoadSavedPaths();
             
-            _viewModel.SetDispatcherQueue(Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
+            _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+            _viewModel.SetDispatcherQueue(_dispatcherQueue);
+            
+            // 初始化 PreviewService
+            _previewService.Initialize(_dispatcherQueue);
         }
 
         private void MainPage_Unloaded(object sender, RoutedEventArgs e)
         {
             SaveCurrentPaths();
+            
+            _previewLoadCts?.Cancel();
+            _previewLoadCts?.Dispose();
+            _previewLoadCts = null;
+            
+            _previewService.CancelAllPredecodeTasks();
+            _ = _previewService.ClearCacheAsync();
+            _previewService.Dispose();
         }
 
         private void PreviewContainer_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -780,9 +797,15 @@ namespace FastPick.Views
         /// <summary>
         /// 更新预览区
         /// </summary>
-        private void UpdatePreview()
+        private async void UpdatePreview()
         {
             ResetZoom();
+            
+            // 取消之前的加载任务
+            _previewLoadCts?.Cancel();
+            _previewLoadCts?.Dispose();
+            _previewLoadCts = new CancellationTokenSource();
+            var ct = _previewLoadCts.Token;
             
             var item = _viewModel.CurrentPreviewItem;
             if (item == null)
@@ -806,6 +829,39 @@ namespace FastPick.Views
             PreviewFileNameText.Text = item.FileName;
             
             UpdateFileInfo(item);
+            
+            // 使用 PreviewService 加载预览图像
+            try
+            {
+                var previewImage = await _previewService.LoadPreviewAsync(item, (img) =>
+                {
+                    if (img != null && !ct.IsCancellationRequested)
+                    {
+                        _dispatcherQueue?.TryEnqueue(() =>
+                        {
+                            _frontImage.Source = img;
+                        });
+                    }
+                }, ct);
+                
+                if (previewImage != null && !ct.IsCancellationRequested)
+                {
+                    // 更新预解码窗口
+                    var currentIndex = _viewModel.FilteredPhotoItems.IndexOf(item);
+                    if (currentIndex >= 0)
+                    {
+                        _ = _previewService.UpdatePredecodeWindowAsync(currentIndex, _viewModel.FilteredPhotoItems);
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // 正常取消
+            }
+            catch (Exception ex)
+            {
+                DebugService.WriteLine($"[Preview] 加载失败: {item.DisplayPath}, {ex.Message}");
+            }
         }
 
         private void ClearFileInfo()

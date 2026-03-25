@@ -35,7 +35,7 @@ public class SettingsService
         public bool DeleteToRecycleBin { get; set; } = true;
         public bool UseRawForHighResDecode { get; set; } = false;
         public PreviewLoadMode PreviewLoadMode { get; set; } = PreviewLoadMode.OnDemand;
-        public bool EnableBackgroundThumbnailDecoding { get; set; } = true;
+        public bool EnableBackgroundThumbnailDecoding { get; set; } = false;
     }
 
     private static string SettingsFilePath => Path.Combine(

@@ -267,7 +267,7 @@ public class MainViewModel : INotifyPropertyChanged
     public MainViewModel()
     {
         _imageScanService = new ImageScanService();
-        _thumbnailService = new ThumbnailService();
+        _thumbnailService = PreviewService.Instance.GetThumbnailService();
         _jpgMetadataService = new JpgMetadataService();
     }
 

@@ -7,7 +7,7 @@ namespace FastPick.Models;
 /// <summary>
 /// 照片项模型 - 支持数据绑定
 /// </summary>
-public class PhotoItem : INotifyPropertyChanged
+public partial class PhotoItem : INotifyPropertyChanged
 {
     private string _fileName = string.Empty;
     private string _jpgPath = string.Empty;
