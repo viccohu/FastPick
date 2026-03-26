@@ -17,7 +17,7 @@ public class ThumbnailService
     private readonly SemaphoreSlim _throttler = new(Environment.ProcessorCount, Environment.ProcessorCount);
     private readonly ConcurrentDictionary<string, TaskCompletionSource<BitmapImage?>> _pendingLoads = new(StringComparer.OrdinalIgnoreCase);
     private const int MaxCacheSize = 1000;
-    private const int MaxThumbnailSize = 120;
+    private const int MaxThumbnailSize = 256;
 
     public async Task<BitmapImage?> GetThumbnailAsync(PhotoItem photoItem, CancellationToken cancellationToken = default)
     {
@@ -133,32 +133,21 @@ public class ThumbnailService
         try
         {
             var storageFile = await StorageFile.GetFileFromPathAsync(filePath).AsTask(cancellationToken);
+
+            LoggerService.Instance.Verbose(LogCategory.Thumbnail, $"获取系统缩略图: {Path.GetFileName(filePath)}");
             
-            var cachedThumbnail = await storageFile.GetThumbnailAsync(
-                ThumbnailMode.PicturesView,
+            using var thumbnail = await storageFile.GetThumbnailAsync(
+                ThumbnailMode.SingleItem,
                 (uint)MaxThumbnailSize,
-                ThumbnailOptions.ReturnOnlyIfCached).AsTask(cancellationToken);
+                ThumbnailOptions.UseCurrentScale).AsTask(cancellationToken);
 
-            if (cachedThumbnail != null)
-            {
-                var bitmap = new BitmapImage();
-                await bitmap.SetSourceAsync(cachedThumbnail).AsTask(cancellationToken);
-                cachedThumbnail.Dispose();
-                return bitmap;
-            }
+            if (thumbnail == null)
+                return null;
 
-            var thumbnail = await storageFile.GetThumbnailAsync(
-                ThumbnailMode.PicturesView,
-                (uint)MaxThumbnailSize,
-                ThumbnailOptions.ResizeThumbnail).AsTask(cancellationToken);
+            var bitmap = new BitmapImage();
+            await bitmap.SetSourceAsync(thumbnail).AsTask(cancellationToken);
 
-            if (thumbnail != null)
-            {
-                var bitmap = new BitmapImage();
-                await bitmap.SetSourceAsync(thumbnail).AsTask(cancellationToken);
-                thumbnail.Dispose();
-                return bitmap;
-            }
+            return bitmap;
         }
         catch (OperationCanceledException)
         {
@@ -180,18 +169,19 @@ public class ThumbnailService
             using var stream = await storageFile.OpenAsync(FileAccessMode.Read).AsTask(cancellationToken);
             var decoder = await BitmapDecoder.CreateAsync(stream).AsTask(cancellationToken);
 
-            var orientedWidth = decoder.OrientedPixelWidth;
-            var orientedHeight = decoder.OrientedPixelHeight;
-            var originalWidth = decoder.PixelWidth;
-            var originalHeight = decoder.PixelHeight;
+            uint width = decoder.OrientedPixelWidth;
+            uint height = decoder.OrientedPixelHeight;
+
+            double scale = Math.Min(
+                (double)MaxThumbnailSize / width,
+                (double)MaxThumbnailSize / height
+            );
 
             var transform = new BitmapTransform();
-            var scaleFactor = (double)MaxThumbnailSize / Math.Max(orientedWidth, orientedHeight);
-            
-            if (scaleFactor < 1)
+            if (scale < 1)
             {
-                transform.ScaledWidth = (uint)(originalWidth * scaleFactor);
-                transform.ScaledHeight = (uint)(originalHeight * scaleFactor);
+                transform.ScaledWidth = (uint)(width * scale);
+                transform.ScaledHeight = (uint)(height * scale);
             }
 
             var softwareBitmap = await decoder.GetSoftwareBitmapAsync(

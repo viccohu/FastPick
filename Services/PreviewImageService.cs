@@ -349,10 +349,7 @@ public class PreviewImageService
                 var originalWidth = decoder.PixelWidth;
                 var originalHeight = decoder.PixelHeight;
 
-                var transform = new BitmapTransform
-                {
-                    InterpolationMode = BitmapInterpolationMode.Fant
-                };
+                var transform = new BitmapTransform();
 
                 var scaleFactor = Math.Min(
                     (double)targetWidth / orientedWidth,
@@ -452,10 +449,7 @@ public class PreviewImageService
                 var originalWidth = decoder.PixelWidth;
                 var originalHeight = decoder.PixelHeight;
 
-                var transform = new BitmapTransform
-                {
-                    InterpolationMode = BitmapInterpolationMode.Fant
-                };
+                var transform = new BitmapTransform();
 
                 var scaleFactor = Math.Min(
                     (double)targetWidth / orientedWidth,
