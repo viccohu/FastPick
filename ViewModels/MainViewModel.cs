@@ -1,5 +1,6 @@
 using FastPick.Models;
 using FastPick.Services;
+using Microsoft.UI.Xaml.Media;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -860,7 +861,7 @@ public class MainViewModel : INotifyPropertyChanged
     /// <summary>
     /// 获取缩略图
     /// </summary>
-    public async Task<object?> GetThumbnailAsync(PhotoItem item, System.Threading.CancellationToken cancellationToken = default)
+    public async Task<ImageSource?> GetThumbnailAsync(PhotoItem item, System.Threading.CancellationToken cancellationToken = default)
     {
         return await _thumbnailService.GetThumbnailAsync(item, cancellationToken);
     }

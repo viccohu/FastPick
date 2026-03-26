@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Microsoft.UI.Xaml.Media;
 
 namespace FastPick.Models;
 
@@ -138,7 +139,7 @@ public class PhotoItem : INotifyPropertyChanged
     /// <summary>
     /// 缩略图（运行时缓存）
     /// </summary>
-    public object? Thumbnail { get; set; }
+    public ImageSource? Thumbnail { get; set; }
 
     /// <summary>
     /// 文件大小（字节）

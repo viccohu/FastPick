@@ -686,12 +686,12 @@ namespace FastPick.Views
                 UpdateSelectionVisual(thumbnailGrid, photoItem.IsSelected);
                 
                 // 优先检查缓存，如果有缓存直接设置，否则立即异步加载（无防抖）
-                if (photoItem.Thumbnail is Microsoft.UI.Xaml.Media.Imaging.BitmapImage cachedBitmap)
+                if (photoItem.Thumbnail != null)
                 {
                     var image = thumbnailGrid.FindName("ThumbnailImage") as Image;
                     if (image != null)
                     {
-                        image.Source = cachedBitmap;
+                        image.Source = photoItem.Thumbnail;
                     }
                 }
                 else
@@ -746,24 +746,24 @@ namespace FastPick.Views
                 var image = thumbnailGrid.FindName("ThumbnailImage") as Image;
                 if (image == null) return;
                 
-                if (photoItem.Thumbnail is Microsoft.UI.Xaml.Media.Imaging.BitmapImage cachedBitmap)
+                if (photoItem.Thumbnail != null)
                 {
-                    image.Source = cachedBitmap;
+                    image.Source = photoItem.Thumbnail;
                     return;
                 }
                 
                 photoItem.ThumbnailCts = new System.Threading.CancellationTokenSource();
                 
                 var thumbnail = await _viewModel.GetThumbnailAsync(photoItem, photoItem.ThumbnailCts.Token);
-                if (thumbnail is Microsoft.UI.Xaml.Media.Imaging.BitmapImage bitmap)
+                if (thumbnail != null)
                 {
-                    photoItem.Thumbnail = bitmap;
+                    photoItem.Thumbnail = thumbnail;
                     
                     this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
                     {
                         if (image != null && thumbnailGrid.DataContext == photoItem)
                         {
-                            image.Source = bitmap;
+                            image.Source = thumbnail;
                         }
                     });
                 }

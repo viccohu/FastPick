@@ -1,4 +1,5 @@
 using FastPick.Models;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Storage.FileProperties;
 using Windows.Storage;
@@ -11,12 +12,12 @@ namespace FastPick.Services;
 public class ThumbnailService
 {
     private readonly LinkedList<string> _lruList = new();
-    private readonly Dictionary<string, BitmapImage> _thumbnailCache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, ImageSource> _thumbnailCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, PhotoItem> _photoItemMap = new(StringComparer.OrdinalIgnoreCase);
     private readonly SemaphoreSlim _cacheLock = new(1, 1);
     private readonly SemaphoreSlim _scrollThrottler = new(3, 3);
     private readonly SemaphoreSlim _idleThrottler = new(12, 12);
-    private readonly ConcurrentDictionary<string, TaskCompletionSource<BitmapImage?>> _pendingLoads = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, TaskCompletionSource<ImageSource?>> _pendingLoads = new(StringComparer.OrdinalIgnoreCase);
     private bool _isScrolling = false;
     private const int MaxCacheSize = 2000;
     private const int ScrollThumbnailSize = 64;
@@ -37,7 +38,7 @@ public class ThumbnailService
         return _isScrolling ? _scrollThrottler : _idleThrottler;
     }
 
-    public async Task<BitmapImage?> GetThumbnailAsync(PhotoItem photoItem, CancellationToken cancellationToken = default)
+    public async Task<ImageSource?> GetThumbnailAsync(PhotoItem photoItem, CancellationToken cancellationToken = default)
     {
         var filePath = photoItem.DisplayPath;
         
@@ -63,7 +64,7 @@ public class ThumbnailService
             _cacheLock.Release();
         }
 
-        var tcs = new TaskCompletionSource<BitmapImage?>();
+        var tcs = new TaskCompletionSource<ImageSource?>();
         if (_pendingLoads.TryAdd(filePath, tcs))
         {
             var throttler = GetCurrentThrottler();
@@ -93,7 +94,7 @@ public class ThumbnailService
                         var embeddedPreview = await TryGetRawEmbeddedPreviewAsync(filePath, cancellationToken);
                         if (embeddedPreview != null)
                         {
-                            var embeddedBitmap = await SoftwareBitmapToBitmapImageAsync(embeddedPreview, cancellationToken);
+                            var embeddedBitmap = await SoftwareBitmapToImageSourceAsync(embeddedPreview, cancellationToken);
                             if (embeddedBitmap != null)
                             {
                                 await AddToCacheAsync(filePath, embeddedBitmap, photoItem, cancellationToken);
@@ -180,7 +181,7 @@ public class ThumbnailService
         return null;
     }
 
-    private async Task<BitmapImage?> GenerateWicThumbnailAsync(string filePath, CancellationToken cancellationToken)
+    private async Task<ImageSource?> GenerateWicThumbnailAsync(string filePath, CancellationToken cancellationToken)
     {
         try
         {
@@ -212,16 +213,7 @@ public class ThumbnailService
                 ExifOrientationMode.RespectExifOrientation,
                 ColorManagementMode.DoNotColorManage).AsTask(cancellationToken);
 
-            using var outputStream = new InMemoryRandomAccessStream();
-            var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, outputStream).AsTask(cancellationToken);
-            encoder.SetSoftwareBitmap(softwareBitmap);
-            await encoder.FlushAsync().AsTask(cancellationToken);
-
-            outputStream.Seek(0);
-            var bitmap = new BitmapImage();
-            await bitmap.SetSourceAsync(outputStream).AsTask(cancellationToken);
-
-            return bitmap;
+            return await SoftwareBitmapToImageSourceAsync(softwareBitmap, cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -311,47 +303,13 @@ public class ThumbnailService
         }
     }
 
-    private async Task<BitmapImage?> SoftwareBitmapToBitmapImageAsync(SoftwareBitmap softwareBitmap, CancellationToken cancellationToken)
+    private async Task<ImageSource?> SoftwareBitmapToImageSourceAsync(SoftwareBitmap softwareBitmap, CancellationToken cancellationToken)
     {
         try
         {
-            var orientedWidth = softwareBitmap.PixelWidth;
-            var orientedHeight = softwareBitmap.PixelHeight;
-            var currentSize = GetCurrentThumbnailSize();
-
-            var transform = new BitmapTransform();
-            var scaleFactor = (double)currentSize / Math.Max(orientedWidth, orientedHeight);
-
-            SoftwareBitmap finalBitmap = softwareBitmap;
-            if (scaleFactor < 1)
-            {
-                var newWidth = (uint)(orientedWidth * scaleFactor);
-                var newHeight = (uint)(orientedHeight * scaleFactor);
-
-                using var outputStream = new InMemoryRandomAccessStream();
-                var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, outputStream).AsTask(cancellationToken);
-                encoder.SetSoftwareBitmap(softwareBitmap);
-                encoder.BitmapTransform.ScaledWidth = newWidth;
-                encoder.BitmapTransform.ScaledHeight = newHeight;
-                await encoder.FlushAsync().AsTask(cancellationToken);
-
-                outputStream.Seek(0);
-                var decoder = await BitmapDecoder.CreateAsync(outputStream).AsTask(cancellationToken);
-                finalBitmap = await decoder.GetSoftwareBitmapAsync().AsTask(cancellationToken);
-                softwareBitmap.Dispose();
-            }
-
-            using var bmpStream = new InMemoryRandomAccessStream();
-            var bmpEncoder = await BitmapEncoder.CreateAsync(BitmapEncoder.BmpEncoderId, bmpStream).AsTask(cancellationToken);
-            bmpEncoder.SetSoftwareBitmap(finalBitmap);
-            await bmpEncoder.FlushAsync().AsTask(cancellationToken);
-
-            bmpStream.Seek(0);
-            var bitmap = new BitmapImage();
-            await bitmap.SetSourceAsync(bmpStream).AsTask(cancellationToken);
-
-            finalBitmap.Dispose();
-            return bitmap;
+            var imageSource = new SoftwareBitmapSource();
+            await imageSource.SetBitmapAsync(softwareBitmap);
+            return imageSource;
         }
         catch
         {
@@ -360,7 +318,7 @@ public class ThumbnailService
         }
     }
 
-    private async Task AddToCacheAsync(string filePath, BitmapImage thumbnail, PhotoItem? photoItem = null, CancellationToken cancellationToken = default)
+    private async Task AddToCacheAsync(string filePath, ImageSource thumbnail, PhotoItem? photoItem = null, CancellationToken cancellationToken = default)
     {
         await _cacheLock.WaitAsync(cancellationToken);
         try
@@ -376,10 +334,6 @@ public class ThumbnailService
                     _photoItemMap.Remove(oldestKey);
                 }
                 
-                if (_thumbnailCache.TryGetValue(oldestKey, out var oldImage))
-                {
-                    oldImage.UriSource = null;
-                }
                 _thumbnailCache.Remove(oldestKey);
             }
 
@@ -413,10 +367,6 @@ public class ThumbnailService
                 photoItem.Thumbnail = null;
             }
             
-            foreach (var image in _thumbnailCache.Values)
-            {
-                image.UriSource = null;
-            }
             _thumbnailCache.Clear();
             _photoItemMap.Clear();
             _lruList.Clear();
