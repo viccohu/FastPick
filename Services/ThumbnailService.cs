@@ -14,10 +14,28 @@ public class ThumbnailService
     private readonly Dictionary<string, BitmapImage> _thumbnailCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, PhotoItem> _photoItemMap = new(StringComparer.OrdinalIgnoreCase);
     private readonly SemaphoreSlim _cacheLock = new(1, 1);
-    private readonly SemaphoreSlim _throttler = new(10, 12);
+    private readonly SemaphoreSlim _scrollThrottler = new(3, 3);
+    private readonly SemaphoreSlim _idleThrottler = new(12, 12);
     private readonly ConcurrentDictionary<string, TaskCompletionSource<BitmapImage?>> _pendingLoads = new(StringComparer.OrdinalIgnoreCase);
+    private bool _isScrolling = false;
     private const int MaxCacheSize = 2000;
-    private const int MaxThumbnailSize = 256;
+    private const int ScrollThumbnailSize = 64;
+    private const int IdleThumbnailSize = 130;
+
+    public void SetScrollMode(bool isScrolling)
+    {
+        _isScrolling = isScrolling;
+    }
+
+    private int GetCurrentThumbnailSize()
+    {
+        return _isScrolling ? ScrollThumbnailSize : IdleThumbnailSize;
+    }
+
+    private SemaphoreSlim GetCurrentThrottler()
+    {
+        return _isScrolling ? _scrollThrottler : _idleThrottler;
+    }
 
     public async Task<BitmapImage?> GetThumbnailAsync(PhotoItem photoItem, CancellationToken cancellationToken = default)
     {
@@ -48,9 +66,10 @@ public class ThumbnailService
         var tcs = new TaskCompletionSource<BitmapImage?>();
         if (_pendingLoads.TryAdd(filePath, tcs))
         {
+            var throttler = GetCurrentThrottler();
             try
             {
-                await _throttler.WaitAsync(cancellationToken);
+                await throttler.WaitAsync(cancellationToken);
                 try
                 {
                     cancellationToken.ThrowIfCancellationRequested();
@@ -99,7 +118,7 @@ public class ThumbnailService
                 }
                 finally
                 {
-                    _throttler.Release();
+                    throttler.Release();
                 }
             }
             catch (OperationCanceledException)
@@ -138,7 +157,7 @@ public class ThumbnailService
             
             using var thumbnail = await storageFile.GetThumbnailAsync(
                 ThumbnailMode.SingleItem,
-                (uint)MaxThumbnailSize,
+                (uint)GetCurrentThumbnailSize(),
                 ThumbnailOptions.UseCurrentScale).AsTask(cancellationToken);
 
             if (thumbnail == null)
@@ -171,10 +190,11 @@ public class ThumbnailService
 
             uint width = decoder.OrientedPixelWidth;
             uint height = decoder.OrientedPixelHeight;
+            var currentSize = GetCurrentThumbnailSize();
 
             double scale = Math.Min(
-                (double)MaxThumbnailSize / width,
-                (double)MaxThumbnailSize / height
+                (double)currentSize / width,
+                (double)currentSize / height
             );
 
             var transform = new BitmapTransform();
@@ -295,9 +315,10 @@ public class ThumbnailService
         {
             var orientedWidth = softwareBitmap.PixelWidth;
             var orientedHeight = softwareBitmap.PixelHeight;
+            var currentSize = GetCurrentThumbnailSize();
 
             var transform = new BitmapTransform();
-            var scaleFactor = (double)MaxThumbnailSize / Math.Max(orientedWidth, orientedHeight);
+            var scaleFactor = (double)currentSize / Math.Max(orientedWidth, orientedHeight);
 
             SoftwareBitmap finalBitmap = softwareBitmap;
             if (scaleFactor < 1)

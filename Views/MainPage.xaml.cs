@@ -54,9 +54,11 @@ namespace FastPick.Views
         private DispatcherTimer? _zoomIndicatorTimer;
 
         // 缩略图滚动相关
-        private bool _isThumbnailScrolling = false;
-        private DispatcherTimer? _thumbnailScrollDebounceTimer;
-        private readonly Dictionary<string, (Grid grid, PhotoItem item)> _pendingThumbnailLoads = new(StringComparer.OrdinalIgnoreCase);
+        private double _lastScrollOffset = 0;
+        private DateTime _lastScrollTime = DateTime.Now;
+        private double _currentScrollSpeed = 0;
+        private bool _wasScrolling = false;
+        private DispatcherTimer? _scrollStopTimer;
 
         // 缩放动画
         private DispatcherTimer? _zoomAnimationTimer;
@@ -191,10 +193,10 @@ namespace FastPick.Views
             _zoomIndicatorTimer.Interval = TimeSpan.FromSeconds(2);
             _zoomIndicatorTimer.Tick += ZoomIndicatorTimer_Tick;
 
-            // 初始化缩略图滚动防抖定时器
-            _thumbnailScrollDebounceTimer = new DispatcherTimer();
-            _thumbnailScrollDebounceTimer.Interval = TimeSpan.FromMilliseconds(100);
-            _thumbnailScrollDebounceTimer.Tick += ThumbnailScrollDebounceTimer_Tick;
+            // 初始化滚动停止检测定时器
+            _scrollStopTimer = new DispatcherTimer();
+            _scrollStopTimer.Interval = TimeSpan.FromMilliseconds(200);
+            _scrollStopTimer.Tick += ScrollStopTimer_Tick;
 
             // 初始化快速浏览停止检测定时器
             _fastNavigationStopTimer = new DispatcherTimer();
@@ -578,31 +580,89 @@ namespace FastPick.Views
         }
 
         /// <summary>
-        /// 缩略图滚动视图变化事件 - 检测滚动状态
+        /// 缩略图滚动视图变化事件 - 检测滚动状态和速度
         /// </summary>
         private void ThumbnailScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
         {
-            _isThumbnailScrolling = true;
-            _thumbnailScrollDebounceTimer?.Stop();
-            _thumbnailScrollDebounceTimer?.Start();
+            var currentOffset = ThumbnailScrollViewer.HorizontalOffset;
+            var currentTime = DateTime.Now;
+            var deltaTime = (currentTime - _lastScrollTime).TotalMilliseconds;
+            
+            if (deltaTime > 0)
+            {
+                _currentScrollSpeed = Math.Abs(currentOffset - _lastScrollOffset) / deltaTime;
+            }
+            
+            _lastScrollOffset = currentOffset;
+            _lastScrollTime = currentTime;
+            
+            if (!_wasScrolling)
+            {
+                _viewModel?.ThumbnailService.SetScrollMode(true);
+                _wasScrolling = true;
+            }
+            
+            _scrollStopTimer?.Stop();
+            _scrollStopTimer?.Start();
         }
 
         /// <summary>
-        /// 缩略图滚动防抖定时器 - 滚动停止后加载缩略图
+        /// 滚动停止检测定时器
         /// </summary>
-        private async void ThumbnailScrollDebounceTimer_Tick(object? sender, object e)
+        private async void ScrollStopTimer_Tick(object? sender, object e)
         {
-            _thumbnailScrollDebounceTimer?.Stop();
-            _isThumbnailScrolling = false;
+            _scrollStopTimer?.Stop();
+            _viewModel?.ThumbnailService.SetScrollMode(false);
+            _wasScrolling = false;
+            
+            await ReloadVisibleThumbnailsWithFullSizeAsync();
+        }
 
-            // 加载所有待加载的缩略图
-            var pendingLoads = _pendingThumbnailLoads.Values.ToList();
-            _pendingThumbnailLoads.Clear();
-
-            foreach (var (grid, item) in pendingLoads)
+        /// <summary>
+        /// 重新加载可见区域缩略图为正常尺寸
+        /// </summary>
+        private async Task ReloadVisibleThumbnailsWithFullSizeAsync()
+        {
+            var visibleIndices = GetVisibleThumbnailIndices();
+            
+            foreach (var index in visibleIndices)
             {
-                await LoadThumbnailToImageAsync(grid, item);
+                if (index >= 0 && index < _viewModel.FilteredPhotoItems.Count)
+                {
+                    var element = ThumbnailRepeater.TryGetElement(index);
+                    if (element is Grid thumbnailGrid && 
+                        thumbnailGrid.DataContext is PhotoItem item)
+                    {
+                        await LoadThumbnailToImageAsync(thumbnailGrid, item);
+                    }
+                }
             }
+        }
+
+        /// <summary>
+        /// 获取可见缩略图索引
+        /// </summary>
+        private List<int> GetVisibleThumbnailIndices()
+        {
+            var indices = new List<int>();
+            if (ThumbnailScrollViewer == null)
+                return indices;
+                
+            var scrollOffset = ThumbnailScrollViewer.HorizontalOffset;
+            var viewportWidth = ThumbnailScrollViewer.ViewportWidth;
+            const double thumbnailWidth = 104;
+            
+            var startIndex = Math.Max(0, (int)(scrollOffset / thumbnailWidth) - 2);
+            var endIndex = Math.Min(
+                _viewModel.FilteredPhotoItems.Count - 1,
+                (int)((scrollOffset + viewportWidth) / thumbnailWidth) + 2);
+            
+            for (int i = startIndex; i <= endIndex; i++)
+            {
+                indices.Add(i);
+            }
+            
+            return indices;
         }
 
         /// <summary>
@@ -628,7 +688,7 @@ namespace FastPick.Views
                 // 更新选中状态显示
                 UpdateSelectionVisual(thumbnailGrid, photoItem.IsSelected);
                 
-                // 优先检查缓存，如果有缓存直接设置，否则异步加载
+                // 优先检查缓存，如果有缓存直接设置，否则立即异步加载（无防抖）
                 if (photoItem.Thumbnail is Microsoft.UI.Xaml.Media.Imaging.BitmapImage cachedBitmap)
                 {
                     var image = thumbnailGrid.FindName("ThumbnailImage") as Image;
@@ -639,16 +699,8 @@ namespace FastPick.Views
                 }
                 else
                 {
-                    // 如果正在滚动，加入待加载队列；否则立即加载
-                    if (_isThumbnailScrolling)
-                    {
-                        _pendingThumbnailLoads[photoItem.DisplayPath] = (thumbnailGrid, photoItem);
-                    }
-                    else
-                    {
-                        // 没有缓存且不在滚动时才异步加载
-                        await LoadThumbnailToImageAsync(thumbnailGrid, photoItem);
-                    }
+                    // 立即加载，不等待滚动停止
+                    await LoadThumbnailToImageAsync(thumbnailGrid, photoItem);
                 }
             }
         }
@@ -697,30 +749,30 @@ namespace FastPick.Views
                 var image = thumbnailGrid.FindName("ThumbnailImage") as Image;
                 if (image == null) return;
                 
-                // 先检查是否已有缓存
                 if (photoItem.Thumbnail is Microsoft.UI.Xaml.Media.Imaging.BitmapImage cachedBitmap)
                 {
                     image.Source = cachedBitmap;
                     return;
                 }
                 
-                // 创建取消令牌源
                 photoItem.ThumbnailCts = new System.Threading.CancellationTokenSource();
                 
-                // 异步加载缩略图（带取消令牌）
                 var thumbnail = await _viewModel.GetThumbnailAsync(photoItem, photoItem.ThumbnailCts.Token);
                 if (thumbnail is Microsoft.UI.Xaml.Media.Imaging.BitmapImage bitmap)
                 {
-                    // 缓存到 PhotoItem
                     photoItem.Thumbnail = bitmap;
                     
-                    // 直接设置到 Image 控件
-                    image.Source = bitmap;
+                    this.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                    {
+                        if (image != null && thumbnailGrid.DataContext == photoItem)
+                        {
+                            image.Source = bitmap;
+                        }
+                    });
                 }
             }
             catch (OperationCanceledException)
             {
-                // 加载被取消，忽略
             }
             catch (Exception ex)
             {
@@ -728,7 +780,6 @@ namespace FastPick.Views
             }
             finally
             {
-                // 清理取消令牌源
                 photoItem.ThumbnailCts?.Dispose();
                 photoItem.ThumbnailCts = null;
             }
@@ -741,12 +792,6 @@ namespace FastPick.Views
         {
             if (args.Element is Grid thumbnailGrid)
             {
-                // 从待加载队列中移除（使用文件路径作为键）
-                if (thumbnailGrid.DataContext is PhotoItem item)
-                {
-                    _pendingThumbnailLoads.Remove(item.DisplayPath);
-                }
-                
                 // 只清空 Image 控件的 Source，保留 PhotoItem.Thumbnail 缓存
                 var image = thumbnailGrid.FindName("ThumbnailImage") as Image;
                 if (image != null)

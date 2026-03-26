@@ -64,6 +64,52 @@ public static class FileOperationService
     /// <param name="filePath">要删除的文件路径</param>
     /// <param name="permanentlyDelete">是否永久删除（不放入回收站）</param>
     /// <returns>是否成功</returns>
+    public class DeleteResult
+    {
+        public bool Success { get; set; }
+        public int DeletedCount { get; set; }
+        public bool WasForcedPermanent { get; set; }
+        public string? WarningMessage { get; set; }
+        public List<string> RemovableDrivePaths { get; set; } = new();
+    }
+
+    public static DeleteResult CheckAndPrepareDelete(List<PhotoItem> photos, bool userWantsRecycleBin)
+    {
+        var result = new DeleteResult();
+        var removablePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var shouldForcePermanent = false;
+
+        foreach (var photo in photos)
+        {
+            if (!string.IsNullOrEmpty(photo.JpgPath) && File.Exists(photo.JpgPath))
+            {
+                if (DriveTypeService.Instance.IsRemovableDrive(photo.JpgPath))
+                {
+                    removablePaths.Add(DriveTypeService.Instance.GetDriveDescription(photo.JpgPath));
+                    shouldForcePermanent = true;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(photo.RawPath) && File.Exists(photo.RawPath))
+            {
+                if (DriveTypeService.Instance.IsRemovableDrive(photo.RawPath))
+                {
+                    removablePaths.Add(DriveTypeService.Instance.GetDriveDescription(photo.RawPath));
+                    shouldForcePermanent = true;
+                }
+            }
+        }
+
+        if (shouldForcePermanent && userWantsRecycleBin)
+        {
+            result.WasForcedPermanent = true;
+            result.RemovableDrivePaths = removablePaths.ToList();
+            result.WarningMessage = $"检测到 {string.Join("、", removablePaths)}，已自动切换为直接删除模式";
+        }
+
+        return result;
+    }
+
     public static bool MoveToRecycleBin(string filePath, bool permanentlyDelete = false)
     {
         if (!File.Exists(filePath))
@@ -78,7 +124,11 @@ public static class FileOperationService
             }
             else
             {
-                // 使用 Windows API 移动到回收站
+                if (DriveTypeService.Instance.IsRemovableDrive(filePath))
+                {
+                    File.Delete(filePath);
+                    return true;
+                }
                 return SendToRecycleBin(filePath);
             }
         }

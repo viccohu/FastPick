@@ -17,6 +17,8 @@ public class MainViewModel : INotifyPropertyChanged
     private readonly JpgMetadataService _jpgMetadataService;
     private readonly PreviewImageService _previewImageService;
     private SettingsService _settingsService => SettingsService.Instance;
+    
+    public ThumbnailService ThumbnailService => _thumbnailService;
 
     // 增量加载配置
     private const int InitialBatchSize = 100;
@@ -169,6 +171,23 @@ public class MainViewModel : INotifyPropertyChanged
     public ObservableCollection<PhotoItem> FilteredPhotoItems { get; } = new();
     
     public int FilteredCount => FilteredPhotoItems.Count;
+
+    private string _deleteWarningMessage = string.Empty;
+    public string DeleteWarningMessage
+    {
+        get => _deleteWarningMessage;
+        set
+        {
+            if (_deleteWarningMessage != value)
+            {
+                _deleteWarningMessage = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(HasDeleteWarning));
+            }
+        }
+    }
+
+    public bool HasDeleteWarning => !string.IsNullOrEmpty(_deleteWarningMessage);
 
     public MainViewModel()
     {
@@ -418,6 +437,29 @@ public class MainViewModel : INotifyPropertyChanged
         }
 
         OnPropertyChanged(nameof(MarkedForDeletionCount));
+        UpdateDeleteWarning();
+    }
+
+    public void UpdateDeleteWarning()
+    {
+        if (MarkedForDeletionItems.Count == 0)
+        {
+            DeleteWarningMessage = string.Empty;
+            return;
+        }
+
+        var deleteCheck = FileOperationService.CheckAndPrepareDelete(
+            MarkedForDeletionItems.ToList(), 
+            _settingsService.DeleteToRecycleBin);
+
+        if (deleteCheck.WasForcedPermanent)
+        {
+            DeleteWarningMessage = deleteCheck.WarningMessage ?? string.Empty;
+        }
+        else
+        {
+            DeleteWarningMessage = string.Empty;
+        }
     }
 
     /// <summary>
@@ -451,11 +493,20 @@ public class MainViewModel : INotifyPropertyChanged
     {
         var itemsToDelete = MarkedForDeletionItems.ToList();
 
+        var deleteCheck = FileOperationService.CheckAndPrepareDelete(itemsToDelete, _settingsService.DeleteToRecycleBin);
+        if (deleteCheck.WasForcedPermanent)
+        {
+            DeleteWarningMessage = deleteCheck.WarningMessage ?? string.Empty;
+        }
+        else
+        {
+            DeleteWarningMessage = string.Empty;
+        }
+
         foreach (var item in itemsToDelete)
         {
             try
             {
-                // 删除文件
                 if (option == DeleteOptionEnum.Both || option == DeleteOptionEnum.JpgOnly)
                 {
                     if (item.HasJpg)
@@ -468,7 +519,6 @@ public class MainViewModel : INotifyPropertyChanged
                         await DeleteFileToRecycleBinAsync(item.RawPath);
                 }
 
-                // 从列表移除
                 PhotoItems.Remove(item);
                 MarkedForDeletionItems.Remove(item);
                 SelectedItems.Remove(item);
@@ -482,7 +532,6 @@ public class MainViewModel : INotifyPropertyChanged
         OnPropertyChanged(nameof(TotalCount));
         OnPropertyChanged(nameof(MarkedForDeletionCount));
         
-        // 刷新筛选列表
         ApplyFilter();
     }
 
