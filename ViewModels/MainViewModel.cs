@@ -817,6 +817,14 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
     /// <summary>
+    /// 预加载缩略图
+    /// </summary>
+    public async Task PreloadThumbnailsAsync(IList<PhotoItem> items, int currentIndex, int preloadCount = 8)
+    {
+        await _thumbnailService.PreloadThumbnailsAsync(items.ToList(), currentIndex, preloadCount);
+    }
+
+    /// <summary>
     /// 加载预览图
     /// </summary>
     public async Task<Microsoft.UI.Xaml.Media.Imaging.BitmapImage?> LoadPreviewAsync(PhotoItem item)

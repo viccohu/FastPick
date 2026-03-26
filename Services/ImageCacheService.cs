@@ -156,5 +156,9 @@ public class ImageCacheService
 
     private void ReleaseImage(BitmapImage? image)
     {
+        if (image != null)
+        {
+            image.UriSource = null;
+        }
     }
 }

@@ -158,7 +158,7 @@ public class PreviewImageService
             bool isFlippedHorizontal = false;
             try
             {
-                var orientation = GetOrientationFromDecoder(decoder);
+                var orientation = await GetOrientationFromDecoderAsync(decoder);
                 (orientationRotation, isFlippedHorizontal) = ConvertOrientationToTransform(orientation);
                 LoggerService.Instance.Verbose(LogCategory.RawProcessing, $"{Path.GetFileName(rawPath)}: Orientation={orientation}, Rotation={orientationRotation}, Flip={isFlippedHorizontal}");
             }
@@ -225,14 +225,14 @@ public class PreviewImageService
         }
     }
 
-    private ushort GetOrientationFromDecoder(BitmapDecoder decoder)
+    private async Task<ushort> GetOrientationFromDecoderAsync(BitmapDecoder decoder)
     {
         try
         {
             var properties = decoder.BitmapProperties;
             const string orientationQuery = "System.Photo.Orientation";
             
-            var result = properties.GetPropertiesAsync(new[] { orientationQuery }).AsTask().Result;
+            var result = await properties.GetPropertiesAsync(new[] { orientationQuery }).AsTask();
             if (result.TryGetValue(orientationQuery, out var orientationValue))
             {
                 if (orientationValue.Value is ushort orientation)
@@ -517,7 +517,6 @@ public class PreviewImageService
         var bitmap = new BitmapImage();
         await bitmap.SetSourceAsync(outputStream);
 
-        softwareBitmap.Dispose();
         return bitmap;
     }
 
@@ -560,10 +559,8 @@ public class PreviewImageService
 
     public void ReleasePreview(BitmapImage? bitmap)
     {
-        if (bitmap != null)
-        {
-            bitmap.UriSource = null;
-        }
+        // 不再清空 UriSource，避免二次打开时黑屏闪烁
+        // BitmapImage 不实现 IDisposable，无需手动释放
     }
 
     public async Task<BitmapImage?> LoadQuickPreviewAsync(PhotoItem photoItem, CancellationToken cancellationToken = default)
@@ -731,7 +728,7 @@ public class PreviewImageService
             bool isFlippedHorizontal = false;
             try
             {
-                var orientation = GetOrientationFromDecoder(decoder);
+                var orientation = await GetOrientationFromDecoderAsync(decoder);
                 (orientationRotation, isFlippedHorizontal) = ConvertOrientationToTransform(orientation);
             }
             catch (Exception)

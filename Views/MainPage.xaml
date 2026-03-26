@@ -740,23 +740,24 @@
               Background="{StaticResource SurfaceBackgroundBrush}"
               BorderBrush="{StaticResource BorderBrush}"
               BorderThickness="0,1,0,0">
-            <ScrollViewer x:Name="ThumbnailScrollViewer"
-                          HorizontalScrollBarVisibility="Auto"
-                          VerticalScrollBarVisibility="Disabled"
-                          HorizontalScrollMode="Enabled"
-                          VerticalScrollMode="Disabled"
-                          IsVerticalScrollChainingEnabled="False"
-                          PointerWheelChanged="ThumbnailScrollViewer_PointerWheelChanged"
-                          ViewChanged="ThumbnailScrollViewer_ViewChanged">
-                <Grid Padding="8,5,8,5">
+            <controls:ItemsRepeaterScrollHost>
+                <ScrollViewer x:Name="ThumbnailScrollViewer"
+                              HorizontalScrollBarVisibility="Auto"
+                              VerticalScrollBarVisibility="Disabled"
+                              HorizontalScrollMode="Enabled"
+                              VerticalScrollMode="Disabled"
+                              IsVerticalScrollChainingEnabled="False"
+                              PointerWheelChanged="ThumbnailScrollViewer_PointerWheelChanged"
+                              ViewChanged="ThumbnailScrollViewer_ViewChanged"
+                              Padding="8,5,8,5">
                     <ItemsRepeater x:Name="ThumbnailRepeater"
                                    ItemTemplate="{StaticResource ThumbnailItemTemplate}">
                         <ItemsRepeater.Layout>
                             <StackLayout Orientation="Horizontal" Spacing="8"/>
                         </ItemsRepeater.Layout>
                     </ItemsRepeater>
-                </Grid>
-            </ScrollViewer>
+                </ScrollViewer>
+            </controls:ItemsRepeaterScrollHost>
         </Grid>
 
         <!-- ==================== 右侧文件信息抽屉 ==================== -->

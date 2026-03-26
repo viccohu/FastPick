@@ -14,9 +14,9 @@ public class ThumbnailService
     private readonly Dictionary<string, BitmapImage> _thumbnailCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, PhotoItem> _photoItemMap = new(StringComparer.OrdinalIgnoreCase);
     private readonly SemaphoreSlim _cacheLock = new(1, 1);
-    private readonly SemaphoreSlim _throttler = new(Environment.ProcessorCount, Environment.ProcessorCount);
+    private readonly SemaphoreSlim _throttler = new(10, 12);
     private readonly ConcurrentDictionary<string, TaskCompletionSource<BitmapImage?>> _pendingLoads = new(StringComparer.OrdinalIgnoreCase);
-    private const int MaxCacheSize = 1000;
+    private const int MaxCacheSize = 2000;
     private const int MaxThumbnailSize = 256;
 
     public async Task<BitmapImage?> GetThumbnailAsync(PhotoItem photoItem, CancellationToken cancellationToken = default)
@@ -184,7 +184,7 @@ public class ThumbnailService
                 transform.ScaledHeight = (uint)(height * scale);
             }
 
-            var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
+            using var softwareBitmap = await decoder.GetSoftwareBitmapAsync(
                 BitmapPixelFormat.Bgra8,
                 BitmapAlphaMode.Premultiplied,
                 transform,
@@ -200,7 +200,6 @@ public class ThumbnailService
             var bitmap = new BitmapImage();
             await bitmap.SetSourceAsync(outputStream).AsTask(cancellationToken);
 
-            softwareBitmap.Dispose();
             return bitmap;
         }
         catch (OperationCanceledException)
@@ -228,7 +227,7 @@ public class ThumbnailService
             {
                 var properties = decoder.BitmapProperties;
                 const string orientationQuery = "System.Photo.Orientation";
-                var result = properties.GetPropertiesAsync(new[] { orientationQuery }).AsTask(cancellationToken).Result;
+                var result = await properties.GetPropertiesAsync(new[] { orientationQuery }).AsTask(cancellationToken);
                 if (result.TryGetValue(orientationQuery, out var orientationValue) && orientationValue.Value is ushort orientation)
                 {
                     (orientationRotation, isFlippedHorizontal) = orientation switch
@@ -415,6 +414,51 @@ public class ThumbnailService
         finally
         {
             _cacheLock.Release();
+        }
+    }
+
+    /// <summary>
+    /// 预加载缩略图，保证翻阅流畅
+    /// </summary>
+    /// <param name="items">所有图片项</param>
+    /// <param name="currentIndex">当前索引</param>
+    /// <param name="preloadCount">预加载数量（默认8张）</param>
+    /// <param name="cancellationToken">取消令牌</param>
+    public async Task PreloadThumbnailsAsync(
+        List<PhotoItem> items, 
+        int currentIndex, 
+        int preloadCount = 8,
+        CancellationToken cancellationToken = default)
+    {
+        if (items == null || items.Count == 0)
+            return;
+
+        var start = Math.Max(0, currentIndex - 2);
+        var end = Math.Min(items.Count - 1, currentIndex + preloadCount);
+
+        var preloadTasks = new List<Task>();
+        
+        for (int i = start; i <= end; i++)
+        {
+            if (cancellationToken.IsCancellationRequested)
+                break;
+                
+            try
+            {
+                var task = GetThumbnailAsync(items[i], cancellationToken);
+                preloadTasks.Add(task);
+            }
+            catch
+            {
+            }
+        }
+
+        try
+        {
+            await Task.WhenAll(preloadTasks);
+        }
+        catch
+        {
         }
     }
 }

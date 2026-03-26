@@ -283,6 +283,9 @@ namespace FastPick.Views
                 if (currentIndex >= 0)
                 {
                     RecordBrowseHistory(currentIndex);
+                    
+                    // 预加载缩略图（后台执行，不阻塞UI）
+                    _ = PreloadThumbnailsAsync(currentIndex);
                 }
             }
 
@@ -294,6 +297,24 @@ namespace FastPick.Views
             
             UpdatePreview();
             PreloadAdjacentImages(newItem);
+        }
+
+        /// <summary>
+        /// 预加载缩略图（后台执行）
+        /// </summary>
+        private async Task PreloadThumbnailsAsync(int currentIndex)
+        {
+            try
+            {
+                var items = _viewModel.FilteredPhotoItems;
+                if (items == null || items.Count == 0)
+                    return;
+
+                await _viewModel.PreloadThumbnailsAsync(items, currentIndex, 8);
+            }
+            catch
+            {
+            }
         }
 
         /// <summary>
