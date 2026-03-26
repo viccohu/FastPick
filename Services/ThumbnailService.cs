@@ -198,6 +198,7 @@ public class ThumbnailService
             );
 
             var transform = new BitmapTransform();
+            transform.InterpolationMode = BitmapInterpolationMode.Fant;
             if (scale < 1)
             {
                 transform.ScaledWidth = (uint)(width * scale);
@@ -291,7 +292,8 @@ public class ThumbnailService
             var transform = new BitmapTransform
             {
                 Rotation = orientationRotation,
-                Flip = isFlippedHorizontal ? BitmapFlip.Horizontal : BitmapFlip.None
+                Flip = isFlippedHorizontal ? BitmapFlip.Horizontal : BitmapFlip.None,
+                InterpolationMode = BitmapInterpolationMode.Fant
             };
 
             var softwareBitmap = await previewFrame.GetSoftwareBitmapAsync(

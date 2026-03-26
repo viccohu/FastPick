@@ -119,6 +119,7 @@ public class PreviewImageService
             var originalHeight = decoder.PixelHeight;
 
             var transform = new BitmapTransform();
+            transform.InterpolationMode = BitmapInterpolationMode.Fant;
             var scaleFactor = Math.Min(
                 (double)MaxPreviewWidth / orientedWidth,
                 (double)MaxPreviewHeight / orientedHeight);
@@ -192,7 +193,8 @@ public class PreviewImageService
             var transform = new BitmapTransform
             {
                 Rotation = orientationRotation,
-                Flip = isFlippedHorizontal ? BitmapFlip.Horizontal : BitmapFlip.None
+                Flip = isFlippedHorizontal ? BitmapFlip.Horizontal : BitmapFlip.None,
+                InterpolationMode = BitmapInterpolationMode.Fant
             };
 
             var softwareBitmap = await previewFrame.GetSoftwareBitmapAsync(
@@ -278,6 +280,7 @@ public class PreviewImageService
             var originalHeight = decoder.PixelHeight;
 
             var transform = new BitmapTransform();
+            transform.InterpolationMode = BitmapInterpolationMode.Fant;
             var scaleFactor = Math.Min(
                 (double)MaxPreviewWidth / orientedWidth,
                 (double)MaxPreviewHeight / orientedHeight);
@@ -758,7 +761,8 @@ public class PreviewImageService
             var transform = new BitmapTransform
             {
                 Rotation = orientationRotation,
-                Flip = isFlippedHorizontal ? BitmapFlip.Horizontal : BitmapFlip.None
+                Flip = isFlippedHorizontal ? BitmapFlip.Horizontal : BitmapFlip.None,
+                InterpolationMode = BitmapInterpolationMode.Fant
             };
 
             var softwareBitmap = await previewFrame.GetSoftwareBitmapAsync(

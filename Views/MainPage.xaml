@@ -656,43 +656,36 @@
         <!-- ==================== 预览区 (Row 2) ==================== -->
         <Grid x:Name="PreviewContainer" 
               Grid.Row="2" 
-              Background="{StaticResource PageBackgroundBrush}"
-              PointerWheelChanged="PreviewContainer_PointerWheelChanged"
-              PointerPressed="PreviewContainer_PointerPressed"
-              PointerMoved="PreviewContainer_PointerMoved"
-              PointerReleased="PreviewContainer_PointerReleased"
-              PointerEntered="PreviewContainer_PointerEntered"
-              PointerExited="PreviewContainer_PointerExited"
-              DoubleTapped="PreviewContainer_DoubleTapped">
-            <Grid.Clip>
-                <RectangleGeometry x:Name="PreviewClip" />
-            </Grid.Clip>
-            <!-- 双缓冲预览容器 -->
-            <Grid x:Name="PreviewImageContainer"
-                  HorizontalAlignment="Center"
-                  VerticalAlignment="Center"
-                  RenderTransformOrigin="0.5,0.5">
-                <Grid.RenderTransform>
-                    <TransformGroup>
-                        <ScaleTransform x:Name="PreviewScaleTransform" ScaleX="1" ScaleY="1" />
-                        <RotateTransform x:Name="PreviewRotateTransform" Angle="0" />
-                        <TranslateTransform x:Name="PreviewTranslateTransform" X="0" Y="0" />
-                    </TransformGroup>
-                </Grid.RenderTransform>
-                <!-- 前台缓冲（当前显示） -->
-                <Image x:Name="PreviewImageFront"
-                       Stretch="Uniform"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       Visibility="Visible" />
-                <!-- 后台缓冲（预加载） -->
-                <Image x:Name="PreviewImageBack"
-                       Stretch="Uniform"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       Visibility="Collapsed"
-                       Opacity="0" />
-            </Grid>
+              Background="{StaticResource PageBackgroundBrush}">
+            <!-- 微软官方大图预览标准三件套 -->
+            <ScrollViewer x:Name="PreviewScrollViewer"
+                          ZoomMode="Enabled"
+                          HorizontalScrollBarVisibility="Auto"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollMode="Enabled"
+                          VerticalScrollMode="Enabled"
+                          IsHorizontalRailEnabled="True"
+                          IsVerticalRailEnabled="True"
+                          MinZoomFactor="0.1"
+                          MaxZoomFactor="8.0">
+                <Grid x:Name="PreviewImageContainer"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center">
+                    <!-- 前台缓冲（当前显示） -->
+                    <Image x:Name="PreviewImageFront"
+                           Stretch="Uniform"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Visibility="Visible" />
+                    <!-- 后台缓冲（预加载） -->
+                    <Image x:Name="PreviewImageBack"
+                           Stretch="Uniform"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Visibility="Collapsed"
+                           Opacity="0" />
+                </Grid>
+            </ScrollViewer>
             <!-- 兼容旧代码的引用 -->
             <Image x:Name="PreviewImage"
                    Stretch="Uniform"

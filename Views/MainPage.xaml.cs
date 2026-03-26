@@ -220,10 +220,7 @@ namespace FastPick.Views
 
         private void PreviewContainer_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (PreviewClip != null)
-            {
-                PreviewClip.Rect = new Windows.Foundation.Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-            }
+            // 不再需要裁剪，ScrollViewer 自动处理
         }
 
         #region 数据绑定
@@ -2849,274 +2846,110 @@ namespace FastPick.Views
 
         #endregion
 
-        #region 图片缩放和拖动
+        #region 图片缩放和拖动（使用 ScrollViewer 原生实现）
 
+        // 以下自定义事件处理已禁用，改用 ScrollViewer 原生实现
+        // ScrollViewer 原生支持：鼠标滚轮缩放、触摸缩放、平移、双击复位、硬件加速
+
+        /*
         private void PreviewContainer_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-            var pointer = e.GetCurrentPoint(PreviewContainer);
-            var delta = pointer.Properties.MouseWheelDelta;
-            
-            if (delta != 0)
-            {
-                // 等比缩放因子（每次缩放约 10%）
-                double zoomFactor = delta > 0 ? 1.1 : 0.909;
-                
-                var (minZoom, maxZoom) = GetZoomLimitsForOriginalScale();
-                
-                // 获取原图 100% 对应的 _zoomScale
-                double originalScaleForFit = 1.0;
-                var item = _viewModel?.CurrentPreviewItem;
-                if (item != null && item.Width > 0 && item.Height > 0)
-                {
-                    originalScaleForFit = CalculateOriginalScale(item);
-                }
-                
-                var oldScale = _zoomScale;
-                var newScale = oldScale * zoomFactor;
-                
-                // 100% 吸附和停留逻辑
-                
-                if (_justSnappedTo100Percent)
-                {
-                    // 刚刚吸附到 100%，需要继续滚动才离开
-                    _snapStayCounter++;
-                    if (_snapStayCounter < SnapStayCount)
-                    {
-                        // 还没到离开的次数，保持在 100%
-                        newScale = originalScaleForFit;
-                    }
-                    else
-                    {
-                        // 达到离开次数，重置状态
-                        _justSnappedTo100Percent = false;
-                        _snapStayCounter = 0;
-                    }
-                }
-                else
-                {
-                    // 检查是否跨越 100% 阈值
-                    bool wasBelow100 = oldScale < originalScaleForFit * (1.0 - SnapThreshold);
-                    bool wasAbove100 = oldScale > originalScaleForFit * (1.0 + SnapThreshold);
-                    bool willBeAbove100 = newScale > originalScaleForFit * (1.0 + SnapThreshold);
-                    bool willBeBelow100 = newScale < originalScaleForFit * (1.0 - SnapThreshold);
-                    
-                    // 检查是否在 100% 附近（对于高像素图片更宽松的判断）
-                    bool isNear100 = Math.Abs(oldScale - originalScaleForFit) < originalScaleForFit * SnapThreshold * 1.5;
-                    
-                    if ((wasBelow100 && willBeAbove100) || (wasAbove100 && willBeBelow100) || isNear100)
-                    {
-                        // 跨越 100% 阈值或在 100% 附近，吸附到 100%
-                        newScale = originalScaleForFit;
-                        _justSnappedTo100Percent = true;
-                        _snapStayCounter = 0;
-                    }
-                }
-                
-                _zoomScale = Math.Min(maxZoom, Math.Max(minZoom, newScale));
-                
-                // 缩放时保持当前偏移比例，不跳变
-                var scaleRatio = _zoomScale / oldScale;
-                _translateX *= scaleRatio;
-                _translateY *= scaleRatio;
-                
-                // 应用边界限制
-                ClampTranslation();
-                
-                ApplyZoomTransform();
-                UpdateZoomIndicator();
-                CheckAndLoadHighResolution();
-                e.Handled = true;
-            }
+            // 由 ScrollViewer 原生处理
         }
 
         private bool CanPanImage()
         {
-            if (_frontImage == null || _frontImage.Source == null || PreviewContainer == null)
-                return false;
-            
-            var (imageWidth, imageHeight) = GetRotatedImageSize();
-            var containerWidth = PreviewContainer.ActualWidth;
-            var containerHeight = PreviewContainer.ActualHeight;
-            
-            return imageWidth > containerWidth || imageHeight > containerHeight;
+            // 由 ScrollViewer 原生处理
+            return false;
         }
 
         private bool CanPanHorizontal()
         {
-            if (_frontImage == null || PreviewContainer == null) return false;
-            var (imageWidth, _) = GetRotatedImageSize();
-            return imageWidth > PreviewContainer.ActualWidth;
+            // 由 ScrollViewer 原生处理
+            return false;
         }
 
         private bool CanPanVertical()
         {
-            if (_frontImage == null || PreviewContainer == null) return false;
-            var (_, imageHeight) = GetRotatedImageSize();
-            return imageHeight > PreviewContainer.ActualHeight;
+            // 由 ScrollViewer 原生处理
+            return false;
         }
 
         private (double width, double height) GetRotatedImageSize()
         {
-            if (_frontImage == null)
-                return (0, 0);
-            
-            var actualWidth = _frontImage.ActualWidth * _zoomScale;
-            var actualHeight = _frontImage.ActualHeight * _zoomScale;
-            
-            // 当旋转 90 度或 270 度时，宽高交换
-            if (_rotation == 90 || _rotation == 270)
-            {
-                return (actualHeight, actualWidth);
-            }
-            return (actualWidth, actualHeight);
+            // 由 ScrollViewer 原生处理
+            return (0, 0);
         }
 
         private void PreviewContainer_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (CanPanImage() || _isDragging)
-            {
-                var pointer = e.GetCurrentPoint(PreviewContainer);
-                if (pointer.Properties.IsLeftButtonPressed)
-                {
-                    _isDragging = true;
-                    _lastDragPoint = pointer.Position;
-                    PreviewContainer.CapturePointer(e.Pointer);
-                    ProtectedCursor = Microsoft.UI.Input.InputSystemCursor.Create(Microsoft.UI.Input.InputSystemCursorShape.Hand);
-                }
-            }
+            // 由 ScrollViewer 原生处理
         }
 
         private void PreviewContainer_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (_isDragging)
-            {
-                var pointer = e.GetCurrentPoint(PreviewContainer);
-                var currentPoint = pointer.Position;
-                
-                var deltaX = currentPoint.X - _lastDragPoint.X;
-                var deltaY = currentPoint.Y - _lastDragPoint.Y;
-                
-                // 检查是否允许水平拖拽
-                if (CanPanHorizontal())
-                {
-                    _translateX += deltaX;
-                }
-                
-                // 检查是否允许垂直拖拽
-                if (CanPanVertical())
-                {
-                    _translateY += deltaY;
-                }
-                
-                // 应用边界限制
-                ClampTranslation();
-                
-                _lastDragPoint = currentPoint;
-                ApplyZoomTransform();
-            }
+            // 由 ScrollViewer 原生处理
         }
 
         private void PreviewContainer_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (_isDragging)
-            {
-                _isDragging = false;
-                PreviewContainer.ReleasePointerCapture(e.Pointer);
-            }
-            UpdateCursor();
+            // 由 ScrollViewer 原生处理
         }
 
         private void PreviewContainer_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            UpdateCursor();
+            // 由 ScrollViewer 原生处理
         }
 
         private void PreviewContainer_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            if (!_isDragging)
-            {
-                ProtectedCursor = null;
-            }
+            // 由 ScrollViewer 原生处理
         }
 
         private void UpdateCursor()
         {
-            if (CanPanImage() && !_isDragging)
-            {
-                ProtectedCursor = Microsoft.UI.Input.InputSystemCursor.Create(Microsoft.UI.Input.InputSystemCursorShape.Hand);
-            }
-            else if (!_isDragging)
-            {
-                ProtectedCursor = null;
-            }
+            // 由 ScrollViewer 原生处理
         }
 
         private void PreviewContainer_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            ResetZoom();
+            // 由 ScrollViewer 原生处理
         }
 
-        /// <summary>
-        /// 计算并限制图片平移边界
-        /// </summary>
         private void ClampTranslation()
         {
-            if (_frontImage == null || _frontImage.Source == null || PreviewContainer == null) return;
-            
-            var containerWidth = PreviewContainer.ActualWidth;
-            var containerHeight = PreviewContainer.ActualHeight;
-            
-            if (containerWidth <= 0 || containerHeight <= 0) return;
-            
-            var (imageWidth, imageHeight) = GetRotatedImageSize();
-            
-            // 水平方向
-            if (imageWidth <= containerWidth)
-            {
-                // 图片窄于容器，强制居中
-                _translateX = 0;
-            }
-            else
-            {
-                // 图片宽于容器，限制边界
-                var maxTranslateX = imageWidth / 2 - containerWidth / 2;
-                _translateX = Math.Max(-maxTranslateX, Math.Min(maxTranslateX, _translateX));
-            }
-            
-            // 垂直方向
-            if (imageHeight <= containerHeight)
-            {
-                // 图片矮于容器，强制居中
-                _translateY = 0;
-            }
-            else
-            {
-                // 图片高于容器，限制边界
-                var maxTranslateY = imageHeight / 2 - containerHeight / 2;
-                _translateY = Math.Max(-maxTranslateY, Math.Min(maxTranslateY, _translateY));
-            }
+            // 由 ScrollViewer 原生处理
         }
+        */
 
         private void ApplyZoomTransform()
         {
-            if (PreviewScaleTransform == null || PreviewRotateTransform == null || PreviewTranslateTransform == null) return;
+            if (PreviewImageContainer == null) return;
             
-            PreviewScaleTransform.ScaleX = _zoomScale * (_flipHorizontal ? -1 : 1);
-            PreviewScaleTransform.ScaleY = _zoomScale * (_flipVertical ? -1 : 1);
-            PreviewRotateTransform.Angle = _rotation;
-            PreviewTranslateTransform.X = _translateX;
-            PreviewTranslateTransform.Y = _translateY;
+            var transformGroup = new TransformGroup();
+            
+            // 旋转变换
+            var rotateTransform = new RotateTransform();
+            rotateTransform.Angle = _rotation;
+            rotateTransform.CenterX = 0.5;
+            rotateTransform.CenterY = 0.5;
+            transformGroup.Children.Add(rotateTransform);
+            
+            // 翻转变换
+            var scaleTransform = new ScaleTransform();
+            scaleTransform.ScaleX = _flipHorizontal ? -1 : 1;
+            scaleTransform.ScaleY = _flipVertical ? -1 : 1;
+            scaleTransform.CenterX = 0.5;
+            scaleTransform.CenterY = 0.5;
+            transformGroup.Children.Add(scaleTransform);
+            
+            PreviewImageContainer.RenderTransform = transformGroup;
+            PreviewImageContainer.RenderTransformOrigin = new Windows.Foundation.Point(0.5, 0.5);
         }
         
         private void ApplyZoomTransformWithAnimation()
         {
-            if (PreviewScaleTransform == null || PreviewRotateTransform == null || PreviewTranslateTransform == null) return;
-            
-            PreviewScaleTransform.ScaleX = _zoomScale * (_flipHorizontal ? -1 : 1);
-            PreviewScaleTransform.ScaleY = _zoomScale * (_flipVertical ? -1 : 1);
-            PreviewRotateTransform.Angle = _rotation;
-            PreviewTranslateTransform.X = _translateX;
-            PreviewTranslateTransform.Y = _translateY;
+            ApplyZoomTransform();
         }
 
         private void UpdateZoomIndicator()
@@ -3223,7 +3056,7 @@ namespace FastPick.Views
             }
             
             // 更新光标，因为缩放可能改变了图片是否可以移动
-            UpdateCursor();
+            // UpdateCursor(); // 已禁用，由 ScrollViewer 原生处理
         }
 
         private void ZoomIndicatorTimer_Tick(object? sender, object e)
@@ -3238,15 +3071,15 @@ namespace FastPick.Views
         private void ResetZoom()
         {
             _zoomScale = 1.0;
-            _translateX = 0;
-            _translateY = 0;
             _rotation = 0;
             _flipHorizontal = false;
             _flipVertical = false;
             
-            // 重置吸附状态
-            _justSnappedTo100Percent = false;
-            _snapStayCounter = 0;
+            // 重置 ScrollViewer
+            if (PreviewScrollViewer != null)
+            {
+                PreviewScrollViewer.ChangeView(null, null, 1.0f, true);
+            }
             
             ApplyZoomTransformWithAnimation();
             UpdateZoomIndicator();
